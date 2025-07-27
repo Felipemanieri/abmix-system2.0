@@ -110,40 +110,87 @@ export default function LogsViewer() {
     setFilteredLogs(filtered);
   }, [logs, searchTerm, levelFilter, moduleFilter]);
 
-  // Auto scroll para o final - só se o usuário estiver no final ou próximo
+  // Estado para controlar se o usuário está interagindo manualmente
+  const [userScrolling, setUserScrolling] = useState(false);
+  const userScrollTimeout = useRef<NodeJS.Timeout>();
+
+  // Auto scroll inteligente - só rola se usuário não estiver navegando manualmente
   useEffect(() => {
-    if (autoScroll && logsEndRef.current && logsContainerRef.current) {
+    if (autoScroll && !userScrolling && logsEndRef.current && logsContainerRef.current) {
       const container = logsContainerRef.current;
-      const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100;
+      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
       
-      // Só faz scroll automático se estiver perto do final
-      if (isNearBottom) {
-        logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      // Só faz scroll se realmente estiver no final da lista
+      if (isAtBottom) {
+        setTimeout(() => {
+          if (logsEndRef.current && !userScrolling && autoScroll) {
+            logsEndRef.current.scrollIntoView({ behavior: 'auto' });
+          }
+        }, 50);
       }
     }
-  }, [filteredLogs, autoScroll]);
+  }, [filteredLogs, autoScroll, userScrolling]);
 
-  // Desabilitar auto-scroll quando usuário rola manualmente para cima
+  // Detectar quando usuário está rolando manualmente
   useEffect(() => {
     const container = logsContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100;
+    let isUserScrolling = false;
+
+    const handleUserInteraction = () => {
+      isUserScrolling = true;
+      setUserScrolling(true);
       
-      // Se usuário rolou para longe do final, desabilita auto-scroll
-      if (!isNearBottom && autoScroll) {
-        setAutoScroll(false);
+      // Limpa timeout anterior
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current);
       }
-      // Se usuário voltou pro final, reabilita auto-scroll
-      else if (isNearBottom && !autoScroll) {
-        setAutoScroll(true);
+      
+      // Define que parou de rolar após 3 segundos de inatividade
+      userScrollTimeout.current = setTimeout(() => {
+        isUserScrolling = false;
+        setUserScrolling(false);
+        
+        // Verifica se está no final para reativar auto-scroll
+        const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+        if (isAtBottom) {
+          setAutoScroll(true);
+        }
+      }, 3000);
+    };
+
+    const handleScroll = (e: Event) => {
+      // Se não foi um scroll programático, marca como interação do usuário
+      if (!e.isTrusted) return;
+      
+      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+      
+      // Se o usuário saiu do final da lista, desabilita auto-scroll
+      if (!isAtBottom) {
+        setAutoScroll(false);
+        handleUserInteraction();
       }
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [autoScroll]);
+    // Detecta todos os tipos de interação do usuário
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener('wheel', handleUserInteraction, { passive: true });
+    container.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    container.addEventListener('touchmove', handleUserInteraction, { passive: true });
+    container.addEventListener('mousedown', handleUserInteraction, { passive: true });
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', handleUserInteraction);
+      container.removeEventListener('touchstart', handleUserInteraction);
+      container.removeEventListener('touchmove', handleUserInteraction);
+      container.removeEventListener('mousedown', handleUserInteraction);
+      if (userScrollTimeout.current) {
+        clearTimeout(userScrollTimeout.current);
+      }
+    };
+  }, []);
 
   const getLevelIcon = (level: string) => {
     switch (level) {
