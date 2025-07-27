@@ -2256,15 +2256,6 @@ Vendedor Abmix`;
                 onMessagesView={() => setShowInternalMessage(true)}
               />
               
-              <button
-                onClick={() => setShowInternalMessage(true)}
-                className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-              >
-                <MessageSquare className="w-5 h-5" />
-              </button>
-              
-
-              
               <ThemeToggle />
               
               <button
