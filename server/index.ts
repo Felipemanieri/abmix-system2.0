@@ -244,7 +244,12 @@ async function startServer() {
           updatedAt: new Date()
         };
         
-        console.log('📝 Dados finais da proposta:', proposalData);
+        console.log('📝 Dados finais da proposta:', JSON.stringify(proposalData, null, 2));
+        
+        // Validar campos obrigatórios antes de inserir
+        if (!proposalData.id || !proposalData.clientToken) {
+          throw new Error('Campos obrigatórios faltando: id ou clientToken');
+        }
         
         const proposal = await storage.createProposal(proposalData);
         console.log('✅ Proposta criada com sucesso:', proposal.id);
@@ -257,7 +262,13 @@ async function startServer() {
           console.warn('Aviso: Erro na sincronização Google Sheets:', syncError);
         }
 
-        res.json(proposal);
+        // Gerar link do formulário do cliente
+        const clientFormLink = `${req.protocol}://${req.get('host')}/client-form?token=${proposal.clientToken}`;
+        
+        res.json({
+          ...proposal,
+          clientFormLink: clientFormLink
+        });
       } catch (error) {
         console.error('❌ Erro ao criar proposta:', error);
         res.status(500).json({ error: 'Erro ao criar proposta' });
