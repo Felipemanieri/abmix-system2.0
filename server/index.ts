@@ -199,8 +199,55 @@ async function startServer() {
 
     app.post('/api/proposals', async (req: Request, res: Response) => {
       try {
-        const proposalData = req.body;
+        console.log('🚀 Criando nova proposta com dados:', req.body);
+        
+        // 1. GERAR IDs ÚNICOS OBRIGATÓRIOS
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substr(2, 9);
+        const proposalId = `PROP-${timestamp}-${randomSuffix}`;
+        
+        // Obter próximo número ABM
+        const existingProposals = await storage.getAllProposals();
+        const maxAbmNumber = Math.max(0, ...existingProposals
+          .filter(p => p.abmId && p.abmId.startsWith('ABM'))
+          .map(p => parseInt(p.abmId.substring(3)) || 0));
+        const nextAbmNumber = maxAbmNumber + 1;
+        const abmId = `ABM${String(nextAbmNumber).padStart(3, '0')}`;
+        
+        const clientToken = `CLIENT-${timestamp}-${randomSuffix}`;
+        
+        console.log(`🔢 IDs gerados: proposalId=${proposalId}, abmId=${abmId}, clientToken=${clientToken}`);
+        
+        // 2. PREPARAR DADOS DA PROPOSTA COM IDs E VALIDAÇÕES
+        const proposalData = {
+          id: proposalId,
+          abmId: abmId,
+          clientToken: clientToken,
+          vendorId: req.body.vendorId || null,
+          contractData: req.body.contractData || {},
+          titulares: req.body.titulares || [],
+          dependentes: req.body.dependentes || [],
+          internalData: req.body.internalData || {},
+          vendorAttachments: req.body.vendorAttachments || [],
+          clientAttachments: req.body.clientAttachments || [],
+          clientCompleted: req.body.clientCompleted || false,
+          status: req.body.status || 'pendente',
+          priority: req.body.priority || 'normal',
+          driveFolder: req.body.driveFolder || null,
+          folderName: req.body.folderName || null,
+          driveFolderId: req.body.driveFolderId || null,
+          observacaoFinanceira: req.body.observacaoFinanceira || null,
+          observacaoSupervisor: req.body.observacaoSupervisor || null,
+          observacaoImplementacao: req.body.observacaoImplementacao || null,
+          documentosRecebidos: req.body.documentosRecebidos || {},
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        console.log('📝 Dados finais da proposta:', proposalData);
+        
         const proposal = await storage.createProposal(proposalData);
+        console.log('✅ Proposta criada com sucesso:', proposal.id);
 
         // Tentar sincronizar com Google Sheets
         try {
@@ -212,7 +259,7 @@ async function startServer() {
 
         res.json(proposal);
       } catch (error) {
-        console.error('Erro ao criar proposta:', error);
+        console.error('❌ Erro ao criar proposta:', error);
         res.status(500).json({ error: 'Erro ao criar proposta' });
       }
     });

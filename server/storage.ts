@@ -150,11 +150,20 @@ export class DatabaseStorage implements IStorage {
 
   // Proposal operations
   async createProposal(proposalData: any): Promise<any> {
-    const [proposal] = await db
-      .insert(proposals)
-      .values(proposalData)
-      .returning();
-    return proposal;
+    try {
+      console.log('💾 STORAGE: Inserindo proposta no banco:', proposalData);
+      
+      const [proposal] = await db
+        .insert(proposals)
+        .values(proposalData)
+        .returning();
+      
+      console.log('✅ STORAGE: Proposta inserida com sucesso:', proposal.id);
+      return proposal;
+    } catch (error) {
+      console.error('❌ STORAGE: Erro ao inserir proposta:', error);
+      throw error;
+    }
   }
 
   async getProposal(id: string): Promise<any> {
