@@ -19,6 +19,7 @@ export default function LogsViewer() {
   const [autoScroll, setAutoScroll] = useState(true);
   const [isLive, setIsLive] = useState(true);
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
   // Simular logs do sistema (em produção, viria do backend)
   const generateMockLog = (): LogEntry => {
@@ -109,12 +110,40 @@ export default function LogsViewer() {
     setFilteredLogs(filtered);
   }, [logs, searchTerm, levelFilter, moduleFilter]);
 
-  // Auto scroll para o final
+  // Auto scroll para o final - só se o usuário estiver no final ou próximo
   useEffect(() => {
-    if (autoScroll && logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (autoScroll && logsEndRef.current && logsContainerRef.current) {
+      const container = logsContainerRef.current;
+      const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100;
+      
+      // Só faz scroll automático se estiver perto do final
+      if (isNearBottom) {
+        logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   }, [filteredLogs, autoScroll]);
+
+  // Desabilitar auto-scroll quando usuário rola manualmente para cima
+  useEffect(() => {
+    const container = logsContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const isNearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 100;
+      
+      // Se usuário rolou para longe do final, desabilita auto-scroll
+      if (!isNearBottom && autoScroll) {
+        setAutoScroll(false);
+      }
+      // Se usuário voltou pro final, reabilita auto-scroll
+      else if (isNearBottom && !autoScroll) {
+        setAutoScroll(true);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [autoScroll]);
 
   const getLevelIcon = (level: string) => {
     switch (level) {
@@ -326,7 +355,10 @@ export default function LogsViewer() {
           </div>
         </div>
 
-        <div className="max-h-96 overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm">
+        <div 
+          ref={logsContainerRef}
+          className="max-h-96 overflow-y-auto bg-gray-900 text-gray-100 font-mono text-sm"
+        >
           {filteredLogs.length === 0 ? (
             <div className="p-8 text-center text-gray-400">
               <Monitor className="h-12 w-12 mx-auto mb-4 opacity-50" />
