@@ -118,15 +118,21 @@ export default function LogsViewer() {
   useEffect(() => {
     if (autoScroll && !userScrolling && logsEndRef.current && logsContainerRef.current) {
       const container = logsContainerRef.current;
-      const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
       
-      // Só faz scroll se realmente estiver no final da lista
-      if (isAtBottom) {
-        setTimeout(() => {
-          if (logsEndRef.current && !userScrolling && autoScroll) {
-            logsEndRef.current.scrollIntoView({ behavior: 'auto' });
-          }
-        }, 50);
+      // Para os primeiros logs, NÃO faz auto-scroll para evitar movimento indesejado
+      if (filteredLogs.length <= 4) {
+        // Não faz nada - deixa o usuário controlar manualmente
+        return;
+      } else {
+        // Para listas maiores, verifica se está realmente no final
+        const isAtBottom = Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) <= 5;
+        if (isAtBottom) {
+          setTimeout(() => {
+            if (logsEndRef.current && !userScrolling && autoScroll) {
+              logsEndRef.current.scrollIntoView({ behavior: 'auto' });
+            }
+          }, 100);
+        }
       }
     }
   }, [filteredLogs, autoScroll, userScrolling]);
@@ -152,10 +158,12 @@ export default function LogsViewer() {
         isUserScrolling = false;
         setUserScrolling(false);
         
-        // Verifica se está no final para reativar auto-scroll
-        const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
-        if (isAtBottom) {
-          setAutoScroll(true);
+        // Só reativa auto-scroll se tiver mais de 4 logs e estiver no final
+        if (container.scrollHeight > container.clientHeight) {
+          const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
+          if (isAtBottom) {
+            setAutoScroll(true);
+          }
         }
       }, 3000);
     };
