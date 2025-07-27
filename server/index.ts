@@ -262,8 +262,8 @@ async function startServer() {
           console.warn('Aviso: Erro na sincronização Google Sheets:', syncError);
         }
 
-        // Gerar link do formulário do cliente
-        const clientFormLink = `${req.protocol}://${req.get('host')}/client-form?token=${proposal.clientToken}`;
+        // Gerar link do formulário do cliente - formato correto para frontend
+        const clientFormLink = `${req.protocol}://${req.get('host')}/cliente/proposta/${proposal.clientToken}`;
         
         res.json({
           ...proposal,
