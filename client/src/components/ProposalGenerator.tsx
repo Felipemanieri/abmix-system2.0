@@ -539,7 +539,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         localStorage.removeItem(draftKey);
       }
       
-      setGeneratedLink(result.clientLink);
+      setGeneratedLink(result.clientFormLink);
       setShowProfessionalModal(true);
       showNotification('Link exclusivo da proposta gerado com sucesso!', 'success');
       
