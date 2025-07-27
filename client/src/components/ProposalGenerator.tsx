@@ -1524,7 +1524,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
               <button
                 onClick={adicionarTitular}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-lg hover:bg-green-150 transition-colors"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Titular
@@ -1549,7 +1549,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
               <button
                 onClick={adicionarDependente}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex items-center px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-150 transition-colors"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Dependente
@@ -1583,7 +1583,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
               <button
                 onClick={() => setShowInternalFields(!showInternalFields)}
-                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
+                className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"
               >
                 {showInternalFields ? (
                   <>
@@ -1980,35 +1980,35 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             <div className="flex flex-wrap items-center gap-3 mt-6">
               <button
                 onClick={adicionarCotacao}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium shadow-md text-sm"
+                className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-150 transition-colors font-medium shadow-md text-sm"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Adicionar Cotação
               </button>
               <button
                 onClick={limparFormulario}
-                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors font-medium shadow-md text-sm"
+                className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-md hover:bg-gray-150 transition-colors font-medium shadow-md text-sm"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Limpar Formulário
               </button>
               <button
                 onClick={gerarCotacao}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium shadow-md text-sm"
+                className="flex items-center px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-150 transition-colors font-medium shadow-md text-sm"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 Gerar Cotação
               </button>
               <button
                 onClick={salvarCotacao}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium shadow-md text-sm"
+                className="flex items-center px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-150 transition-colors font-medium shadow-md text-sm"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Salvar Cotação
               </button>
               <button
                 onClick={baixarCotacao}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium shadow-md text-sm"
+                className="flex items-center px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-150 transition-colors font-medium shadow-md text-sm"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Baixar Cotação
@@ -2060,7 +2060,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           <div className="flex justify-end">
             <button
               onClick={handleSend}
-              className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="flex items-center px-6 py-3 bg-blue-100 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-150 transition-colors font-medium"
             >
               <Send className="w-4 h-4 mr-2" />
               Gerar Link para Cliente
