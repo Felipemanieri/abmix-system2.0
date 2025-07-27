@@ -1707,6 +1707,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                     <option value="Lead Supervisor">Lead Supervisor</option>
                     <option value="Indicação Pós Venda">Indicação Pós Venda</option>
                     <option value="Indicação Cliente">Indicação Cliente</option>
+                    <option value="SITE">SITE</option>
                   </select>
                 </div>
 
