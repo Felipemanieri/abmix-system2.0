@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Mail, MessageCircle, Share2, Check, Shield, Lock, CheckCircle, RefreshCw } from 'lucide-react';
 import { showNotification } from '@/utils/notifications';
-import AbmixLogo from './AbmixLogo';
+import logoOficial from '@assets/Logo Abmix_1753662019626.jpg';
 
 interface ProfessionalLinkShareProps {
   clientLink: string;
@@ -71,7 +71,11 @@ Abmix Consultoria em Benefícios`;
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div className="flex items-center space-x-4">
-              <AbmixLogo size={48} />
+              <img 
+                src={logoOficial} 
+                alt="Abmix Logo" 
+                className="h-12 w-auto object-contain"
+              />
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 dark:text-white">Abmix Consultoria em Benefícios</h2>
                 <p className="text-gray-600">Formulário de Proposta</p>
