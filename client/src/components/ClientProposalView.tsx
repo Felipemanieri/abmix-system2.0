@@ -1100,44 +1100,8 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleSave}
-                disabled={isSaving || isSubmitting}
-                className="bg-blue-600 text-white dark:bg-blue-50 dark:bg-blue-9000 dark:text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-lg font-medium"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-5 w-5 mr-2" />
-                    Salvar
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={handleClearDraft}
-                disabled={isClearingDraft}
-                className="bg-red-600 text-white dark:bg-red-50 dark:bg-red-9000 dark:text-white px-8 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-lg font-medium"
-              >
-                {isClearingDraft ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Limpando...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-5 w-5 mr-2" />
-                    Limpar Rascunho
-                  </>
-                )}
-              </button>
-              
+            {/* Action Buttons - Apenas Enviar Proposta */}
+            <div className="flex justify-center">
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || isSaving}
