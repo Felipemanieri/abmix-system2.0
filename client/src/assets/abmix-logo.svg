@@ -1,0 +1,19 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo Abmix oficial - círculo com setores -->
+  <g>
+    <!-- Setor superior esquerdo - azul -->
+    <path d="M50 15 C30.67 15 15 30.67 15 50 L50 50 Z" fill="#00B4A6"/>
+    
+    <!-- Setor inferior direito - azul -->
+    <path d="M50 85 C69.33 85 85 69.33 85 50 L50 50 Z" fill="#00B4A6"/>
+    
+    <!-- Setor superior direito - cinza -->
+    <path d="M50 15 C69.33 15 85 30.67 85 50 L50 50 Z" fill="#9CA3AF"/>
+    
+    <!-- Setor inferior esquerdo - cinza -->
+    <path d="M50 85 C30.67 85 15 69.33 15 50 L50 50 Z" fill="#9CA3AF"/>
+    
+    <!-- Centro branco -->
+    <circle cx="50" cy="50" r="8" fill="white"/>
+  </g>
+</svg>
