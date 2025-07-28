@@ -15,7 +15,7 @@ export default function PlanilhaViewer() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({
     nomePlanilha: 'Planilha Principal',
-    departamento: 'Sistema',
+    departamento: 'Comercial',
     linkId: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link',
     proprietario: 'Admin',
     linkCompartilhamento: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link',
@@ -963,11 +963,12 @@ export default function PlanilhaViewer() {
                       onChange={(e) => setEditFormData({...editFormData, departamento: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="Sistema">Sistema</option>
-                      <option value="Vendas">Vendas</option>
+                      <option value="Comercial">Comercial</option>
                       <option value="Financeiro">Financeiro</option>
-                      <option value="Implementação">Implementação</option>
+                      <option value="Implantação">Implantação</option>
+                      <option value="Supervisão">Supervisão</option>
                       <option value="Administração">Administração</option>
+                      <option value="Sistema">Sistema</option>
                     </select>
                   </div>
                 </div>
