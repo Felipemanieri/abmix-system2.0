@@ -57,6 +57,7 @@ interface RealTimeSpreadsheetEditorProps {
 
 export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSpreadsheetEditorProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchByCNPJ, setSearchByCNPJ] = useState('');
   const [filterColumn, setFilterColumn] = useState('');
   const [editingCell, setEditingCell] = useState<{row: number, column: string} | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -215,6 +216,15 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
   };
 
   const filteredData = spreadsheetData?.data.filter(row => {
+    // Filtro por CNPJ tem prioridade
+    if (searchByCNPJ.trim()) {
+      const cnpjCell = row['CNPJ'] || row['cnpj'] || Object.values(row).find(cell => 
+        cell.value.includes('/') && cell.value.match(/\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}/)
+      );
+      return cnpjCell?.value.toLowerCase().includes(searchByCNPJ.toLowerCase()) || false;
+    }
+    
+    // Filtro geral se não há busca por CNPJ
     if (!searchTerm) return true;
     return Object.values(row).some(cell => 
       cell.value.toLowerCase().includes(searchTerm.toLowerCase())
@@ -281,28 +291,45 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
         </div>
 
         {/* Controles de busca e filtro */}
-        <div className="flex items-center space-x-4">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+        <div className="space-y-4">
+          {/* Busca por CNPJ - Prioritária */}
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-3 text-orange-400" />
             <input
               type="text"
-              placeholder="Buscar em toda a planilha..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="🔍 Buscar por CNPJ (filtro prioritário)..."
+              value={searchByCNPJ}
+              onChange={(e) => setSearchByCNPJ(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-orange-50"
             />
           </div>
           
-          <select
-            value={filterColumn}
-            onChange={(e) => setFilterColumn(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas as colunas</option>
-            {spreadsheetData?.headers.map(header => (
-              <option key={header} value={header}>{header}</option>
-            ))}
-          </select>
+          {/* Busca geral */}
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar em toda a planilha..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={searchByCNPJ.trim().length > 0}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+              />
+            </div>
+            
+            <select
+              value={filterColumn}
+              onChange={(e) => setFilterColumn(e.target.value)}
+              disabled={searchByCNPJ.trim().length > 0}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            >
+              <option value="">Todas as colunas</option>
+              {spreadsheetData?.headers.map(header => (
+                <option key={header} value={header}>{header}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Status da sincronização */}
