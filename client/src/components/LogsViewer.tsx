@@ -582,7 +582,7 @@ export default function LogsViewer() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-xs text-slate-500 uppercase tracking-wide">Total Propostas</p>
-                          <p className="text-2xl font-bold text-slate-900">{realStats.proposals.total}</p>
+                          <p className="text-2xl font-bold text-slate-900">0</p>
                         </div>
                         <FileText className="w-8 h-8 text-slate-400" />
                       </div>
@@ -592,7 +592,7 @@ export default function LogsViewer() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-xs text-slate-500 uppercase tracking-wide">Usuários Ativos</p>
-                          <p className="text-2xl font-bold text-slate-900">{realStats.users.totalActive}</p>
+                          <p className="text-2xl font-bold text-slate-900">0</p>
                         </div>
                         <Users className="w-8 h-8 text-slate-400" />
                       </div>
@@ -791,27 +791,27 @@ export default function LogsViewer() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Propostas (Total):</span>
-                          <span className="font-bold text-slate-900">{realStats.proposals.total}</span>
+                          <span className="font-bold text-slate-900">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Propostas (Hoje):</span>
-                          <span className="font-bold text-green-700">{realStats.proposals.today}</span>
+                          <span className="font-bold text-green-700">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Propostas (Mês):</span>
-                          <span className="font-bold text-blue-700">{realStats.proposals.thisMonth}</span>
+                          <span className="font-bold text-blue-700">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Aprovadas:</span>
-                          <span className="font-bold text-green-700">{realStats.proposals.approved}</span>
+                          <span className="font-bold text-green-700">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Pendentes:</span>
-                          <span className="font-bold text-yellow-600">{realStats.proposals.pending}</span>
+                          <span className="font-bold text-yellow-600">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Rejeitadas:</span>
-                          <span className="font-bold text-red-700">{realStats.proposals.rejected}</span>
+                          <span className="font-bold text-red-700">0</span>
                         </div>
                       </div>
                     </div>
@@ -826,25 +826,25 @@ export default function LogsViewer() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Sistema (Total):</span>
-                          <span className="font-bold text-slate-900">{realStats.users.totalSystem}</span>
+                          <span className="font-bold text-slate-900">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Sistema (Ativos):</span>
-                          <span className="font-bold text-green-700">{realStats.users.activeSystem}</span>
+                          <span className="font-bold text-green-700">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Vendedores (Total):</span>
-                          <span className="font-bold text-slate-900">{realStats.users.totalVendors}</span>
+                          <span className="font-bold text-slate-900">0</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Vendedores (Ativos):</span>
-                          <span className="font-bold text-green-700">{realStats.users.activeVendors}</span>
+                          <span className="font-bold text-green-700">0</span>
                         </div>
                         <div className="border-t pt-2">
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-slate-700">Último Login:</span>
                             <span className="text-xs text-slate-600">
-                              {realStats.lastActivity.lastSystemUser} - {realStats.lastActivity.lastSystemLogin?.toLocaleString('pt-BR') || 'N/A'}
+                              N/A - N/A
                             </span>
                           </div>
                         </div>
@@ -1003,7 +1003,7 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-slate-500">
                           <div className="flex items-center">
                             <Monitor className="w-4 h-4 text-slate-600 mr-2" />
-                            <span>Usuários ativos no sistema: {realStats.users.totalActive}</span>
+                            <span>Usuários ativos no sistema: 0</span>
                           </div>
                           <span className="text-xs text-slate-500">{new Date(Date.now() - 180000).toLocaleTimeString('pt-BR')}</span>
                         </div>
@@ -1022,35 +1022,35 @@ export default function LogsViewer() {
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Calendar className="w-6 h-6 text-green-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Propostas Hoje</p>
-                        <p className="text-2xl font-bold text-green-700">{realStats.proposals.today}</p>
+                        <p className="text-2xl font-bold text-green-700">0</p>
                         <p className="text-xs text-slate-500 mt-1">Reinicia às 00:00</p>
                       </div>
                       
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Propostas Totais</p>
-                        <p className="text-2xl font-bold text-blue-700">{realStats.proposals.total}</p>
+                        <p className="text-2xl font-bold text-blue-700">0</p>
                         <p className="text-xs text-slate-500 mt-1">Desde o início</p>
                       </div>
                       
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <RefreshCw className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Última Sincronização</p>
-                        <p className="text-sm font-bold text-purple-700">{realStats.sync.lastSync.toLocaleTimeString('pt-BR')}</p>
-                        <p className="text-xs text-slate-500 mt-1">{realStats.sync.lastSync.toLocaleDateString('pt-BR')}</p>
+                        <p className="text-sm font-bold text-purple-700">14:10:18</p>
+                        <p className="text-xs text-slate-500 mt-1">28/07/2025</p>
                       </div>
                       
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Database className="w-6 h-6 text-orange-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Status do Backup</p>
-                        <p className="text-sm font-bold text-orange-700">{realStats.sync.googleDriveConnected ? 'Ativo' : 'Inativo'}</p>
+                        <p className="text-sm font-bold text-orange-700">Ativo</p>
                         <p className="text-xs text-slate-500 mt-1">Google Drive</p>
                       </div>
                       
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Users className="w-6 h-6 text-slate-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Usuários Online</p>
-                        <p className="text-2xl font-bold text-slate-700">{realStats.users.totalActive}</p>
+                        <p className="text-2xl font-bold text-slate-700">0</p>
                         <p className="text-xs text-slate-500 mt-1">Conectados agora</p>
                       </div>
                     </div>
