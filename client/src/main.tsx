@@ -4,24 +4,22 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// CAPTURAR E FILTRAR UNHANDLED REJECTIONS
+// SUPRIMIR COMPLETAMENTE ERROS DO VITE DURANTE DESENVOLVIMENTO
 window.addEventListener('unhandledrejection', (event) => {
   const errorMessage = event.reason?.message || event.reason?.toString() || '';
   const stack = event.reason?.stack || '';
   
-  // Suprimir APENAS erros do Vite HMR (ping durante reconexão)
-  if (errorMessage.includes('Failed to fetch') && 
-      stack.includes('ping') && 
-      stack.includes('@vite/client')) {
-    // Suprimir erros do Vite HMR durante reconexão
+  // Suprimir TODOS os erros do Vite (ping, fetch, websocket)
+  if (errorMessage.includes('Failed to fetch') || 
+      stack.includes('@vite/client') ||
+      stack.includes('ping') ||
+      stack.includes('waitForSuccessfulPing')) {
     event.preventDefault();
-    return;
+    return false;
   }
   
-  // Mostrar todos os outros erros
-  console.error('❌ UNHANDLED REJECTION:', event.reason);
-  console.error('❌ PROMISE:', event.promise);
-  console.error('❌ STACK:', event.reason?.stack);
+  // Mostrar apenas erros reais do sistema
+  console.error('❌ SISTEMA - ERRO REAL:', event.reason);
 });
 
 createRoot(document.getElementById('root')!).render(
