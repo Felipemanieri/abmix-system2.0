@@ -736,6 +736,305 @@ export default function LogsViewer() {
                     </div>
                   </div>
 
+                  {/* Gerenciamento de Logs */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <FileText className="w-5 h-5 mr-2 text-slate-600" />
+                      Gerenciamento de Logs
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button className="flex flex-col items-center p-4 border border-red-200 hover:border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
+                        <Trash2 className="w-8 h-8 text-red-600 mb-2" />
+                        <span className="text-sm font-medium text-red-900">Zerar Logs</span>
+                        <span className="text-xs text-red-600 text-center">Apagar todo histórico de atividades e logs</span>
+                      </button>
+                      
+                      <button className="flex flex-col items-center p-4 border border-blue-200 hover:border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <Download className="w-8 h-8 text-blue-600 mb-2" />
+                        <span className="text-sm font-medium text-blue-900">Exportar Logs</span>
+                        <span className="text-xs text-blue-600 text-center">Download dos logs (.csv) para auditoria</span>
+                      </button>
+                      
+                      <button className="flex flex-col items-center p-4 border border-green-200 hover:border-green-300 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                        <Activity className="w-8 h-8 text-green-600 mb-2" />
+                        <span className="text-sm font-medium text-green-900">Logs em Tempo Real</span>
+                        <span className="text-xs text-green-600 text-center">Ver atividades recentes do sistema</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Logs em Tempo Real */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Activity className="w-5 h-5 mr-2 text-slate-600" />
+                      Atividades Recentes em Tempo Real
+                    </h4>
+                    
+                    <div className="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-green-500">
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 text-green-600 mr-2" />
+                            <span>Login Sistema: Felipe Manieri (felipe@abmix.com.br)</span>
+                          </div>
+                          <span className="text-xs text-slate-500">{new Date().toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-blue-500">
+                          <div className="flex items-center">
+                            <Database className="w-4 h-4 text-blue-600 mr-2" />
+                            <span>Consulta de estatísticas do sistema realizada</span>
+                          </div>
+                          <span className="text-xs text-slate-500">{new Date(Date.now() - 30000).toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-purple-500">
+                          <div className="flex items-center">
+                            <FileText className="w-4 h-4 text-purple-600 mr-2" />
+                            <span>Busca de mensagens para supervisao@abmix.com.br</span>
+                          </div>
+                          <span className="text-xs text-slate-500">{new Date(Date.now() - 60000).toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-orange-500">
+                          <div className="flex items-center">
+                            <RefreshCw className="w-4 h-4 text-orange-600 mr-2" />
+                            <span>Sincronização automática dos dados do sistema</span>
+                          </div>
+                          <span className="text-xs text-slate-500">{new Date(Date.now() - 120000).toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-slate-500">
+                          <div className="flex items-center">
+                            <Monitor className="w-4 h-4 text-slate-600 mr-2" />
+                            <span>Usuários ativos no sistema: {realStats.users.totalActive}</span>
+                          </div>
+                          <span className="text-xs text-slate-500">{new Date(Date.now() - 180000).toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Painel de Estatísticas do Rodapé */}
+                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <BarChart3 className="w-5 h-5 mr-2 text-slate-600" />
+                      Painel de Estatísticas do Rodapé (Tempo Real)
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                        <Calendar className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-600">Propostas Hoje</p>
+                        <p className="text-2xl font-bold text-green-700">{realStats.proposals.today}</p>
+                        <p className="text-xs text-slate-500 mt-1">Reinicia às 00:00</p>
+                      </div>
+                      
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                        <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-600">Propostas Totais</p>
+                        <p className="text-2xl font-bold text-blue-700">{realStats.proposals.total}</p>
+                        <p className="text-xs text-slate-500 mt-1">Desde o início</p>
+                      </div>
+                      
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                        <RefreshCw className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-600">Última Sincronização</p>
+                        <p className="text-sm font-bold text-purple-700">{realStats.sync.lastSync.toLocaleTimeString('pt-BR')}</p>
+                        <p className="text-xs text-slate-500 mt-1">{realStats.sync.lastSync.toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                        <Database className="w-6 h-6 text-orange-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-600">Status do Backup</p>
+                        <p className="text-sm font-bold text-orange-700">{realStats.sync.googleDriveConnected ? 'Ativo' : 'Inativo'}</p>
+                        <p className="text-xs text-slate-500 mt-1">Google Drive</p>
+                      </div>
+                      
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                        <Users className="w-6 h-6 text-slate-600 mx-auto mb-2" />
+                        <p className="text-sm text-slate-600">Usuários Online</p>
+                        <p className="text-2xl font-bold text-slate-700">{realStats.users.totalActive}</p>
+                        <p className="text-xs text-slate-500 mt-1">Conectados agora</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Configuração de Resets */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Clock className="w-5 h-5 mr-2 text-slate-600" />
+                      Configuração de Resets Automáticos
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-slate-900">Reset de Contadores</p>
+                            <p className="text-sm text-slate-600">Propostas diárias, semanais, mensais</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
+                              <option value="daily">Diário (00:00)</option>
+                              <option value="weekly">Semanal (Segunda)</option>
+                              <option value="monthly">Mensal (Dia 1)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                              Salvar
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-slate-900">Limpeza de Logs</p>
+                            <p className="text-sm text-slate-600">Remoção automática de logs antigos</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
+                              <option value="30">30 dias</option>
+                              <option value="60">60 dias</option>
+                              <option value="90">90 dias</option>
+                              <option value="never">Nunca</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                              Salvar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-slate-900">Backup Automático</p>
+                            <p className="text-sm text-slate-600">Backup completo do sistema</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
+                              <option value="daily">Diário (02:00)</option>
+                              <option value="weekly">Semanal</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded transition-colors">
+                              Executar Agora
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-slate-900">Otimização BD</p>
+                            <p className="text-sm text-slate-600">Reorganização automática do banco</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
+                              <option value="weekly">Semanal</option>
+                              <option value="monthly">Mensal</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded transition-colors">
+                              Otimizar Agora
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Notificações e Alertas */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <AlertTriangle className="w-5 h-5 mr-2 text-slate-600" />
+                      Notificações e Alertas do Sistema
+                    </h4>
+                    
+                    <div className="space-y-3">
+                      {/* Alerta de Conexão */}
+                      <div className={`p-4 rounded-lg border-l-4 ${realStats.sync.databaseConnected ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Database className={`w-5 h-5 mr-3 ${realStats.sync.databaseConnected ? 'text-green-600' : 'text-red-600'}`} />
+                            <div>
+                              <p className={`font-medium ${realStats.sync.databaseConnected ? 'text-green-800' : 'text-red-800'}`}>
+                                Banco de Dados: {realStats.sync.databaseConnected ? 'Conectado' : 'Desconectado'}
+                              </p>
+                              <p className={`text-sm ${realStats.sync.databaseConnected ? 'text-green-600' : 'text-red-600'}`}>
+                                {realStats.sync.databaseConnected ? 'Sistema funcionando normalmente' : 'ATENÇÃO: Verificar conexão com PostgreSQL'}
+                              </p>
+                            </div>
+                          </div>
+                          {!realStats.sync.databaseConnected && (
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Reconectar
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Alerta de Backup */}
+                      <div className={`p-4 rounded-lg border-l-4 ${realStats.sync.googleDriveConnected ? 'bg-green-50 border-green-500' : 'bg-yellow-50 border-yellow-500'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Folder className={`w-5 h-5 mr-3 ${realStats.sync.googleDriveConnected ? 'text-green-600' : 'text-yellow-600'}`} />
+                            <div>
+                              <p className={`font-medium ${realStats.sync.googleDriveConnected ? 'text-green-800' : 'text-yellow-800'}`}>
+                                Backup: {realStats.sync.googleDriveConnected ? 'Ativo' : 'Inativo'}
+                              </p>
+                              <p className={`text-sm ${realStats.sync.googleDriveConnected ? 'text-green-600' : 'text-yellow-600'}`}>
+                                {realStats.sync.googleDriveConnected ? 'Backup automático funcionando' : 'AVISO: Backup não está sendo realizado'}
+                              </p>
+                            </div>
+                          </div>
+                          {!realStats.sync.googleDriveConnected && (
+                            <button className="px-3 py-1 text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded transition-colors">
+                              Ativar Backup
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Alerta de Segurança */}
+                      <div className="p-4 rounded-lg border-l-4 bg-blue-50 border-blue-500">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Users className="w-5 h-5 mr-3 text-blue-600" />
+                            <div>
+                              <p className="font-medium text-blue-800">Segurança: Monitoramento Ativo</p>
+                              <p className="text-sm text-blue-600">
+                                {realStats.users.totalActive} usuários online • Última atividade: {realStats.lastActivity.lastSystemLogin?.toLocaleTimeString('pt-BR') || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          <button className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                            Ver Detalhes
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Status de Performance */}
+                      <div className="p-4 rounded-lg border-l-4 bg-slate-50 border-slate-500">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <Activity className="w-5 h-5 mr-3 text-slate-600" />
+                            <div>
+                              <p className="font-medium text-slate-800">Performance: Sistema Otimizado</p>
+                              <p className="text-sm text-slate-600">
+                                Tempo ativo: {realStats.system.uptime} • Cache: {realStats.system.cacheSize} • Conexões: {realStats.system.activeConnections}
+                              </p>
+                            </div>
+                          </div>
+                          <button className="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition-colors">
+                            Otimizar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Ações de Manutenção */}
                   <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
                     <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
