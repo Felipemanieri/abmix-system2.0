@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Plus, Users, FileText, Link, Eye, BarChart3, Clock, CheckCircle, AlertCircle, Copy, ExternalLink, Download, Search, Filter, ArrowLeft, Home, Bell, Calculator, Target, TrendingUp, DollarSign, X, Mail, Image, MessageSquare, MessageCircle, Trash2, Camera, Upload, Paperclip, User, Award } from 'lucide-react';
+import { LogOut, Plus, Users, FileText, Link, Eye, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, Copy, ExternalLink, Download, Search, Filter, ArrowLeft, Home, Bell, Calculator, Target, TrendingUp, DollarSign, X, Mail, Image, MessageSquare, MessageCircle, Trash2, Camera, Upload, Paperclip, User, Award } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import ActionButtons from './ActionButtons';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
@@ -2191,13 +2191,20 @@ Vendedor Abmix`;
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
-                              {/* INDICADOR DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL - SOMENTE SÍMBOLOS */}
+                              {/* INDICADOR DE APROVAÇÃO/REJEIÇÃO SINCRONIZADO EM TEMPO REAL - SOMENTE SÍMBOLOS */}
                               {proposal.approved ? (
                                 <span
                                   className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full animate-pulse hover:bg-green-200 transition-colors cursor-pointer"
                                   title="Proposta Aprovada pelo Portal de Implementação"
                                 >
                                   <CheckCircle className="w-4 h-4" />
+                                </span>
+                              ) : proposal.rejected ? (
+                                <span
+                                  className="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full animate-pulse hover:bg-red-200 transition-colors cursor-pointer"
+                                  title="Proposta Rejeitada"
+                                >
+                                  <XCircle className="w-4 h-4" />
                                 </span>
                               ) : (
                                 <span

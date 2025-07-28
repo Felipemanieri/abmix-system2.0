@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { BarChart3, Users, TrendingUp, DollarSign, FileText, Target, Calculator, UserPlus, Bell, MessageSquare, MessageCircle, LogOut, X, CheckCircle, Calendar, PieChart, Settings, Award, Plus, Edit, Trash2, Save, Filter, Search, Download, Eye, ExternalLink, Share, Share2, Clock, User, RefreshCw, Zap, AlertTriangle, Heart, TrendingDown, Mail, Phone, Copy } from 'lucide-react';
+import { BarChart3, Users, TrendingUp, DollarSign, FileText, Target, Calculator, UserPlus, Bell, MessageSquare, MessageCircle, LogOut, X, CheckCircle, XCircle, AlertCircle, Calendar, PieChart, Settings, Award, Plus, Edit, Trash2, Save, Filter, Search, Download, Eye, ExternalLink, Share, Share2, Clock, User, RefreshCw, Zap, AlertTriangle, Heart, TrendingDown, Mail, Phone, Copy } from 'lucide-react';
 import { format, isWithinInterval, subDays, subMonths, subWeeks, parseISO } from 'date-fns';
 import { PieChart as RechartsPieChart, Cell, ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, Area, AreaChart, Pie } from 'recharts';
 // import AbmixLogo from './AbmixLogo';
@@ -3472,6 +3472,29 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex space-x-1">
+                        {/* INDICADORES DE APROVAÇÃO/REJEIÇÃO SINCRONIZADOS */}
+                        {proposal.approved ? (
+                          <span
+                            className="inline-flex items-center justify-center w-6 h-6 bg-green-100 text-green-600 rounded-full animate-pulse hover:bg-green-200 transition-colors cursor-pointer"
+                            title="Proposta Aprovada"
+                          >
+                            <CheckCircle className="w-3 h-3" />
+                          </span>
+                        ) : proposal.rejected ? (
+                          <span
+                            className="inline-flex items-center justify-center w-6 h-6 bg-red-100 text-red-600 rounded-full animate-pulse hover:bg-red-200 transition-colors cursor-pointer"
+                            title="Proposta Rejeitada"
+                          >
+                            <XCircle className="w-3 h-3" />
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 transition-colors cursor-pointer"
+                            title="Aguardando Aprovação"
+                          >
+                            <AlertCircle className="w-3 h-3" />
+                          </span>
+                        )}
                         <button
                           onClick={() => {
                             // Abrir detalhes da proposta em modal ou nova aba
