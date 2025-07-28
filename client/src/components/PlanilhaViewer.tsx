@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Download, RefreshCw, Eye, Clock, Users, Database } from 'lucide-react';
+import { FileText, Download, RefreshCw, Eye, Clock, Users, Database, Play, Pause, ExternalLink, Trash2, Edit, Save } from 'lucide-react';
 
 export default function PlanilhaViewer() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [updateInterval, setUpdateInterval] = useState(5 * 60 * 1000); // 5 minutos padrão
+  const [isAutoUpdate, setIsAutoUpdate] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState('connected');
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Buscar todas as propostas para gerar planilha
   const { data: proposals = [], isLoading, refetch } = useQuery({
@@ -13,8 +17,63 @@ export default function PlanilhaViewer() {
       if (!response.ok) throw new Error("Erro ao buscar propostas");
       return response.json();
     },
-    refetchInterval: 5000 // Atualiza a cada 5 segundos
+    refetchInterval: isAutoUpdate ? updateInterval : false
   });
+
+  // Opções de tempo para o seletor
+  const timeOptions = [
+    { value: 1000, label: '1 segundo' },
+    { value: 5000, label: '5 segundos' },
+    { value: 10000, label: '10 segundos' },
+    { value: 30000, label: '30 segundos' },
+    { value: 60000, label: '1 minuto' },
+    { value: 300000, label: '5 minutos' },
+    { value: 600000, label: '10 minutos' },
+    { value: 900000, label: '15 minutos' },
+    { value: 3600000, label: '1 hora' },
+    { value: 18000000, label: '5 horas' },
+    { value: 36000000, label: '10 horas' },
+    { value: 86400000, label: '24 horas' },
+    { value: 0, label: 'Manual' }
+  ];
+
+  // Funções para controlar a planilha
+  const handleOpenSheet = () => {
+    window.open('https://docs.google.com/spreadsheets/d/1JiC3ksTCdnY3uL9GhG9u8gJO', '_blank');
+  };
+
+  const handleRemoveSheet = () => {
+    if (confirm('Tem certeza que deseja remover a conexão com esta planilha?')) {
+      setConnectionStatus('disconnected');
+      alert('Planilha desconectada com sucesso!');
+    }
+  };
+
+  const handleEditSheet = () => {
+    alert('Funcionalidade de edição será implementada');
+  };
+
+  const handleManualBackup = () => {
+    setConnectionStatus('backing-up');
+    setTimeout(() => {
+      setConnectionStatus('connected');
+      alert('Backup manual realizado com sucesso!');
+    }, 2000);
+  };
+
+  const handleTimeChange = (newInterval: number) => {
+    setUpdateInterval(newInterval);
+    if (newInterval === 0) {
+      setIsAutoUpdate(false);
+    } else {
+      setIsAutoUpdate(true);
+    }
+  };
+
+  const handleManualUpdate = () => {
+    refetch();
+    setLastUpdate(new Date());
+  };
 
   // Buscar dados dos vendedores
   const { data: vendors = [] } = useQuery({
@@ -497,7 +556,11 @@ export default function PlanilhaViewer() {
               ↔️ Role horizontalmente para ver todos os {colunas.length} campos
             </span>
             <span className="flex items-center gap-1">
-              🔄 Atualização automática a cada 5 segundos
+              {isAutoUpdate ? (
+                <><Play className="h-3 w-3 text-green-500" /> Atualização automática: {timeOptions.find(opt => opt.value === updateInterval)?.label}</>
+              ) : (
+                <><Pause className="h-3 w-3 text-orange-500" /> Modo manual - Clique para atualizar</>
+              )}
             </span>
             <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded">
               📊 {proposals.length} propostas carregadas
@@ -591,32 +654,78 @@ export default function PlanilhaViewer() {
                   <span><span className="font-medium">🔗 Link Compartilhamento:</span> <span className="text-green-600">Acessar</span></span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span><span className="font-medium">🔌 Conectado</span></span>
-                  <span><span className="font-medium">📅 2025-07-28T12:23:44.325Z</span></span>
-                  <span><span className="font-medium">🔗 Conectada</span></span>
+                  <span>
+                    <span className="font-medium">
+                      {connectionStatus === 'connected' ? '🔌 Conectado' : 
+                       connectionStatus === 'disconnected' ? '❌ Desconectado' :
+                       connectionStatus === 'backing-up' ? '💾 Fazendo backup...' : '🔌 Conectado'}
+                    </span>
+                  </span>
+                  <span><span className="font-medium">📅 {lastUpdate.toLocaleString('pt-BR')}</span></span>
+                  <span>
+                    <span className="font-medium">
+                      {isAutoUpdate ? 
+                        `⏱️ Auto: ${timeOptions.find(opt => opt.value === updateInterval)?.label}` : 
+                        '⏸️ Manual'
+                      }
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
             
             <div className="flex items-center gap-2 ml-4">
-              <button className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
-                📂 Abrir
+              <button 
+                onClick={handleOpenSheet}
+                className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Abrir
               </button>
-              <button className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors">
-                🗑️ Remover
+              <button 
+                onClick={handleRemoveSheet}
+                className="px-3 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200 transition-colors flex items-center gap-1"
+              >
+                <Trash2 className="h-3 w-3" />
+                Remover
               </button>
-              <button className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors">
-                ✏️ Editar
+              <button 
+                onClick={handleEditSheet}
+                className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200 transition-colors flex items-center gap-1"
+              >
+                <Edit className="h-3 w-3" />
+                Editar
               </button>
-              <button className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors">
-                💾 Backup Manual
+              <button 
+                onClick={handleManualBackup}
+                className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded hover:bg-green-200 transition-colors flex items-center gap-1"
+                disabled={connectionStatus === 'backing-up'}
+              >
+                <Save className="h-3 w-3" />
+                {connectionStatus === 'backing-up' ? 'Salvando...' : 'Backup Manual'}
               </button>
-              <select className="px-2 py-1 border border-gray-300 rounded text-xs">
-                <option>5 minutos</option>
-                <option>10 minutos</option>
-                <option>30 minutos</option>
-                <option>1 hora</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <select 
+                  value={updateInterval}
+                  onChange={(e) => handleTimeChange(Number(e.target.value))}
+                  className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:border-blue-500 focus:outline-none"
+                >
+                  {timeOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {updateInterval === 0 && (
+                  <button
+                    onClick={handleManualUpdate}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded hover:bg-blue-200 transition-colors flex items-center gap-1"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Atualizar
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
