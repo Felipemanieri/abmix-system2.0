@@ -404,7 +404,7 @@ function App() {
               <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
                 Acompanhe suas propostas e documentos
               </p>
-              <div className="flex items-center text-teal-600 dark:text-teal-400 font-semibold">
+              <div className="flex items-center justify-center text-teal-600 dark:text-teal-400 font-semibold">
                 <ArrowRight className="w-4 h-4 mr-2" />
                 Acessar Portal
               </div>
@@ -428,7 +428,7 @@ function App() {
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Gerencie propostas e clientes
             </p>
-            <div className="flex items-center text-green-600 dark:text-green-400 font-semibold">
+            <div className="flex items-center justify-center text-green-600 dark:text-green-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
@@ -452,7 +452,7 @@ function App() {
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Validação e automação de propostas
             </p>
-            <div className="flex items-center text-teal-600 dark:text-teal-400 font-semibold">
+            <div className="flex items-center justify-center text-teal-600 dark:text-teal-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
@@ -476,7 +476,7 @@ function App() {
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Análise financeira e relatórios
             </p>
-            <div className="flex items-center text-purple-600 dark:text-purple-400 font-semibold">
+            <div className="flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
@@ -500,7 +500,7 @@ function App() {
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Supervisão e relatórios gerenciais
             </p>
-            <div className="flex items-center text-gray-600 dark:text-gray-400 font-semibold">
+            <div className="flex items-center justify-center text-gray-600 dark:text-gray-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
