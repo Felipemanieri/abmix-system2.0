@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogOut, Settings, Users, Database, FileText, Shield } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
@@ -20,6 +19,30 @@ export default function RestrictedAreaPortalSimple({ user, onLogout }: Restricte
 
   console.log('🔥 RestrictedAreaPortalSimple carregado para:', user);
 
+  // Testar conexões Google simplificadas COM TRATAMENTO DE ERRO
+  useEffect(() => {
+    const testSimpleConnections = async () => {
+      try {
+        const response = await fetch('/api/simple-google/test-connection');
+        const result = await response.json();
+
+        if (result.success) {
+          console.log('✅ Conexões Google Simples OK');
+        } else {
+          console.warn('⚠️ Problemas nas conexões simples:', result);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao testar conexões simples:', error);
+        // Tratar erro silenciosamente para não quebrar a interface
+      }
+    };
+
+    // Executar com tratamento de promise rejeitada
+    testSimpleConnections().catch(error => {
+      console.error('❌ Promise rejeitada tratada - Conexões Simples:', error);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -37,7 +60,7 @@ export default function RestrictedAreaPortalSimple({ user, onLogout }: Restricte
                 <p className="text-sm text-gray-500 dark:text-gray-400">Bem-vindo, {user.name}</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               <button
@@ -90,7 +113,7 @@ export default function RestrictedAreaPortalSimple({ user, onLogout }: Restricte
             {activeTab === 'reports' && 'Relatórios'}
             {activeTab === 'security' && 'Configurações de Segurança'}
           </h2>
-          
+
           <div className="text-gray-600 dark:text-gray-300">
             {activeTab === 'dashboard' && (
               <div>
@@ -111,25 +134,25 @@ export default function RestrictedAreaPortalSimple({ user, onLogout }: Restricte
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'users' && (
               <div>
                 <p>Interface de gerenciamento de usuários em desenvolvimento.</p>
               </div>
             )}
-            
+
             {activeTab === 'database' && (
               <div>
                 <p>Configurações do banco de dados PostgreSQL.</p>
               </div>
             )}
-            
+
             {activeTab === 'reports' && (
               <div>
                 <p>Relatórios do sistema em desenvolvimento.</p>
               </div>
             )}
-            
+
             {activeTab === 'security' && (
               <div>
                 <p>Configurações de segurança do sistema.</p>

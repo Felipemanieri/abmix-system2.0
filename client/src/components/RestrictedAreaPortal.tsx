@@ -551,6 +551,30 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
     }
   };
 
+  // Testar conexões Google ao carregar COM TRATAMENTO DE ERRO
+  useEffect(() => {
+    const testConnections = async () => {
+      try {
+        const response = await fetch('/api/google/test-connections');
+        const result = await response.json();
+
+        if (result.success) {
+          console.log('✅ Conexões Google OK');
+        } else {
+          console.warn('⚠️ Problemas nas conexões Google:', result);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao testar conexões:', error);
+        // Tratar erro silenciosamente para não quebrar a interface
+      }
+    };
+
+    // Executar com tratamento de promise rejeitada
+    testConnections().catch(error => {
+      console.error('❌ Promise rejeitada tratada - Conexões Google:', error);
+    });
+  }, []);
+
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${darkMode ? 'dark' : ''}`}>
       {/* Header */}
