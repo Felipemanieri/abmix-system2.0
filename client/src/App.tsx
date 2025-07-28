@@ -37,9 +37,9 @@ function FooterStats() {
   });
 
   const today = new Date().toISOString().split('T')[0];
-  const proposalsToday = proposals?.filter((p: any) => 
+  const proposalsToday = (proposals && Array.isArray(proposals)) ? proposals.filter((p: any) => 
     p.createdAt && p.createdAt.startsWith(today)
-  ).length || 0;
+  ).length : 0;
 
   return (
     <div className="flex flex-col items-end space-y-1">
@@ -272,9 +272,10 @@ function App() {
 
   // Se não está logado e não está na home, mostrar login
   if (!currentUser && currentPortal !== 'home') {
+    const loginPortal = currentPortal === 'admin' ? 'restricted' : currentPortal;
     return (
       <ThemeProvider>
-        <LoginPage portal={currentPortal} onLogin={handleLogin} onBack={() => setCurrentPortal('home')} />
+        <LoginPage portal={loginPortal as any} onLogin={handleLogin} onBack={() => setCurrentPortal('home')} />
       </ThemeProvider>
     );
   }
@@ -385,22 +386,22 @@ function App() {
         </div>
 
         {/* Portal Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 px-4">
           {/* Portal do Cliente - Condicional */}
           {portalVisibility.showClientPortal && (
             <div 
               onClick={() => setCurrentPortal('client')}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-teal-300 dark:hover:border-teal-600 transform hover:-translate-y-2 relative"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-teal-300 dark:border-teal-600 hover:border-teal-400 dark:hover:border-teal-500 transform hover:-translate-y-2 relative aspect-[4/3]"
             >
               <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
                 Online
               </div>
-              <div className="flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-2xl mb-4">
-                <Users className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              <div className="flex items-center justify-center w-12 h-12 bg-teal-50 dark:bg-teal-900/30 rounded-2xl mb-6">
+                <Users className="w-6 h-6 text-teal-600 dark:text-teal-400" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Portal do Cliente</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+              <h3 className="text-lg font-bold text-teal-600 dark:text-teal-400 mb-3">Portal do Cliente</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
                 Acompanhe suas propostas e documentos
               </p>
               <div className="flex items-center text-teal-600 dark:text-teal-400 font-semibold">
@@ -414,17 +415,17 @@ function App() {
           {portalVisibility.showVendorPortal && (
           <div 
             onClick={() => setCurrentPortal('vendor')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 transform hover:-translate-y-2 relative"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-green-300 dark:border-green-600 hover:border-green-400 dark:hover:border-green-500 transform hover:-translate-y-2 relative aspect-[4/3]"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-2xl mb-4">
-              <FileText className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center justify-center w-12 h-12 bg-green-50 dark:bg-green-900/30 rounded-2xl mb-6">
+              <FileText className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Portal Vendedor</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+            <h3 className="text-lg font-bold text-green-600 dark:text-green-400 mb-3">Portal Vendedor</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
               Gerencie propostas e clientes
             </p>
             <div className="flex items-center text-green-600 dark:text-green-400 font-semibold">
@@ -438,17 +439,17 @@ function App() {
           {portalVisibility.showImplementationPortal && (
           <div 
             onClick={() => setCurrentPortal('implementation')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-teal-300 dark:hover:border-teal-600 transform hover:-translate-y-2 relative"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-teal-300 dark:border-teal-600 hover:border-teal-400 dark:hover:border-teal-500 transform hover:-translate-y-2 relative aspect-[4/3]"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-2xl mb-4">
-              <Settings className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center justify-center w-12 h-12 bg-teal-50 dark:bg-teal-900/30 rounded-2xl mb-6">
+              <Settings className="w-6 h-6 text-teal-600 dark:text-teal-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Portal Implantação</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+            <h3 className="text-lg font-bold text-teal-600 dark:text-teal-400 mb-3">Portal Implantação</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
               Validação e automação de propostas
             </p>
             <div className="flex items-center text-teal-600 dark:text-teal-400 font-semibold">
@@ -462,17 +463,17 @@ function App() {
           {portalVisibility.showFinancialPortal && (
           <div 
             onClick={() => setCurrentPortal('financial')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 transform hover:-translate-y-2 relative"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-purple-300 dark:border-purple-600 hover:border-purple-400 dark:hover:border-purple-500 transform hover:-translate-y-2 relative aspect-[4/3]"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-2xl mb-4">
-              <Calculator className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center justify-center w-12 h-12 bg-purple-50 dark:bg-purple-900/30 rounded-2xl mb-6">
+              <Calculator className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Portal Financeiro</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+            <h3 className="text-lg font-bold text-purple-600 dark:text-purple-400 mb-3">Portal Financeiro</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
               Análise financeira e relatórios
             </p>
             <div className="flex items-center text-purple-600 dark:text-purple-400 font-semibold">
@@ -486,17 +487,17 @@ function App() {
           {portalVisibility.showSupervisorPortal && (
           <div 
             onClick={() => setCurrentPortal('supervisor')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transform hover:-translate-y-2 relative"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-gray-400 dark:border-gray-500 hover:border-gray-500 dark:hover:border-gray-400 transform hover:-translate-y-2 relative aspect-[4/3]"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-2xl mb-4">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 dark:bg-gray-600/30 rounded-2xl mb-6">
               <Crown className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Portal Supervisor</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+            <h3 className="text-lg font-bold text-gray-600 dark:text-gray-400 mb-3">Portal Supervisor</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm">
               Supervisão e relatórios gerenciais
             </p>
             <div className="flex items-center text-gray-600 dark:text-gray-400 font-semibold">
