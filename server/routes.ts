@@ -52,6 +52,47 @@ export function setupRoutes(app: any) {
     console.error('❌ Erro na inicialização dos portais:', error);
   });
 
+  // NOVA ROTA: Reset de contadores do sistema
+  app.post('/api/system/reset-counter', async (req: Request, res: Response) => {
+    try {
+      const { counterType } = req.body;
+      console.log(`🔄 Resetando contador: ${counterType}`);
+      
+      // Implementar lógica de reset baseada no tipo
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      switch (counterType) {
+        case 'Propostas Hoje':
+          await storage.setSystemSetting('counter_proposals_today', '0');
+          break;
+        case 'Aprovadas Hoje':
+          await storage.setSystemSetting('counter_approved_today', '0');
+          break;
+        case 'Rejeitadas Hoje':
+          await storage.setSystemSetting('counter_rejected_today', '0');
+          break;
+        case 'Propostas Semana':
+          await storage.setSystemSetting('counter_proposals_week', '0');
+          break;
+        case 'Propostas Mês':
+          await storage.setSystemSetting('counter_proposals_month', '0');
+          break;
+        case 'Propostas Ano':
+          await storage.setSystemSetting('counter_proposals_year', '0');
+          break;
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Contador ${counterType} zerado com sucesso`,
+        resetAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao resetar contador:', error);
+      res.status(500).json({ success: false, error: 'Erro ao resetar contador' });
+    }
+  });
+
   // ROTA CRÍTICA: Portal visibility - GET
   app.get('/api/portal-visibility', async (req: Request, res: Response) => {
     try {

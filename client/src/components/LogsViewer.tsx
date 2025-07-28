@@ -64,8 +64,46 @@ export default function LogsViewer() {
   const [realStats, setRealStats] = useState<RealSystemStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Função para resetar contadores
+  const resetCounter = async (counterType: string) => {
+    try {
+      const response = await fetch('/api/system/reset-counter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ counterType }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setNotification({
+          message: `✅ ${counterType} zerado com sucesso`,
+          type: 'success'
+        });
+        // Atualizar estatísticas após reset
+        await fetchRealStats();
+      } else {
+        setNotification({
+          message: `❌ Erro ao zerar ${counterType}`,
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      setNotification({
+        message: `❌ Erro de conexão ao zerar ${counterType}`,
+        type: 'error'
+      });
+    }
+    
+    // Limpar notificação após 3 segundos
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // Buscar estatísticas reais do sistema
   const fetchRealStats = async () => {
@@ -251,7 +289,24 @@ export default function LogsViewer() {
   const levelStats = getLevelStats();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Notificação Interna */}
+      {notification && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 max-w-md ${
+          notification.type === 'success' ? 'bg-green-50 border-green-500 text-green-800' : 'bg-red-50 border-red-500 text-red-800'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className="font-medium">{notification.message}</span>
+            <button 
+              onClick={() => setNotification(null)}
+              className="ml-4 text-gray-500 hover:text-gray-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Header com Abas */}
       <div className="bg-white rounded-lg shadow">
         {/* Abas */}
@@ -651,7 +706,11 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma limpar o cache do sistema?')) {
-                                  console.log('🗑️ Limpando cache do sistema...');
+                                  setNotification({
+                                    message: '🗑️ Cache do sistema limpo com sucesso',
+                                    type: 'success'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-2 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
@@ -667,7 +726,11 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma remover todos os arquivos temporários?')) {
-                                  console.log('🗂️ Removendo arquivos temporários...');
+                                  setNotification({
+                                    message: '🗂️ Arquivos temporários removidos com sucesso',
+                                    type: 'success'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -979,8 +1042,7 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma zerar o contador de Propostas Hoje?')) {
-                                  console.log('🔄 Zerando contador: Propostas Hoje');
-                                  // Aqui seria a chamada para API de reset
+                                  resetCounter('Propostas Hoje');
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1003,7 +1065,7 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma zerar o contador de Aprovadas Hoje?')) {
-                                  console.log('🔄 Zerando contador: Aprovadas Hoje');
+                                  resetCounter('Aprovadas Hoje');
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1026,7 +1088,7 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma zerar o contador de Rejeitadas Hoje?')) {
-                                  console.log('🔄 Zerando contador: Rejeitadas Hoje');
+                                  resetCounter('Rejeitadas Hoje');
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1054,7 +1116,7 @@ export default function LogsViewer() {
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma zerar o contador semanal?')) {
-                                  console.log('🔄 Zerando contador: Propostas Esta Semana');
+                                  resetCounter('Propostas Semana');
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1074,7 +1136,14 @@ export default function LogsViewer() {
                               <option value="auto">Auto (Dia 1)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador mensal?')) {
+                                  resetCounter('Propostas Mês');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -1090,7 +1159,14 @@ export default function LogsViewer() {
                               <option value="auto">Auto (1º Jan)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador anual?')) {
+                                  resetCounter('Propostas Ano');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -1108,7 +1184,11 @@ export default function LogsViewer() {
                         <div className="flex items-center space-x-3">
                           <button 
                             onClick={() => {
-                              console.log('🔧 Configurando todos os contadores para modo automático');
+                              setNotification({
+                                message: '🔧 Todos os contadores configurados para modo automático',
+                                type: 'success'
+                              });
+                              setTimeout(() => setNotification(null), 3000);
                             }}
                             className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
                           >
@@ -1116,16 +1196,40 @@ export default function LogsViewer() {
                           </button>
                           <button 
                             onClick={() => {
-                              console.log('🔧 Configurando todos os contadores para modo manual');
+                              setNotification({
+                                message: '🔧 Todos os contadores configurados para modo manual',
+                                type: 'success'
+                              });
+                              setTimeout(() => setNotification(null), 3000);
                             }}
                             className="px-4 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
                           >
                             Configurar Todos como Manual
                           </button>
                           <button 
-                            onClick={() => {
+                            onClick={async () => {
                               if (confirm('⚠️ ATENÇÃO: Isso zerará TODOS os contadores de propostas. Confirma?')) {
-                                console.log('🔄 RESET GLOBAL: Zerando todos os contadores');
+                                try {
+                                  await Promise.all([
+                                    resetCounter('Propostas Hoje'),
+                                    resetCounter('Aprovadas Hoje'),
+                                    resetCounter('Rejeitadas Hoje'),
+                                    resetCounter('Propostas Semana'),
+                                    resetCounter('Propostas Mês'),
+                                    resetCounter('Propostas Ano')
+                                  ]);
+                                  setNotification({
+                                    message: '🔄 TODOS os contadores zerados com sucesso',
+                                    type: 'success'
+                                  });
+                                  setTimeout(() => setNotification(null), 4000);
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao zerar contadores',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
+                                }
                               }
                             }}
                             className="px-4 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors font-medium"
