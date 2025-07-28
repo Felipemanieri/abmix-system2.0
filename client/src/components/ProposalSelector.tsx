@@ -47,6 +47,11 @@ const ProposalSelector: React.FC<ProposalSelectorProps> = ({ isOpen, onClose, on
   // Buscar vendedores reais do banco de dados
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
+    queryFn: async () => {
+      const response = await fetch('/api/vendors');
+      if (!response.ok) throw new Error('Failed to fetch vendors');
+      return response.json();
+    },
     retry: false,
   });
 

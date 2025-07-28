@@ -18,16 +18,31 @@ export default function DynamicSheetTester() {
   // Buscar dados para teste - Polling reduzido (não crítico)
   const { data: proposals = [] } = useQuery({
     queryKey: ['/api/proposals'],
+    queryFn: async () => {
+      const response = await fetch('/api/proposals');
+      if (!response.ok) throw new Error('Failed to fetch proposals');
+      return response.json();
+    },
     refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
+    queryFn: async () => {
+      const response = await fetch('/api/vendors');
+      if (!response.ok) throw new Error('Failed to fetch vendors');
+      return response.json();
+    },
     refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 
   const { data: sheetData } = useQuery({
     queryKey: ['/api/proposals/sheet'],
+    queryFn: async () => {
+      const response = await fetch('/api/proposals/sheet');
+      if (!response.ok) throw new Error('Failed to fetch sheet data');
+      return response.json();
+    },
     refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 

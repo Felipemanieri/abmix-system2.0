@@ -142,6 +142,11 @@ export default function AdvancedInternalMessage({
   // Buscar usuários da Gestão Unificada de Usuários (mesmo endpoint usado na Área Restrita)
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ['/api/auth/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/auth/users');
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
     enabled: isOpen, // Só buscar quando modal aberto
     refetchOnWindowFocus: false, // Não refetch automaticamente
     staleTime: 10 * 60 * 1000 // 10 minutos - dados de usuários são estáticos

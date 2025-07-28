@@ -90,6 +90,11 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   // Query para buscar vendedores em tempo real
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
+    queryFn: async () => {
+      const response = await fetch('/api/vendors');
+      if (!response.ok) throw new Error('Failed to fetch vendors');
+      return response.json();
+    },
     refetchInterval: 3000 // Atualiza a cada 3 segundos
   });
   

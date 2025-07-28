@@ -76,6 +76,11 @@ export function useProposals() {
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
+    queryFn: async () => {
+      const response = await fetch('/api/vendors');
+      if (!response.ok) throw new Error('Failed to fetch vendors');
+      return response.json();
+    },
   });
 
   // Adicionar nome do vendedor às propostas
@@ -175,7 +180,6 @@ export function useVendorProposals(vendorId: number) {
         priority: proposal.priority || 'medium'
       }));
     },
-    queryFn: () => apiRequest(`/api/vendors/${vendorId}/proposals`),
     refetchInterval: 1000, // 1 segundo - resposta imediata
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,

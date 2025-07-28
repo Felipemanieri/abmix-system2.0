@@ -4,15 +4,12 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// CAPTURAR COMPLETAMENTE os unhandled rejections do React Query
+// MOSTRAR TODOS OS LOGS - REMOVER SUPRESSÃO
 window.addEventListener('unhandledrejection', (event) => {
-  // Suprimir completamente para eliminar logs no console
-  event.preventDefault();
-  event.stopPropagation();
-  event.stopImmediatePropagation();
-  
-  // Não fazer log nenhum para manter console limpo
-  return false;
+  console.error('❌ UNHANDLED REJECTION:', event.reason);
+  console.error('❌ PROMISE:', event.promise);
+  console.error('❌ STACK:', event.reason?.stack);
+  // NÃO SUPRIMIR - deixar o erro aparecer para diagnóstico
 });
 
 createRoot(document.getElementById('root')!).render(
