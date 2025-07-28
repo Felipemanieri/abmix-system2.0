@@ -70,6 +70,28 @@ function App() {
 
   // Sistema de carregamento da visibilidade persistente dos portais
   useEffect(() => {
+    // Handler global para promises rejeitadas - RESTAURADO
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      // Filtra apenas erros do Vite HMR, permite outros erros importantes
+      const errorStr = event.reason?.toString() || '';
+      const stack = event.reason?.stack || '';
+      
+      if (errorStr.includes('Failed to fetch') && stack.includes('@vite/client')) {
+        // Suprime apenas erros de reconexão do Vite
+        event.preventDefault();
+        return;
+      }
+      
+      // MANTÉM todos os outros erros importantes visíveis
+      console.error('🚨 Promise rejeitada (SISTEMA):', event.reason);
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.error('🚨 Erro não tratado (SISTEMA):', event.error);
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
 
     // PRIMEIRO: Carrega do localStorage (ESTADO PERMANENTE)
     const loadPortalVisibility = async () => {
@@ -136,6 +158,8 @@ function App() {
     console.log('🔄 Portal visibility:', portalVisibility);
 
     return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
       window.removeEventListener('portalVisibilityChanged', handlePortalVisibilityChanged);
     };
   }, []); // Removido portalVisibility das dependências para evitar loop infinito
