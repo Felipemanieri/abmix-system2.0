@@ -152,65 +152,65 @@ Abmix Consultoria em Benefícios`;
               />
               <button
                 onClick={handleCopy}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 shadow-md ${
+                className={`px-3 py-2 rounded-lg border font-medium transition-colors text-xs ${
                   copied 
-                    ? 'bg-emerald-400 text-white hover:bg-emerald-500' 
-                    : 'bg-sky-400 text-white hover:bg-sky-500'
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-150' 
+                    : 'bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-150'
                 }`}
               >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
           </div>
 
           {/* Botões de compartilhamento */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <button
               onClick={handleCopy}
-              className="flex items-center justify-center space-x-2 px-6 py-4 bg-slate-400 text-white rounded-xl hover:bg-slate-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="flex items-center justify-center space-x-1 px-3 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-150 transition-colors text-xs font-medium"
             >
-              <Copy size={20} />
-              <span className="font-medium text-sm">Copiar Link</span>
+              <Copy size={14} />
+              <span>Copiar Link</span>
             </button>
             
             <button
               onClick={handleWhatsApp}
-              className="flex items-center justify-center space-x-2 px-6 py-4 bg-emerald-400 text-white rounded-xl hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="flex items-center justify-center space-x-1 px-3 py-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-150 transition-colors text-xs font-medium"
             >
-              <MessageCircle size={20} />
-              <span className="font-medium text-sm">WhatsApp</span>
+              <MessageCircle size={14} />
+              <span>WhatsApp</span>
             </button>
             
             <button
               onClick={handleEmail}
-              className="flex items-center justify-center space-x-2 px-6 py-4 bg-sky-400 text-white rounded-xl hover:bg-sky-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="flex items-center justify-center space-x-1 px-3 py-2 bg-sky-100 text-sky-700 border border-sky-200 rounded-lg hover:bg-sky-150 transition-colors text-xs font-medium"
             >
-              <Mail size={20} />
-              <span className="font-medium text-sm">Email</span>
+              <Mail size={14} />
+              <span>Email</span>
             </button>
           </div>
 
           {/* Botões Nova Proposta e Retornar ao Dashboard */}
           {onGenerateNewProposal && (
             <div className="mb-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => {
                     onGenerateNewProposal();
                     onClose();
                   }}
-                  className="flex items-center justify-center space-x-2 px-6 py-4 bg-amber-400 text-white rounded-xl hover:bg-amber-500 transition-all duration-300 transform hover:scale-105 shadow-lg font-medium"
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-150 transition-colors text-xs font-medium"
                 >
-                  <RefreshCw size={20} />
-                  <span className="text-sm">Gerar Proposta para o Mesmo Link</span>
+                  <RefreshCw size={14} />
+                  <span>Gerar Proposta para o Mesmo Link</span>
                 </button>
                 
                 <button
                   onClick={onClose}
-                  className="flex items-center justify-center space-x-2 px-6 py-4 bg-violet-400 text-white rounded-xl hover:bg-violet-500 transition-all duration-300 transform hover:scale-105 shadow-lg font-medium"
+                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-violet-100 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-150 transition-colors text-xs font-medium"
                 >
-                  <CheckCircle size={20} />
-                  <span className="text-sm">Retornar ao Dashboard</span>
+                  <CheckCircle size={14} />
+                  <span>Retornar ao Dashboard</span>
                 </button>
               </div>
               <p className="text-xs text-gray-600 mt-3 text-center">
