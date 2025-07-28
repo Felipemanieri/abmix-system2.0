@@ -139,70 +139,78 @@ export default function LogsViewer() {
     }
   }, [activeTab]);
 
-  // Gerar logs do sistema em tempo real
-  const generateMockLog = (): LogEntry => {
-    const levels: ('info' | 'warning' | 'error' | 'success')[] = ['info', 'warning', 'error', 'success'];
-    const modules = ['API', 'Banco de Dados', 'Autenticação', 'Upload de Arquivos', 'Google Sheets', 'WhatsApp', 'Email', 'Propostas', 'Usuários'];
-    const messages = {
-      info: [
-        'Sistema iniciado com sucesso',
-        'Conectado ao banco de dados',
-        'Usuário autenticado',
-        'Proposta criada com ID: PROP-{id}',
-        'Arquivo enviado para Google Drive',
-        'Sincronização com Google Sheets concluída'
-      ],
-      warning: [
-        'Taxa de uso da API próxima do limite',
-        'Conexão lenta detectada',
-        'Cache invalidado',
-        'Sessão expirando em 5 minutos',
-        'Memória em 85% de uso'
-      ],
-      error: [
-        'Falha na conexão com banco de dados',
-        'Erro ao enviar email',
-        'Upload de arquivo falhou',
-        'Token de autenticação expirado',
-        'Erro interno do servidor'
-      ],
-      success: [
-        'Backup realizado com sucesso',
-        'Email enviado com sucesso',
-        'Proposta aprovada',
-        'Sistema otimizado',
-        'Cache limpo com sucesso'
-      ]
-    };
-
-    const level = levels[Math.floor(Math.random() * levels.length)];
-    const module = modules[Math.floor(Math.random() * modules.length)];
-    const messageArray = messages[level];
-    const message = messageArray[Math.floor(Math.random() * messageArray.length)];
-
+  // Capturar logs REAIS do console (sem simulação)
+  const captureConsoleLog = (message: string, level: 'info' | 'warning' | 'error' | 'success' = 'info', module: string = 'Sistema'): LogEntry => {
     return {
-      id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `real-log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
       level,
       module,
-      message: message.replace('{id}', Math.random().toString(36).substr(2, 8).toUpperCase()),
-      details: level === 'error' ? { stack: 'Error stack trace...' } : undefined
+      message,
+      details: undefined
     };
   };
 
-  // Adicionar logs em tempo real
+  // INTERCEPTAR LOGS REAIS DO CONSOLE
   useEffect(() => {
     if (!isLive) return;
 
-    const interval = setInterval(() => {
-      const newLog = generateMockLog();
-      setLogs(prevLogs => {
-        const updatedLogs = [...prevLogs, newLog].slice(-1000); // Manter apenas os últimos 1000 logs
-        return updatedLogs;
-      });
-    }, 2000 + Math.random() * 3000); // Entre 2-5 segundos
+    // Log inicial
+    const initLog = captureConsoleLog(
+      '🔍 LOGS REAIS ATIVADOS - Simulação desabilitada', 
+      'success', 
+      'Sistema'
+    );
+    setLogs(prevLogs => [...prevLogs, initLog].slice(-1000));
 
-    return () => clearInterval(interval);
+    // Interceptar console.log, console.error, etc.
+    const originalConsoleLog = console.log;
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+
+    console.log = (...args) => {
+      originalConsoleLog.apply(console, args);
+      
+      // Filtrar apenas logs importantes do sistema
+      const message = args.join(' ');
+      if (
+        message.includes('🔍') || 
+        message.includes('📊') || 
+        message.includes('✅') || 
+        message.includes('⚠️') ||
+        message.includes('❌') ||
+        message.includes('Promise rejeitada') ||
+        message.includes('Buscando') ||
+        message.includes('Estatísticas') ||
+        message.includes('GoogleSheetsSimple') ||
+        message.includes('STORAGE') ||
+        message.includes('Falha na autenticação')
+      ) {
+        const realLog = captureConsoleLog(message, 'info', 'Sistema');
+        setLogs(prevLogs => [...prevLogs, realLog].slice(-100)); // Manter apenas 100 logs
+      }
+    };
+
+    console.error = (...args) => {
+      originalConsoleError.apply(console, args);
+      const message = args.join(' ');
+      const realLog = captureConsoleLog(message, 'error', 'Sistema');
+      setLogs(prevLogs => [...prevLogs, realLog].slice(-100));
+    };
+
+    console.warn = (...args) => {
+      originalConsoleWarn.apply(console, args);
+      const message = args.join(' ');
+      const realLog = captureConsoleLog(message, 'warning', 'Sistema');
+      setLogs(prevLogs => [...prevLogs, realLog].slice(-100));
+    };
+
+    // Cleanup: restaurar console original
+    return () => {
+      console.log = originalConsoleLog;
+      console.error = originalConsoleError;
+      console.warn = originalConsoleWarn;
+    };
   }, [isLive]);
 
   // Filtrar logs
@@ -1014,24 +1022,31 @@ export default function LogsViewer() {
                         <span className="text-xs text-green-700 text-center">Corrigir "Falha na autenticação, tentando acesso público"</span>
                       </button>
 
-                      {/* CONTROLE 6: Emergency Stop */}
+                      {/* CONTROLE 6: Limpar Logs Falsos */}
                       <button 
                         onClick={() => {
-                          if (confirm('⚠️ ATENÇÃO: Isso irá parar TODOS os processos em loop. Confirma?')) {
-                            console.log('🛑 PARADA DE EMERGÊNCIA ATIVADA');
-                            // Parar todos os intervalos e timers
-                            setNotification({
-                              message: '🛑 PARADA DE EMERGÊNCIA - Todos os loops parados',
-                              type: 'error'
-                            });
-                            setTimeout(() => setNotification(null), 5000);
-                          }
+                          console.log('🧹 Removendo logs simulados/falsos...');
+                          // Limpar todos os logs atuais
+                          setLogs([]);
+                          setFilteredLogs([]);
+                          // Adicionar apenas um log real confirmando a limpeza
+                          const cleanLog = captureConsoleLog(
+                            '✅ LOGS FALSOS REMOVIDOS - Agora mostra apenas dados REAIS do sistema',
+                            'success',
+                            'Limpeza'
+                          );
+                          setLogs([cleanLog]);
+                          setNotification({
+                            message: '🧹 Logs simulados removidos - apenas dados reais agora',
+                            type: 'success'
+                          });
+                          setTimeout(() => setNotification(null), 3000);
                         }}
-                        className="flex flex-col items-center p-4 border-2 border-red-400 hover:border-red-500 rounded-lg bg-red-200 hover:bg-red-300 transition-all"
+                        className="flex flex-col items-center p-4 border-2 border-purple-300 hover:border-purple-400 rounded-lg bg-purple-100 hover:bg-purple-200 transition-all"
                       >
-                        <X className="w-8 h-8 text-red-800 mb-2" />
-                        <span className="text-sm font-bold text-red-900">PARADA DE EMERGÊNCIA</span>
-                        <span className="text-xs text-red-800 text-center">Parar TODOS os processos em loop</span>
+                        <Trash2 className="w-8 h-8 text-purple-700 mb-2" />
+                        <span className="text-sm font-bold text-purple-900">LIMPAR LOGS FALSOS</span>
+                        <span className="text-xs text-purple-700 text-center">Remove logs simulados - só dados REAIS</span>
                       </button>
                     </div>
 
