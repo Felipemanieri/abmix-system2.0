@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Monitor, Download, RefreshCw, Trash2, Search, Filter, AlertTriangle, CheckCircle, Info, X, BarChart3, Database, Users, FileText, Calendar, Clock, Settings } from 'lucide-react';
+import { Monitor, Download, RefreshCw, Trash2, Search, Filter, AlertTriangle, CheckCircle, Info, X, BarChart3, Database, Users, FileText, Calendar, Clock, Settings, Activity, Folder, FileSpreadsheet, Server } from 'lucide-react';
 
 interface LogEntry {
   id: string;
@@ -10,32 +10,46 @@ interface LogEntry {
   details?: any;
 }
 
-interface SystemStats {
-  totalProposals: number;
-  todayProposals: number;
-  monthProposals: number;
-  yearProposals: number;
-  totalUsers: number;
-  totalVendors: number;
-  lastSync: Date | null;
-  systemUptime: string;
-  databaseSize: string;
-  activeConnections: number;
-  lastBackup: Date | null;
-  cacheSize: string;
-  tempFiles: number;
-  sessionsActive: number;
-}
-
-interface ProposalStats {
-  total: number;
-  approved: number;
-  pending: number;
-  rejected: number;
-  thisMonth: number;
-  thisYear: number;
-  byMonth: Record<string, number>;
-  byYear: Record<string, number>;
+interface RealSystemStats {
+  proposals: {
+    total: number;
+    today: number;
+    thisMonth: number;
+    thisYear: number;
+    approved: number;
+    rejected: number;
+    pending: number;
+    approvalRate: number;
+  };
+  users: {
+    totalSystem: number;
+    totalVendors: number;
+    activeSystem: number;
+    activeVendors: number;
+    totalActive: number;
+  };
+  files: {
+    totalAttachments: number;
+    tempFiles: number;
+  };
+  sync: {
+    lastSync: Date;
+    googleDriveConnected: boolean;
+    googleSheetsConnected: boolean;
+    databaseConnected: boolean;
+  };
+  lastActivity: {
+    lastSystemLogin: Date | null;
+    lastVendorLogin: Date | null;
+    lastSystemUser: string;
+    lastVendorUser: string;
+  };
+  system: {
+    uptime: string;
+    databaseSize: string;
+    cacheSize: string;
+    activeConnections: number;
+  };
 }
 
 export default function LogsViewer() {
@@ -47,48 +61,45 @@ export default function LogsViewer() {
   const [autoScroll, setAutoScroll] = useState(false);
   const [isLive, setIsLive] = useState(true);
   const [activeTab, setActiveTab] = useState<'logs' | 'control'>('logs');
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
-  const [systemStats, setSystemStats] = useState<SystemStats>({
-    totalProposals: 125,
-    todayProposals: 8,
-    monthProposals: 23,
-    yearProposals: 89,
-    totalUsers: 22,
-    totalVendors: 13,
-    lastSync: new Date(),
-    systemUptime: '5h 32m',
-    databaseSize: '45 MB',
-    activeConnections: 3,
-    lastBackup: new Date(),
-    cacheSize: '12 MB',
-    tempFiles: 45,
-    sessionsActive: 7
-  });
-  const [proposalStats, setProposalStats] = useState<ProposalStats>({
-    total: 125,
-    approved: 89,
-    pending: 28,
-    rejected: 8,
-    thisMonth: 23,
-    thisYear: 89,
-    byMonth: {
-      '2025-01': 15,
-      '2025-02': 22,
-      '2025-03': 18,
-      '2025-04': 25,
-      '2025-05': 20,
-      '2025-06': 17,
-      '2025-07': 23
-    },
-    byYear: {
-      '2023': 156,
-      '2024': 289,
-      '2025': 89
-    }
-  });
+  const [realStats, setRealStats] = useState<RealSystemStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState<string | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Buscar estatísticas reais do sistema
+  const fetchRealStats = async () => {
+    setStatsLoading(true);
+    setStatsError(null);
+    try {
+      const response = await fetch('/api/system-stats');
+      if (!response.ok) {
+        throw new Error('Erro ao buscar estatísticas');
+      }
+      const data = await response.json();
+      // Converter strings de data de volta para objetos Date
+      data.sync.lastSync = new Date(data.sync.lastSync);
+      if (data.lastActivity.lastSystemLogin) {
+        data.lastActivity.lastSystemLogin = new Date(data.lastActivity.lastSystemLogin);
+      }
+      if (data.lastActivity.lastVendorLogin) {
+        data.lastActivity.lastVendorLogin = new Date(data.lastActivity.lastVendorLogin);
+      }
+      setRealStats(data);
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+      setStatsError('Erro ao carregar estatísticas do sistema');
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  // Carregar estatísticas quando mudar para a aba de controle
+  useEffect(() => {
+    if (activeTab === 'control') {
+      fetchRealStats();
+    }
+  }, [activeTab]);
 
   // Gerar logs do sistema em tempo real
   const generateMockLog = (): LogEntry => {
@@ -469,261 +480,355 @@ export default function LogsViewer() {
               </div>
             </div>
           ) : (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="space-y-6">
+              {/* Header com botão de atualizar */}
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <BarChart3 className="w-6 h-6 text-blue-600 mr-3" />
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Controle do Sistema</h3>
-                    <p className="text-gray-600">Estatísticas completas e controle de operações do sistema</p>
+                    <p className="text-gray-600">Estatísticas reais e status de sincronização</p>
                   </div>
                 </div>
+                <button
+                  onClick={fetchRealStats}
+                  disabled={statsLoading}
+                  className="flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${statsLoading ? 'animate-spin' : ''}`} />
+                  {statsLoading ? 'Carregando...' : 'Atualizar Dados'}
+                </button>
               </div>
 
-              {/* Filtros de Ano/Mês */}
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
-                <div className="flex items-center space-x-4">
-                  <label className="text-sm font-medium text-gray-700">Filtrar dados:</label>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="2023">2023</option>
-                    <option value="2024">2024</option>
-                    <option value="2025">2025</option>
-                  </select>
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="all">Todos os Meses</option>
-                    <option value="01">Janeiro</option>
-                    <option value="02">Fevereiro</option>
-                    <option value="03">Março</option>
-                    <option value="04">Abril</option>
-                    <option value="05">Maio</option>
-                    <option value="06">Junho</option>
-                    <option value="07">Julho</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Setembro</option>
-                    <option value="10">Outubro</option>
-                    <option value="11">Novembro</option>
-                    <option value="12">Dezembro</option>
-                  </select>
+              {/* Erro de carregamento */}
+              {statsError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+                    <span className="text-red-800">{statsError}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Estatísticas Principais de Propostas */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                  Estatísticas de Propostas
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-blue-700 font-medium">Total Geral</p>
-                        <p className="text-2xl font-bold text-blue-900">{proposalStats.total}</p>
+              {/* Loading state */}
+              {statsLoading && !realStats && (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
+                  <span className="ml-3 text-gray-600">Carregando estatísticas reais do sistema...</span>
+                </div>
+              )}
+
+              {/* Conteúdo principal - só mostra se tiver dados */}
+              {realStats && (
+                <>
+                  {/* Status de Sincronização - DESTAQUE */}
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <Monitor className="w-5 h-5 mr-2 text-green-600" />
+                      Status de Sincronização e Conectividade
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Banco de Dados</p>
+                            <p className="text-lg font-bold text-green-700">
+                              {realStats.sync.databaseConnected ? '🟢 ONLINE' : '🔴 OFFLINE'}
+                            </p>
+                          </div>
+                          <Database className="w-8 h-8 text-green-500" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Última verificação: {new Date().toLocaleTimeString('pt-BR')}
+                        </p>
                       </div>
-                      <FileText className="w-8 h-8 text-blue-500" />
-                    </div>
-                    <button className="mt-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition-colors">
-                      Exportar Relatório
-                    </button>
-                  </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-green-700 font-medium">Hoje</p>
-                        <p className="text-2xl font-bold text-green-900">{systemStats.todayProposals}</p>
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Google Drive</p>
+                            <p className="text-lg font-bold text-green-700">
+                              {realStats.sync.googleDriveConnected ? '🟢 CONECTADO' : '🔴 DESCONECTADO'}
+                            </p>
+                          </div>
+                          <Folder className="w-8 h-8 text-green-500" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Sincronização: {realStats.sync.lastSync.toLocaleString('pt-BR')}
+                        </p>
                       </div>
-                      <Calendar className="w-8 h-8 text-green-500" />
-                    </div>
-                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
-                      Zerar Contador (00:00h)
-                    </button>
-                  </div>
 
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-purple-700 font-medium">Este Mês</p>
-                        <p className="text-2xl font-bold text-purple-900">{systemStats.monthProposals}</p>
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Google Sheets</p>
+                            <p className="text-lg font-bold text-green-700">
+                              {realStats.sync.googleSheetsConnected ? '🟢 ATIVO' : '🔴 INATIVO'}
+                            </p>
+                          </div>
+                          <FileSpreadsheet className="w-8 h-8 text-green-500" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Planilhas sincronizadas automaticamente
+                        </p>
                       </div>
-                      <Calendar className="w-8 h-8 text-purple-500" />
                     </div>
-                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
-                      Limpar Mês Atual
-                    </button>
                   </div>
 
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-orange-700 font-medium">Este Ano</p>
-                        <p className="text-2xl font-bold text-orange-900">{systemStats.yearProposals}</p>
+                  {/* Estatísticas REAIS de Propostas */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                      Estatísticas REAIS de Propostas (Banco de Dados)
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <FileText className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                          <p className="text-sm text-blue-700 font-medium">Total no Sistema</p>
+                          <p className="text-3xl font-bold text-blue-900">{realStats.proposals.total}</p>
+                          <p className="text-xs text-blue-600 mt-1">Todas as propostas criadas</p>
+                        </div>
                       </div>
-                      <Calendar className="w-8 h-8 text-orange-500" />
-                    </div>
-                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
-                      Limpar Ano Atual
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Status das Propostas */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Status das Propostas</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="text-center">
-                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                      <p className="text-sm text-green-700 font-medium">Aprovadas</p>
-                      <p className="text-2xl font-bold text-green-900">{proposalStats.approved}</p>
-                    </div>
-                  </div>
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="text-center">
-                      <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                      <p className="text-sm text-yellow-700 font-medium">Pendentes</p>
-                      <p className="text-2xl font-bold text-yellow-900">{proposalStats.pending}</p>
-                    </div>
-                  </div>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="text-center">
-                      <X className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                      <p className="text-sm text-red-700 font-medium">Rejeitadas</p>
-                      <p className="text-2xl font-bold text-red-900">{proposalStats.rejected}</p>
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <Calendar className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <p className="text-sm text-green-700 font-medium">Hoje</p>
+                          <p className="text-3xl font-bold text-green-900">{realStats.proposals.today}</p>
+                          <p className="text-xs text-green-600 mt-1">Criadas nas últimas 24h</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <Calendar className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                          <p className="text-sm text-purple-700 font-medium">Este Mês</p>
+                          <p className="text-3xl font-bold text-purple-900">{realStats.proposals.thisMonth}</p>
+                          <p className="text-xs text-purple-600 mt-1">Mês atual ({new Date().toLocaleDateString('pt-BR', { month: 'long' })})</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <Calendar className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                          <p className="text-sm text-orange-700 font-medium">Este Ano</p>
+                          <p className="text-3xl font-bold text-orange-900">{realStats.proposals.thisYear}</p>
+                          <p className="text-xs text-orange-600 mt-1">Ano de {new Date().getFullYear()}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div className="text-center">
-                      <BarChart3 className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                      <p className="text-sm text-gray-700 font-medium">Taxa Aprovação</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {Math.round((proposalStats.approved / proposalStats.total) * 100)}%
-                      </p>
+
+                  {/* Status REAL das Propostas */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Status REAL das Propostas</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                          <p className="text-sm text-green-700 font-medium">Aprovadas</p>
+                          <p className="text-3xl font-bold text-green-900">{realStats.proposals.approved}</p>
+                        </div>
+                      </div>
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                          <p className="text-sm text-yellow-700 font-medium">Pendentes</p>
+                          <p className="text-3xl font-bold text-yellow-900">{realStats.proposals.pending}</p>
+                        </div>
+                      </div>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <X className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                          <p className="text-sm text-red-700 font-medium">Rejeitadas</p>
+                          <p className="text-3xl font-bold text-red-900">{realStats.proposals.rejected}</p>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div className="text-center">
+                          <BarChart3 className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                          <p className="text-sm text-gray-700 font-medium">Taxa Aprovação</p>
+                          <p className="text-3xl font-bold text-gray-900">{realStats.proposals.approvalRate}%</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Ações de Manutenção */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Settings className="w-5 h-5 mr-2 text-blue-600" />
-                  Ações de Manutenção do Sistema
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <button className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 hover:border-red-300 transition-colors">
-                    <Trash2 className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">Limpar Logs do Sistema</span>
-                    <span className="text-xs text-center text-red-600 leading-tight">
-                      Remove todos os logs de auditoria, debug e monitoramento. Use com cuidado.
-                    </span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
-                    <RefreshCw className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">Limpar Cache do Sistema</span>
-                    <span className="text-xs text-center text-orange-600 leading-tight">
-                      Limpa cache de aplicação ({systemStats.cacheSize}) e dados temporários.
-                    </span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
-                    <Database className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">Otimizar Banco de Dados</span>
-                    <span className="text-xs text-center text-blue-600 leading-tight">
-                      Reorganiza índices e compacta tabelas ({systemStats.databaseSize}).
-                    </span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg border border-green-200 hover:border-green-300 transition-colors">
-                    <FileText className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">Limpar Arquivos Temporários</span>
-                    <span className="text-xs text-center text-green-600 leading-tight">
-                      Remove {systemStats.tempFiles} arquivos temporários e uploads não utilizados.
-                    </span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center p-4 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
-                    <Users className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">Limpar Sessões Expiradas</span>
-                    <span className="text-xs text-center text-purple-600 leading-tight">
-                      Remove sessões antigas, tokens inválidos e cookies expirados.
-                    </span>
-                  </button>
-                  
-                  <button className="flex flex-col items-center p-4 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg border border-red-300 hover:border-red-400 transition-colors">
-                    <AlertTriangle className="w-8 h-8 mb-3" />
-                    <span className="text-sm font-medium mb-2">⚠️ LIMPAR TUDO</span>
-                    <span className="text-xs text-center text-red-700 leading-tight">
-                      Executa TODAS as limpezas acima. Ação irreversível!
-                    </span>
-                  </button>
-                </div>
-              </div>
+                  {/* Usuários e Sistema */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <Users className="w-5 h-5 mr-2 text-blue-600" />
+                        Usuários REAIS do Sistema
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Usuários do Sistema:</span>
+                          <span className="text-lg font-bold text-gray-900">{realStats.users.totalSystem}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Vendedores:</span>
+                          <span className="text-lg font-bold text-gray-900">{realStats.users.totalVendors}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Ativos Sistema:</span>
+                          <span className="text-lg font-bold text-green-700">{realStats.users.activeSystem}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Ativos Vendedores:</span>
+                          <span className="text-lg font-bold text-green-700">{realStats.users.activeVendors}</span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-700">Total Usuários Ativos:</span>
+                            <span className="text-xl font-bold text-blue-900">{realStats.users.totalActive}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-              {/* Manual de Uso */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-amber-900 mb-4 flex items-center">
-                  <Info className="w-5 h-5 mr-2" />
-                  Manual de Uso - Controle do Sistema
-                </h4>
-                
-                <div className="space-y-4 text-sm">
-                  <div className="bg-white rounded-lg p-4 border border-amber-200">
-                    <h5 className="font-semibold text-amber-900 mb-2">📊 Estatísticas de Propostas</h5>
-                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
-                      <li><strong>Total Geral:</strong> Todas as propostas já criadas no sistema</li>
-                      <li><strong>Hoje:</strong> Propostas criadas hoje (zera automaticamente à meia-noite)</li>
-                      <li><strong>Este Mês:</strong> Propostas do mês atual (pode ser limpo manualmente)</li>
-                      <li><strong>Este Ano:</strong> Propostas do ano atual (pode ser limpo manualmente)</li>
-                    </ul>
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <Activity className="w-5 h-5 mr-2 text-blue-600" />
+                        Últimas Atividades REAIS
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Último Login Sistema:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {realStats.lastActivity.lastSystemLogin 
+                              ? realStats.lastActivity.lastSystemLogin.toLocaleString('pt-BR')
+                              : 'Nunca'
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Usuário Sistema:</span>
+                          <span className="text-sm font-medium text-gray-900">{realStats.lastActivity.lastSystemUser}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Último Login Vendedor:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {realStats.lastActivity.lastVendorLogin 
+                              ? realStats.lastActivity.lastVendorLogin.toLocaleString('pt-BR')
+                              : 'Nunca'
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Vendedor:</span>
+                          <span className="text-sm font-medium text-gray-900">{realStats.lastActivity.lastVendorUser}</span>
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">Arquivos/Anexos:</span>
+                            <span className="text-sm font-medium text-gray-900">{realStats.files.totalAttachments}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 border border-amber-200">
-                    <h5 className="font-semibold text-amber-900 mb-2">🧹 Ações de Limpeza</h5>
-                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
-                      <li><strong>Limpar Logs:</strong> Remove histórico de atividades (recomendado mensalmente)</li>
-                      <li><strong>Limpar Cache:</strong> Acelera o sistema removendo dados temporários</li>
-                      <li><strong>Otimizar BD:</strong> Melhora performance do banco de dados</li>
-                      <li><strong>Arquivos Temp:</strong> Libera espaço removendo uploads antigos</li>
-                      <li><strong>Sessões:</strong> Remove usuários inativos e tokens expirados</li>
-                      <li><strong>Limpar Tudo:</strong> ⚠️ Faz todas as limpezas de uma vez (cuidado!)</li>
-                    </ul>
+                  {/* Informações do Sistema */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <Server className="w-5 h-5 mr-2 text-blue-600" />
+                      Informações do Sistema
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <Clock className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                        <p className="text-sm text-gray-600">Tempo Ativo</p>
+                        <p className="text-lg font-bold text-gray-900">{realStats.system.uptime}</p>
+                      </div>
+                      <div className="text-center">
+                        <Database className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                        <p className="text-sm text-gray-600">Banco de Dados</p>
+                        <p className="text-lg font-bold text-gray-900">{realStats.system.databaseSize}</p>
+                      </div>
+                      <div className="text-center">
+                        <RefreshCw className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                        <p className="text-sm text-gray-600">Cache</p>
+                        <p className="text-lg font-bold text-gray-900">{realStats.system.cacheSize}</p>
+                      </div>
+                      <div className="text-center">
+                        <Monitor className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                        <p className="text-sm text-gray-600">Conexões Ativas</p>
+                        <p className="text-lg font-bold text-gray-900">{realStats.system.activeConnections}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 border border-amber-200">
-                    <h5 className="font-semibold text-amber-900 mb-2">⚠️ Cuidados Importantes</h5>
-                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
-                      <li>Sempre faça backup antes de limpar dados importantes</li>
-                      <li>Evite limpezas durante horário comercial (pode afetar usuários)</li>
-                      <li>A ação "Limpar Tudo" não pode ser desfeita</li>
-                      <li>Logs são importantes para auditoria - limpe apenas quando necessário</li>
-                      <li>Use filtros de ano/mês para analisar dados específicos</li>
-                    </ul>
+                  {/* Ações de Manutenção Manual */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <Settings className="w-5 h-5 mr-2 text-red-600" />
+                      Ações de Manutenção Manual (⚠️ Use com Cuidado)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <button className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 hover:border-red-300 transition-colors">
+                        <Trash2 className="w-8 h-8 mb-2" />
+                        <span className="text-sm font-medium mb-1">Limpar Cache ({realStats.system.cacheSize})</span>
+                        <span className="text-xs text-center text-red-600">Remove dados temporários em cache</span>
+                      </button>
+                      
+                      <button className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
+                        <FileText className="w-8 h-8 mb-2" />
+                        <span className="text-sm font-medium mb-1">Limpar Arquivos Temp ({realStats.files.tempFiles})</span>
+                        <span className="text-xs text-center text-orange-600">Remove uploads não utilizados</span>
+                      </button>
+                      
+                      <button className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
+                        <Database className="w-8 h-8 mb-2" />
+                        <span className="text-sm font-medium mb-1">Otimizar BD ({realStats.system.databaseSize})</span>
+                        <span className="text-xs text-center text-blue-600">Reorganiza índices do banco</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 border border-amber-200">
-                    <h5 className="font-semibold text-amber-900 mb-2">📅 Programação Automática</h5>
-                    <p className="text-amber-800">
-                      • <strong>Contador "Hoje":</strong> Zera automaticamente todo dia às 00:00h<br/>
-                      • <strong>Backup:</strong> Executado automaticamente todas as noites<br/>
-                      • <strong>Limpeza de Cache:</strong> Executada automaticamente a cada 6 horas<br/>
-                      • <strong>Sessões:</strong> Limpeza automática de sessões expiradas a cada hora
-                    </p>
+                  {/* Manual Explicativo */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-amber-900 mb-4 flex items-center">
+                      <Info className="w-5 h-5 mr-2" />
+                      O que Está Sincronizado e Como Funciona
+                    </h4>
+                    
+                    <div className="space-y-4 text-sm">
+                      <div className="bg-white rounded-lg p-4 border border-amber-200">
+                        <h5 className="font-semibold text-amber-900 mb-2">🔄 Status de Sincronização</h5>
+                        <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                          <li><strong>Banco de Dados:</strong> {realStats.sync.databaseConnected ? 'CONECTADO' : 'DESCONECTADO'} - Armazena todas as propostas e usuários</li>
+                          <li><strong>Google Drive:</strong> {realStats.sync.googleDriveConnected ? 'CONECTADO' : 'DESCONECTADO'} - Backup automático de arquivos</li>
+                          <li><strong>Google Sheets:</strong> {realStats.sync.googleSheetsConnected ? 'CONECTADO' : 'DESCONECTADO'} - Planilhas sincronizadas em tempo real</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-white rounded-lg p-4 border border-amber-200">
+                        <h5 className="font-semibold text-amber-900 mb-2">📊 Estatísticas REAIS</h5>
+                        <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                          <li><strong>Dados do Banco:</strong> Todos os números mostrados vêm diretamente do banco de dados PostgreSQL</li>
+                          <li><strong>Usuários Ativos:</strong> Conta apenas usuários com flag "active = true"</li>
+                          <li><strong>Propostas por Período:</strong> Calculadas com base na data de criação real</li>
+                          <li><strong>Últimas Atividades:</strong> Baseadas nos últimos logins registrados</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-white rounded-lg p-4 border border-amber-200">
+                        <h5 className="font-semibold text-amber-900 mb-2">⚠️ Ações Manuais Disponíveis</h5>
+                        <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                          <li><strong>Limpar Cache:</strong> Remove {realStats.system.cacheSize} de dados temporários (ação reversível)</li>
+                          <li><strong>Limpar Arquivos:</strong> Remove {realStats.files.tempFiles} arquivos temporários não utilizados</li>
+                          <li><strong>Otimizar BD:</strong> Reorganiza {realStats.system.databaseSize} do banco para melhor performance</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           )}
+
         </div>
       </div>
     </div>

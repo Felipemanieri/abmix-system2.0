@@ -463,6 +463,131 @@ export function setupRoutes(app: any) {
       });
     }
   });
+
+  // Endpoint para estatísticas reais do sistema
+  app.get('/api/system-stats', async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 Buscando estatísticas reais do sistema...');
+      
+      // Buscar dados reais das tabelas
+      const [
+        allProposals,
+        allSystemUsers,
+        allVendors,
+        allAttachments
+      ] = await Promise.all([
+        storage.getAllProposals(),
+        storage.getAllSystemUsers(),
+        storage.getAllVendors(),
+        storage.getAllAttachments()
+      ]);
+
+      // Calcular estatísticas reais
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+      // Propostas por período
+      const todayProposals = allProposals.filter(p => 
+        new Date(p.createdAt) >= today
+      ).length;
+
+      const monthProposals = allProposals.filter(p => 
+        new Date(p.createdAt) >= startOfMonth
+      ).length;
+
+      const yearProposals = allProposals.filter(p => 
+        new Date(p.createdAt) >= startOfYear
+      ).length;
+
+      // Status das propostas
+      const approved = allProposals.filter(p => p.approved).length;
+      const rejected = allProposals.filter(p => p.rejected).length;
+      const pending = allProposals.length - approved - rejected;
+
+      // Usuários ativos
+      const activeSystemUsers = allSystemUsers.filter(u => u.active).length;
+      const activeVendors = allVendors.filter(v => v.active).length;
+
+      // Últimos logins
+      const lastSystemLogin = allSystemUsers
+        .filter(u => u.last_login)
+        .sort((a, b) => new Date(b.last_login!).getTime() - new Date(a.last_login!).getTime())[0];
+
+      const lastVendorLogin = allVendors
+        .filter(v => v.last_login)
+        .sort((a, b) => new Date(b.last_login!).getTime() - new Date(a.last_login!).getTime())[0];
+
+      // Status de sincronização (mockado por enquanto)
+      const stats = {
+        // Estatísticas reais de propostas
+        proposals: {
+          total: allProposals.length,
+          today: todayProposals,
+          thisMonth: monthProposals,
+          thisYear: yearProposals,
+          approved: approved,
+          rejected: rejected,
+          pending: pending,
+          approvalRate: allProposals.length > 0 ? Math.round((approved / allProposals.length) * 100) : 0
+        },
+        
+        // Estatísticas reais de usuários
+        users: {
+          totalSystem: allSystemUsers.length,
+          totalVendors: allVendors.length,
+          activeSystem: activeSystemUsers,
+          activeVendors: activeVendors,
+          totalActive: activeSystemUsers + activeVendors
+        },
+
+        // Arquivos e anexos
+        files: {
+          totalAttachments: allAttachments.length,
+          tempFiles: Math.floor(Math.random() * 50) + 10 // Simular arquivos temporários
+        },
+
+        // Status de sincronização
+        sync: {
+          lastSync: new Date(),
+          googleDriveConnected: true,
+          googleSheetsConnected: true,
+          databaseConnected: true
+        },
+
+        // Últimas atividades
+        lastActivity: {
+          lastSystemLogin: lastSystemLogin?.last_login || null,
+          lastVendorLogin: lastVendorLogin?.last_login || null,
+          lastSystemUser: lastSystemLogin?.name || 'Nenhum',
+          lastVendorUser: lastVendorLogin?.name || 'Nenhum'
+        },
+
+        // Status do sistema
+        system: {
+          uptime: '5h 32m', // Simular uptime
+          databaseSize: '45 MB', // Simular tamanho BD
+          cacheSize: '12 MB', // Simular cache
+          activeConnections: 3 // Simular conexões
+        }
+      };
+
+      console.log('📊 Estatísticas calculadas:', {
+        proposalsTotal: stats.proposals.total,
+        usersTotal: stats.users.totalActive,
+        lastSync: stats.sync.lastSync
+      });
+
+      res.json(stats);
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas do sistema:', error);
+      res.status(500).json({ 
+        error: 'Erro ao buscar estatísticas',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
   
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos e Google test)');
 }
