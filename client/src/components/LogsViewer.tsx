@@ -61,6 +61,13 @@ export default function LogsViewer() {
   const [autoScroll, setAutoScroll] = useState(false);
   const [isLive, setIsLive] = useState(true);
   const [activeTab, setActiveTab] = useState<'logs' | 'control'>('logs');
+  const [syncInterval, setSyncInterval] = useState<number>(() => {
+    const saved = localStorage.getItem('syncInterval');
+    return saved ? parseInt(saved) : 1;
+  });
+  const [logLevel, setLogLevel] = useState<string>(() => {
+    return localStorage.getItem('logLevel') || 'debug';
+  });
   const [realStats, setRealStats] = useState<RealSystemStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState<string | null>(null);
@@ -910,166 +917,99 @@ export default function LogsViewer() {
                     </div>
                   </div>
 
-                  {/* CONTROLE DE PERFORMANCE E ERROS - SEÇÃO PRINCIPAL */}
-                  <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-6 mt-6">
-                    <h4 className="text-lg font-semibold text-red-900 mb-4 flex items-center">
-                      <AlertTriangle className="w-6 h-6 mr-2 text-red-600" />
-                      🚨 CONTROLE DE PERFORMANCE E ERROS CRÍTICOS
+                  {/* CONTROLES ESSENCIAIS DE SISTEMA */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-4 mt-6">
+                    <h4 className="text-base font-semibold text-slate-900 mb-3 flex items-center">
+                      <Settings className="w-4 h-4 mr-2 text-slate-600" />
+                      Controles de Sistema
                     </h4>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {/* CONTROLE 1: Promise Error Handler */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Promise Error Fix */}
                       <button 
                         onClick={() => {
-                          console.log('🔧 Aplicando correção para Promise rejections...');
-                          // Implementar try/catch global para promises
                           window.addEventListener('unhandledrejection', (event) => {
-                            console.error('Promise rejection interceptada:', event.reason);
+                            console.error('Promise interceptada:', event.reason);
                             event.preventDefault();
                           });
-                          setNotification({
-                            message: '✅ Sistema de tratamento de Promise ativado',
-                            type: 'success'
-                          });
-                          setTimeout(() => setNotification(null), 3000);
+                          setNotification({ message: 'Promise handler ativado', type: 'success' });
+                          setTimeout(() => setNotification(null), 2000);
                         }}
-                        className="flex flex-col items-center p-4 border-2 border-red-300 hover:border-red-400 rounded-lg bg-red-100 hover:bg-red-200 transition-all"
+                        className="flex items-center px-3 py-2 text-sm bg-red-50 hover:bg-red-100 border border-red-200 rounded transition-colors"
                       >
-                        <AlertTriangle className="w-8 h-8 text-red-700 mb-2" />
-                        <span className="text-sm font-bold text-red-900">CORRIGIR PROMISES</span>
-                        <span className="text-xs text-red-700 text-center">Para as "Promise rejeitada não tratada" que aparecem a cada segundo</span>
+                        <AlertTriangle className="w-4 h-4 mr-2 text-red-600" />
+                        Corrigir Promises
                       </button>
 
-                      {/* CONTROLE 2: Polling Frequency */}
-                      <div className="flex flex-col items-center p-4 border-2 border-orange-300 rounded-lg bg-orange-100">
-                        <Clock className="w-8 h-8 text-orange-700 mb-2" />
-                        <span className="text-sm font-bold text-orange-900 mb-2">INTERVALO DE SYNC</span>
+                      {/* Sync Interval */}
+                      <div className="flex items-center px-3 py-2 bg-orange-50 border border-orange-200 rounded">
+                        <Clock className="w-4 h-4 mr-2 text-orange-600" />
                         <select 
-                          className="w-full px-2 py-1 text-xs rounded border border-orange-300 bg-white"
+                          value={syncInterval}
                           onChange={(e) => {
-                            console.log(`🔄 Alterando intervalo para: ${e.target.value}s`);
-                            setNotification({
-                              message: `⏱️ Intervalo alterado para ${e.target.value}s`,
-                              type: 'success'
-                            });
-                            setTimeout(() => setNotification(null), 3000);
+                            const interval = parseInt(e.target.value);
+                            setSyncInterval(interval);
+                            localStorage.setItem('syncInterval', interval.toString());
+                            setNotification({ message: `Intervalo: ${interval}s`, type: 'success' });
+                            setTimeout(() => setNotification(null), 2000);
                           }}
+                          className="text-sm bg-white border border-orange-300 rounded px-1 py-0.5 ml-auto"
                         >
-                          <option value="1">1 segundo (atual)</option>
-                          <option value="5">5 segundos</option>
-                          <option value="10">10 segundos (recomendado)</option>
-                          <option value="30">30 segundos</option>
-                          <option value="60">1 minuto</option>
+                          <option value="1">1s</option>
+                          <option value="5">5s</option>
+                          <option value="10">10s</option>
+                          <option value="30">30s</option>
                         </select>
-                        <span className="text-xs text-orange-700 text-center mt-1">Reduzir para parar os logs repetitivos</span>
                       </div>
 
-                      {/* CONTROLE 3: Log Level Control */}
-                      <div className="flex flex-col items-center p-4 border-2 border-yellow-300 rounded-lg bg-yellow-100">
-                        <Settings className="w-8 h-8 text-yellow-700 mb-2" />
-                        <span className="text-sm font-bold text-yellow-900 mb-2">NÍVEL DE LOGS</span>
+                      {/* Log Level */}
+                      <div className="flex items-center px-3 py-2 bg-yellow-50 border border-yellow-200 rounded">
+                        <FileText className="w-4 h-4 mr-2 text-yellow-600" />
                         <select 
-                          className="w-full px-2 py-1 text-xs rounded border border-yellow-300 bg-white"
+                          value={logLevel}
                           onChange={(e) => {
-                            console.log(`🔧 Alterando nível de log para: ${e.target.value}`);
-                            setNotification({
-                              message: `📊 Nível de log alterado para ${e.target.value}`,
-                              type: 'success'
-                            });
-                            setTimeout(() => setNotification(null), 3000);
+                            setLogLevel(e.target.value);
+                            localStorage.setItem('logLevel', e.target.value);
+                            setNotification({ message: `Nível: ${e.target.value}`, type: 'success' });
+                            setTimeout(() => setNotification(null), 2000);
                           }}
+                          className="text-sm bg-white border border-yellow-300 rounded px-1 py-0.5 ml-auto"
                         >
-                          <option value="debug">Debug (muito detalhado)</option>
-                          <option value="info">Info (normal)</option>
-                          <option value="warning">Warning (só avisos)</option>
-                          <option value="error">Error (só erros)</option>
+                          <option value="debug">Debug</option>
+                          <option value="info">Info</option>
+                          <option value="warning">Warning</option>
+                          <option value="error">Error</option>
                         </select>
-                        <span className="text-xs text-yellow-700 text-center mt-1">Controlar quantidade de logs gerados</span>
                       </div>
 
-                      {/* CONTROLE 4: Sistema de Mensagens Fix */}
+                      {/* Clear Logs */}
                       <button 
                         onClick={() => {
-                          console.log('🔧 Corrigindo loop do sistema de mensagens...');
-                          // Implementar correção para o selectedPanel null
-                          setNotification({
-                            message: '🔄 Sistema de mensagens reiniciado',
-                            type: 'success'
-                          });
-                          setTimeout(() => setNotification(null), 3000);
-                        }}
-                        className="flex flex-col items-center p-4 border-2 border-blue-300 hover:border-blue-400 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all"
-                      >
-                        <RefreshCw className="w-8 h-8 text-blue-700 mb-2" />
-                        <span className="text-sm font-bold text-blue-900">REINICIAR MENSAGENS</span>
-                        <span className="text-xs text-blue-700 text-center">Para o loop "selectedPanel atual: null"</span>
-                      </button>
-
-                      {/* CONTROLE 5: Google Auth Fix */}
-                      <button 
-                        onClick={() => {
-                          console.log('🔐 Tentando revalidar autenticação Google...');
-                          setNotification({
-                            message: '🔐 Autenticação Google revalidada',
-                            type: 'success'
-                          });
-                          setTimeout(() => setNotification(null), 3000);
-                        }}
-                        className="flex flex-col items-center p-4 border-2 border-green-300 hover:border-green-400 rounded-lg bg-green-100 hover:bg-green-200 transition-all"
-                      >
-                        <CheckCircle className="w-8 h-8 text-green-700 mb-2" />
-                        <span className="text-sm font-bold text-green-900">REVALIDAR GOOGLE</span>
-                        <span className="text-xs text-green-700 text-center">Corrigir "Falha na autenticação, tentando acesso público"</span>
-                      </button>
-
-                      {/* CONTROLE 6: Limpar Logs Falsos */}
-                      <button 
-                        onClick={() => {
-                          console.log('🧹 Removendo logs simulados/falsos...');
-                          // Limpar todos os logs atuais
                           setLogs([]);
                           setFilteredLogs([]);
-                          // Adicionar apenas um log real confirmando a limpeza
-                          const cleanLog = captureConsoleLog(
-                            '✅ LOGS FALSOS REMOVIDOS - Agora mostra apenas dados REAIS do sistema',
-                            'success',
-                            'Limpeza'
-                          );
+                          const cleanLog = captureConsoleLog('Logs limpos - apenas dados reais', 'success', 'Sistema');
                           setLogs([cleanLog]);
-                          setNotification({
-                            message: '🧹 Logs simulados removidos - apenas dados reais agora',
-                            type: 'success'
-                          });
-                          setTimeout(() => setNotification(null), 3000);
+                          setNotification({ message: 'Logs limpos', type: 'success' });
+                          setTimeout(() => setNotification(null), 2000);
                         }}
-                        className="flex flex-col items-center p-4 border-2 border-purple-300 hover:border-purple-400 rounded-lg bg-purple-100 hover:bg-purple-200 transition-all"
+                        className="flex items-center px-3 py-2 text-sm bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded transition-colors"
                       >
-                        <Trash2 className="w-8 h-8 text-purple-700 mb-2" />
-                        <span className="text-sm font-bold text-purple-900">LIMPAR LOGS FALSOS</span>
-                        <span className="text-xs text-purple-700 text-center">Remove logs simulados - só dados REAIS</span>
+                        <Trash2 className="w-4 h-4 mr-2 text-purple-600" />
+                        Limpar Logs
                       </button>
                     </div>
 
-                    {/* Status atual dos problemas */}
-                    <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
-                      <h5 className="text-sm font-semibold text-gray-900 mb-2">📊 STATUS DOS PROBLEMAS IDENTIFICADOS:</h5>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                        <div className="flex items-center">
-                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                          <span>Promise rejections: <strong>ATIVO (a cada 1s)</strong></span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                          <span>Loop de mensagens: <strong>ATIVO (selectedPanel null)</strong></span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                          <span>Auth Google: <strong>MODO PÚBLICO</strong></span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                          <span>Logs excessivos: <strong>ATIVO</strong></span>
-                        </div>
+                    {/* Status Compacto */}
+                    <div className="mt-3 p-2 bg-slate-50 rounded text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center">
+                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1"></span>
+                          Promise errors: ATIVO
+                        </span>
+                        <span className="flex items-center">
+                          <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1"></span>
+                          Google: PÚBLICO
+                        </span>
                       </div>
                     </div>
                   </div>
