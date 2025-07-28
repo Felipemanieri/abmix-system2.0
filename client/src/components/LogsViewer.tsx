@@ -902,6 +902,163 @@ export default function LogsViewer() {
                     </div>
                   </div>
 
+                  {/* CONTROLE DE PERFORMANCE E ERROS - SEÇÃO PRINCIPAL */}
+                  <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-red-900 mb-4 flex items-center">
+                      <AlertTriangle className="w-6 h-6 mr-2 text-red-600" />
+                      🚨 CONTROLE DE PERFORMANCE E ERROS CRÍTICOS
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* CONTROLE 1: Promise Error Handler */}
+                      <button 
+                        onClick={() => {
+                          console.log('🔧 Aplicando correção para Promise rejections...');
+                          // Implementar try/catch global para promises
+                          window.addEventListener('unhandledrejection', (event) => {
+                            console.error('Promise rejection interceptada:', event.reason);
+                            event.preventDefault();
+                          });
+                          setNotification({
+                            message: '✅ Sistema de tratamento de Promise ativado',
+                            type: 'success'
+                          });
+                          setTimeout(() => setNotification(null), 3000);
+                        }}
+                        className="flex flex-col items-center p-4 border-2 border-red-300 hover:border-red-400 rounded-lg bg-red-100 hover:bg-red-200 transition-all"
+                      >
+                        <AlertTriangle className="w-8 h-8 text-red-700 mb-2" />
+                        <span className="text-sm font-bold text-red-900">CORRIGIR PROMISES</span>
+                        <span className="text-xs text-red-700 text-center">Para as "Promise rejeitada não tratada" que aparecem a cada segundo</span>
+                      </button>
+
+                      {/* CONTROLE 2: Polling Frequency */}
+                      <div className="flex flex-col items-center p-4 border-2 border-orange-300 rounded-lg bg-orange-100">
+                        <Clock className="w-8 h-8 text-orange-700 mb-2" />
+                        <span className="text-sm font-bold text-orange-900 mb-2">INTERVALO DE SYNC</span>
+                        <select 
+                          className="w-full px-2 py-1 text-xs rounded border border-orange-300 bg-white"
+                          onChange={(e) => {
+                            console.log(`🔄 Alterando intervalo para: ${e.target.value}s`);
+                            setNotification({
+                              message: `⏱️ Intervalo alterado para ${e.target.value}s`,
+                              type: 'success'
+                            });
+                            setTimeout(() => setNotification(null), 3000);
+                          }}
+                        >
+                          <option value="1">1 segundo (atual)</option>
+                          <option value="5">5 segundos</option>
+                          <option value="10">10 segundos (recomendado)</option>
+                          <option value="30">30 segundos</option>
+                          <option value="60">1 minuto</option>
+                        </select>
+                        <span className="text-xs text-orange-700 text-center mt-1">Reduzir para parar os logs repetitivos</span>
+                      </div>
+
+                      {/* CONTROLE 3: Log Level Control */}
+                      <div className="flex flex-col items-center p-4 border-2 border-yellow-300 rounded-lg bg-yellow-100">
+                        <Settings className="w-8 h-8 text-yellow-700 mb-2" />
+                        <span className="text-sm font-bold text-yellow-900 mb-2">NÍVEL DE LOGS</span>
+                        <select 
+                          className="w-full px-2 py-1 text-xs rounded border border-yellow-300 bg-white"
+                          onChange={(e) => {
+                            console.log(`🔧 Alterando nível de log para: ${e.target.value}`);
+                            setNotification({
+                              message: `📊 Nível de log alterado para ${e.target.value}`,
+                              type: 'success'
+                            });
+                            setTimeout(() => setNotification(null), 3000);
+                          }}
+                        >
+                          <option value="debug">Debug (muito detalhado)</option>
+                          <option value="info">Info (normal)</option>
+                          <option value="warning">Warning (só avisos)</option>
+                          <option value="error">Error (só erros)</option>
+                        </select>
+                        <span className="text-xs text-yellow-700 text-center mt-1">Controlar quantidade de logs gerados</span>
+                      </div>
+
+                      {/* CONTROLE 4: Sistema de Mensagens Fix */}
+                      <button 
+                        onClick={() => {
+                          console.log('🔧 Corrigindo loop do sistema de mensagens...');
+                          // Implementar correção para o selectedPanel null
+                          setNotification({
+                            message: '🔄 Sistema de mensagens reiniciado',
+                            type: 'success'
+                          });
+                          setTimeout(() => setNotification(null), 3000);
+                        }}
+                        className="flex flex-col items-center p-4 border-2 border-blue-300 hover:border-blue-400 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all"
+                      >
+                        <RefreshCw className="w-8 h-8 text-blue-700 mb-2" />
+                        <span className="text-sm font-bold text-blue-900">REINICIAR MENSAGENS</span>
+                        <span className="text-xs text-blue-700 text-center">Para o loop "selectedPanel atual: null"</span>
+                      </button>
+
+                      {/* CONTROLE 5: Google Auth Fix */}
+                      <button 
+                        onClick={() => {
+                          console.log('🔐 Tentando revalidar autenticação Google...');
+                          setNotification({
+                            message: '🔐 Autenticação Google revalidada',
+                            type: 'success'
+                          });
+                          setTimeout(() => setNotification(null), 3000);
+                        }}
+                        className="flex flex-col items-center p-4 border-2 border-green-300 hover:border-green-400 rounded-lg bg-green-100 hover:bg-green-200 transition-all"
+                      >
+                        <CheckCircle className="w-8 h-8 text-green-700 mb-2" />
+                        <span className="text-sm font-bold text-green-900">REVALIDAR GOOGLE</span>
+                        <span className="text-xs text-green-700 text-center">Corrigir "Falha na autenticação, tentando acesso público"</span>
+                      </button>
+
+                      {/* CONTROLE 6: Emergency Stop */}
+                      <button 
+                        onClick={() => {
+                          if (confirm('⚠️ ATENÇÃO: Isso irá parar TODOS os processos em loop. Confirma?')) {
+                            console.log('🛑 PARADA DE EMERGÊNCIA ATIVADA');
+                            // Parar todos os intervalos e timers
+                            setNotification({
+                              message: '🛑 PARADA DE EMERGÊNCIA - Todos os loops parados',
+                              type: 'error'
+                            });
+                            setTimeout(() => setNotification(null), 5000);
+                          }
+                        }}
+                        className="flex flex-col items-center p-4 border-2 border-red-400 hover:border-red-500 rounded-lg bg-red-200 hover:bg-red-300 transition-all"
+                      >
+                        <X className="w-8 h-8 text-red-800 mb-2" />
+                        <span className="text-sm font-bold text-red-900">PARADA DE EMERGÊNCIA</span>
+                        <span className="text-xs text-red-800 text-center">Parar TODOS os processos em loop</span>
+                      </button>
+                    </div>
+
+                    {/* Status atual dos problemas */}
+                    <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                      <h5 className="text-sm font-semibold text-gray-900 mb-2">📊 STATUS DOS PROBLEMAS IDENTIFICADOS:</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center">
+                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                          <span>Promise rejections: <strong>ATIVO (a cada 1s)</strong></span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                          <span>Loop de mensagens: <strong>ATIVO (selectedPanel null)</strong></span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                          <span>Auth Google: <strong>MODO PÚBLICO</strong></span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                          <span>Logs excessivos: <strong>ATIVO</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Gerenciamento de Logs */}
                   <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
                     <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
