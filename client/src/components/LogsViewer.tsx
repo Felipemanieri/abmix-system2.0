@@ -13,6 +13,8 @@ interface LogEntry {
 interface SystemStats {
   totalProposals: number;
   todayProposals: number;
+  monthProposals: number;
+  yearProposals: number;
   totalUsers: number;
   totalVendors: number;
   lastSync: Date | null;
@@ -20,6 +22,20 @@ interface SystemStats {
   databaseSize: string;
   activeConnections: number;
   lastBackup: Date | null;
+  cacheSize: string;
+  tempFiles: number;
+  sessionsActive: number;
+}
+
+interface ProposalStats {
+  total: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+  thisMonth: number;
+  thisYear: number;
+  byMonth: Record<string, number>;
+  byYear: Record<string, number>;
 }
 
 export default function LogsViewer() {
@@ -28,19 +44,48 @@ export default function LogsViewer() {
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [moduleFilter, setModuleFilter] = useState<string>('all');
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(false);
   const [isLive, setIsLive] = useState(true);
   const [activeTab, setActiveTab] = useState<'logs' | 'control'>('logs');
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [systemStats, setSystemStats] = useState<SystemStats>({
     totalProposals: 125,
     todayProposals: 8,
+    monthProposals: 23,
+    yearProposals: 89,
     totalUsers: 22,
     totalVendors: 13,
     lastSync: new Date(),
     systemUptime: '5h 32m',
     databaseSize: '45 MB',
     activeConnections: 3,
-    lastBackup: new Date()
+    lastBackup: new Date(),
+    cacheSize: '12 MB',
+    tempFiles: 45,
+    sessionsActive: 7
+  });
+  const [proposalStats, setProposalStats] = useState<ProposalStats>({
+    total: 125,
+    approved: 89,
+    pending: 28,
+    rejected: 8,
+    thisMonth: 23,
+    thisYear: 89,
+    byMonth: {
+      '2025-01': 15,
+      '2025-02': 22,
+      '2025-03': 18,
+      '2025-04': 25,
+      '2025-05': 20,
+      '2025-06': 17,
+      '2025-07': 23
+    },
+    byYear: {
+      '2023': 156,
+      '2024': 289,
+      '2025': 89
+    }
   });
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
@@ -424,139 +469,257 @@ export default function LogsViewer() {
               </div>
             </div>
           ) : (
-            <div>
+            <div className="space-y-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <BarChart3 className="w-6 h-6 text-blue-600 mr-3" />
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">Controle do Sistema</h3>
-                    <p className="text-gray-600">Estatísticas completas e controle de operações</p>
+                    <p className="text-gray-600">Estatísticas completas e controle de operações do sistema</p>
                   </div>
                 </div>
               </div>
 
-              {/* Estatísticas do Sistema */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-blue-700 font-medium">Propostas Totais</p>
-                      <p className="text-2xl font-bold text-blue-900">{systemStats.totalProposals}</p>
-                    </div>
-                    <FileText className="w-8 h-8 text-blue-500" />
-                  </div>
-                </div>
-
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-green-700 font-medium">Propostas Hoje</p>
-                      <p className="text-2xl font-bold text-green-900">{systemStats.todayProposals}</p>
-                    </div>
-                    <Calendar className="w-8 h-8 text-green-500" />
-                  </div>
-                </div>
-
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-purple-700 font-medium">Total Usuários</p>
-                      <p className="text-2xl font-bold text-purple-900">{systemStats.totalUsers}</p>
-                    </div>
-                    <Users className="w-8 h-8 text-purple-500" />
-                  </div>
-                </div>
-
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-orange-700 font-medium">Banco de Dados</p>
-                      <p className="text-2xl font-bold text-orange-900">{systemStats.databaseSize}</p>
-                    </div>
-                    <Database className="w-8 h-8 text-orange-500" />
-                  </div>
+              {/* Filtros de Ano/Mês */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center space-x-4">
+                  <label className="text-sm font-medium text-gray-700">Filtrar dados:</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                  </select>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="all">Todos os Meses</option>
+                    <option value="01">Janeiro</option>
+                    <option value="02">Fevereiro</option>
+                    <option value="03">Março</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Maio</option>
+                    <option value="06">Junho</option>
+                    <option value="07">Julho</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                  </select>
                 </div>
               </div>
 
-              {/* Informações do Sistema */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Status do Sistema</h4>
-                  <div className="space-y-3">
+              {/* Estatísticas Principais de Propostas */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                  Estatísticas de Propostas
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Tempo Ativo:</span>
-                      <span className="text-sm font-medium text-gray-900">{systemStats.systemUptime}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Conexões Ativas:</span>
-                      <span className="text-sm font-medium text-gray-900">{systemStats.activeConnections}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Última Sincronização:</span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {systemStats.lastSync?.toLocaleString('pt-BR') || 'Nunca'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Último Backup:</span>
-                      <span className="text-sm font-medium text-gray-900">
-                        {systemStats.lastBackup?.toLocaleString('pt-BR') || 'Nunca'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Logs por Módulo</h4>
-                  <div className="space-y-2">
-                    {Object.entries(moduleStats).slice(0, 6).map(([module, count]) => (
-                      <div key={module} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">{module}:</span>
-                        <span className="text-sm font-medium text-gray-900">{count}</span>
+                      <div>
+                        <p className="text-sm text-blue-700 font-medium">Total Geral</p>
+                        <p className="text-2xl font-bold text-blue-900">{proposalStats.total}</p>
                       </div>
-                    ))}
+                      <FileText className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <button className="mt-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition-colors">
+                      Exportar Relatório
+                    </button>
+                  </div>
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-green-700 font-medium">Hoje</p>
+                        <p className="text-2xl font-bold text-green-900">{systemStats.todayProposals}</p>
+                      </div>
+                      <Calendar className="w-8 h-8 text-green-500" />
+                    </div>
+                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
+                      Zerar Contador (00:00h)
+                    </button>
+                  </div>
+
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-purple-700 font-medium">Este Mês</p>
+                        <p className="text-2xl font-bold text-purple-900">{systemStats.monthProposals}</p>
+                      </div>
+                      <Calendar className="w-8 h-8 text-purple-500" />
+                    </div>
+                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
+                      Limpar Mês Atual
+                    </button>
+                  </div>
+
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-orange-700 font-medium">Este Ano</p>
+                        <p className="text-2xl font-bold text-orange-900">{systemStats.yearProposals}</p>
+                      </div>
+                      <Calendar className="w-8 h-8 text-orange-500" />
+                    </div>
+                    <button className="mt-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded transition-colors">
+                      Limpar Ano Atual
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Ações de Manutenção do Sistema</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Status das Propostas */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Status das Propostas</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="text-center">
+                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                      <p className="text-sm text-green-700 font-medium">Aprovadas</p>
+                      <p className="text-2xl font-bold text-green-900">{proposalStats.approved}</p>
+                    </div>
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="text-center">
+                      <Clock className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                      <p className="text-sm text-yellow-700 font-medium">Pendentes</p>
+                      <p className="text-2xl font-bold text-yellow-900">{proposalStats.pending}</p>
+                    </div>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="text-center">
+                      <X className="w-8 h-8 text-red-500 mx-auto mb-2" />
+                      <p className="text-sm text-red-700 font-medium">Rejeitadas</p>
+                      <p className="text-2xl font-bold text-red-900">{proposalStats.rejected}</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div className="text-center">
+                      <BarChart3 className="w-8 h-8 text-gray-500 mx-auto mb-2" />
+                      <p className="text-sm text-gray-700 font-medium">Taxa Aprovação</p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {Math.round((proposalStats.approved / proposalStats.total) * 100)}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ações de Manutenção */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Settings className="w-5 h-5 mr-2 text-blue-600" />
+                  Ações de Manutenção do Sistema
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <button className="flex flex-col items-center p-4 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg border border-red-200 hover:border-red-300 transition-colors">
-                    <Trash2 className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">Limpar Logs do Sistema</span>
-                    <span className="text-xs text-center text-red-600">Remove todos os logs de auditoria e debug</span>
+                    <Trash2 className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">Limpar Logs do Sistema</span>
+                    <span className="text-xs text-center text-red-600 leading-tight">
+                      Remove todos os logs de auditoria, debug e monitoramento. Use com cuidado.
+                    </span>
                   </button>
                   
                   <button className="flex flex-col items-center p-4 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg border border-orange-200 hover:border-orange-300 transition-colors">
-                    <RefreshCw className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">Limpar Cache do Sistema</span>
-                    <span className="text-xs text-center text-orange-600">Limpa cache temporário e sessões inativas</span>
+                    <RefreshCw className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">Limpar Cache do Sistema</span>
+                    <span className="text-xs text-center text-orange-600 leading-tight">
+                      Limpa cache de aplicação ({systemStats.cacheSize}) e dados temporários.
+                    </span>
                   </button>
                   
                   <button className="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 hover:border-blue-300 transition-colors">
-                    <Database className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">Otimizar Banco de Dados</span>
-                    <span className="text-xs text-center text-blue-600">Reorganiza e otimiza tabelas do banco</span>
+                    <Database className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">Otimizar Banco de Dados</span>
+                    <span className="text-xs text-center text-blue-600 leading-tight">
+                      Reorganiza índices e compacta tabelas ({systemStats.databaseSize}).
+                    </span>
                   </button>
                   
                   <button className="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg border border-green-200 hover:border-green-300 transition-colors">
-                    <FileText className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">Limpar Arquivos Temporários</span>
-                    <span className="text-xs text-center text-green-600">Remove uploads e arquivos não utilizados</span>
+                    <FileText className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">Limpar Arquivos Temporários</span>
+                    <span className="text-xs text-center text-green-600 leading-tight">
+                      Remove {systemStats.tempFiles} arquivos temporários e uploads não utilizados.
+                    </span>
                   </button>
                   
                   <button className="flex flex-col items-center p-4 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
-                    <Users className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">Limpar Sessões Expiradas</span>
-                    <span className="text-xs text-center text-purple-600">Remove sessões antigas e tokens inválidos</span>
+                    <Users className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">Limpar Sessões Expiradas</span>
+                    <span className="text-xs text-center text-purple-600 leading-tight">
+                      Remove sessões antigas, tokens inválidos e cookies expirados.
+                    </span>
                   </button>
                   
                   <button className="flex flex-col items-center p-4 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg border border-red-300 hover:border-red-400 transition-colors">
-                    <AlertTriangle className="w-6 h-6 mb-2" />
-                    <span className="text-sm font-medium mb-1">LIMPAR TUDO</span>
-                    <span className="text-xs text-center text-red-700">Executa todas as limpezas acima</span>
+                    <AlertTriangle className="w-8 h-8 mb-3" />
+                    <span className="text-sm font-medium mb-2">⚠️ LIMPAR TUDO</span>
+                    <span className="text-xs text-center text-red-700 leading-tight">
+                      Executa TODAS as limpezas acima. Ação irreversível!
+                    </span>
                   </button>
+                </div>
+              </div>
+
+              {/* Manual de Uso */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                <h4 className="text-lg font-semibold text-amber-900 mb-4 flex items-center">
+                  <Info className="w-5 h-5 mr-2" />
+                  Manual de Uso - Controle do Sistema
+                </h4>
+                
+                <div className="space-y-4 text-sm">
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h5 className="font-semibold text-amber-900 mb-2">📊 Estatísticas de Propostas</h5>
+                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                      <li><strong>Total Geral:</strong> Todas as propostas já criadas no sistema</li>
+                      <li><strong>Hoje:</strong> Propostas criadas hoje (zera automaticamente à meia-noite)</li>
+                      <li><strong>Este Mês:</strong> Propostas do mês atual (pode ser limpo manualmente)</li>
+                      <li><strong>Este Ano:</strong> Propostas do ano atual (pode ser limpo manualmente)</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h5 className="font-semibold text-amber-900 mb-2">🧹 Ações de Limpeza</h5>
+                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                      <li><strong>Limpar Logs:</strong> Remove histórico de atividades (recomendado mensalmente)</li>
+                      <li><strong>Limpar Cache:</strong> Acelera o sistema removendo dados temporários</li>
+                      <li><strong>Otimizar BD:</strong> Melhora performance do banco de dados</li>
+                      <li><strong>Arquivos Temp:</strong> Libera espaço removendo uploads antigos</li>
+                      <li><strong>Sessões:</strong> Remove usuários inativos e tokens expirados</li>
+                      <li><strong>Limpar Tudo:</strong> ⚠️ Faz todas as limpezas de uma vez (cuidado!)</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h5 className="font-semibold text-amber-900 mb-2">⚠️ Cuidados Importantes</h5>
+                    <ul className="space-y-1 text-amber-800 list-disc list-inside">
+                      <li>Sempre faça backup antes de limpar dados importantes</li>
+                      <li>Evite limpezas durante horário comercial (pode afetar usuários)</li>
+                      <li>A ação "Limpar Tudo" não pode ser desfeita</li>
+                      <li>Logs são importantes para auditoria - limpe apenas quando necessário</li>
+                      <li>Use filtros de ano/mês para analisar dados específicos</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-4 border border-amber-200">
+                    <h5 className="font-semibold text-amber-900 mb-2">📅 Programação Automática</h5>
+                    <p className="text-amber-800">
+                      • <strong>Contador "Hoje":</strong> Zera automaticamente todo dia às 00:00h<br/>
+                      • <strong>Backup:</strong> Executado automaticamente todas as noites<br/>
+                      • <strong>Limpeza de Cache:</strong> Executada automaticamente a cada 6 horas<br/>
+                      • <strong>Sessões:</strong> Limpeza automática de sessões expiradas a cada hora
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
