@@ -39,12 +39,7 @@ interface Proposal {
   estimatedCompletion: string;
 }
 
-interface ChatMessage {
-  id: string;
-  text: string;
-  isBot: boolean;
-  timestamp: Date;
-}
+
 
 interface AutomationRule {
   id: string;
@@ -59,7 +54,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedProposal, setSelectedProposal] = useState<string | null>(null);
   const [observations, setObservations] = useState('');
-  const [showChat, setShowChat] = useState(false);
+
   const [showNotifications, setShowNotifications] = useState(false);
   
   // DESABILITAR TODAS AS NOTIFICAÇÕES DO IMPLANTAÇÃO PORTAL
@@ -198,15 +193,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     }
   };
   
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      text: 'Olá! Sou o assistente do portal de implantação. Como posso ajudá-lo com validações, automações e integrações?',
-      isBot: true,
-      timestamp: new Date()
-    }
-  ]);
-  const [newMessage, setNewMessage] = useState('');
+
 
   // Use dados reais do banco de dados
   const [automationRules] = useState<AutomationRule[]>([]);
@@ -308,53 +295,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     );
   };
 
-  const sendMessage = () => {
-    if (!newMessage.trim()) return;
 
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: newMessage,
-      isBot: false,
-      timestamp: new Date()
-    };
-
-    setChatMessages(prev => [...prev, userMessage]);
-
-    setTimeout(() => {
-      const response = getBotResponse(newMessage);
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: response,
-        isBot: true,
-        timestamp: new Date()
-      };
-      setChatMessages(prev => [...prev, botMessage]);
-    }, 1000);
-
-    setNewMessage('');
-  };
-
-  const getBotResponse = (message: string): string => {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('validar') || lowerMessage.includes('aprovar')) {
-      return 'Para validar uma proposta, clique no ícone de visualização e depois em "Validar Proposta". Certifique-se de revisar todos os documentos antes.';
-    }
-    if (lowerMessage.includes('automação') || lowerMessage.includes('make') || lowerMessage.includes('zapier')) {
-      return 'Após validar uma proposta, você pode enviá-la para automação. Isso irá processar os dados no Make/Zapier para criação automática do contrato.';
-    }
-    if (lowerMessage.includes('documento') || lowerMessage.includes('anexo')) {
-      return 'Verifique se todos os documentos obrigatórios foram enviados antes de validar. RG, CPF, CNPJ e comprovantes são essenciais.';
-    }
-    if (lowerMessage.includes('implantação') || lowerMessage.includes('sistema')) {
-      return 'A implantação envolve validação de dados, integração com sistemas e automação de processos. Posso ajudar com qualquer etapa.';
-    }
-    if (lowerMessage.includes('integração') || lowerMessage.includes('api')) {
-      return 'Temos integrações ativas com CRM, sistemas de pagamento e automações. Verifique a aba "Integrações" para mais detalhes.';
-    }
-    
-    return 'Como especialista em implantação, posso ajudar com validações, automações, integrações e monitoramento. O que precisa fazer?';
-  };
 
   // Funções de cores removidas - agora usa StatusBadge para cores uniformes
   
@@ -436,7 +377,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
           <div className="flex items-center space-x-2">
             <button
               onClick={() => showNotification('Exportando relatório...', 'info')}
-              className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-200 rounded-md hover:bg-teal-200 dark:hover:bg-teal-800 transition-colors border border-teal-200 dark:border-teal-700"
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar
@@ -1025,7 +966,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
             <div className="flex space-x-4">
               <button
                 onClick={() => setShowProposalSelector(true)}
-                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 dark:bg-blue-600 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors duration-200 shadow-sm dark:shadow-gray-900/30"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200 shadow-sm border border-blue-200 dark:border-blue-700"
               >
                 <Search className="w-4 h-4 mr-2" />
                 <span>Selecionar Proposta</span>
@@ -1033,7 +974,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
               
               <button
                 onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
-                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-green-600 dark:bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 rounded-lg transition-colors duration-200 shadow-sm dark:shadow-gray-900/30"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-green-100 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 dark:hover:bg-green-800 rounded-lg transition-colors duration-200 shadow-sm border border-green-200 dark:border-green-700"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 <span>Google Drive</span>
@@ -1041,7 +982,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
               
               <button
                 onClick={() => window.open('https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link', '_blank')}
-                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 rounded-lg transition-colors duration-200 shadow-sm dark:shadow-gray-900/30"
+                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200 shadow-sm border border-blue-200 dark:border-blue-700"
               >
                 <Database className="w-4 h-4 mr-2" />
                 <span>Google Sheets</span>
@@ -1233,75 +1174,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         />
       )}
 
-      {/* Chatbot */}
-      <div className="chatbot-container">
-        {showChat ? (
-          <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 dark:border-gray-600 w-96 h-96 flex flex-col">
-            <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-4 rounded-t-2xl flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-white dark:bg-gray-800 dark:bg-gray-800/20 rounded-full flex items-center justify-center">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="font-bold">Assistente Implantação</h3>
-                  <p className="text-xs text-teal-100 dark:text-white">Online agora</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowChat(false)}
-                className="text-white/80 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
-              {chatMessages.map((message) => (
-                <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`max-w-xs p-3 rounded-2xl ${
-                    message.isBot 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white dark:text-white' 
-                      : 'bg-gradient-to-r from-teal-600 to-teal-700 text-white'
-                  }`}>
-                    <p className="text-sm">{message.text}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.isBot ? 'text-gray-500 dark:text-white dark:text-gray-500 dark:text-white' : 'text-teal-100'
-                    }`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 dark:border-gray-600">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Digite sua mensagem..."
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-                <button
-                  onClick={sendMessage}
-                  className="p-2 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl hover:from-teal-700 hover:to-teal-800 transition-colors"
-                >
-                  <SendIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowChat(true)}
-            className="w-16 h-16 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:scale-110 flex items-center justify-center"
-          >
-            <MessageCircle className="w-8 h-8" />
-          </button>
-        )}
-      </div>
       
       {/* System Footer */}
       <SystemFooter />
