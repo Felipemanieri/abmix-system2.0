@@ -567,6 +567,61 @@ export default function PlanilhaViewer() {
         )}
       </div>
 
+      {/* Controle de Planilhas Conectadas */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="p-4 border-b bg-gray-50">
+          <h4 className="text-base font-semibold">Planilhas Conectadas (1)</h4>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                <span className="font-medium text-gray-900">Planilha Principal</span>
+                <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">Sistema</span>
+              </div>
+              
+              <div className="text-xs text-gray-600 space-y-1">
+                <div>
+                  <span className="font-medium">URL:</span>
+                  <span className="ml-2 text-blue-600">https://docs.google.com/spreadsheets/d/1JiC3ksTCdnY3uL9GhG9u8gJO...</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">👤 Proprietário:</span> Admin</span>
+                  <span><span className="font-medium">🔗 Link Compartilhamento:</span> <span className="text-green-600">Acessar</span></span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">🔌 Conectado</span></span>
+                  <span><span className="font-medium">📅 2025-07-28T12:23:44.325Z</span></span>
+                  <span><span className="font-medium">🔗 Conectada</span></span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 ml-4">
+              <button className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
+                📂 Abrir
+              </button>
+              <button className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors">
+                🗑️ Remover
+              </button>
+              <button className="px-3 py-1 bg-gray-500 text-white text-xs rounded hover:bg-gray-600 transition-colors">
+                ✏️ Editar
+              </button>
+              <button className="px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors">
+                💾 Backup Manual
+              </button>
+              <select className="px-2 py-1 border border-gray-300 rounded text-xs">
+                <option>5 minutos</option>
+                <option>10 minutos</option>
+                <option>30 minutos</option>
+                <option>1 hora</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Estrutura Completa das Colunas - OCULTO */}
       <div className="hidden bg-white rounded-lg shadow p-6">
         <h4 className="text-lg font-semibold mb-4">📊 Estrutura Completa das Colunas</h4>
