@@ -2190,15 +2190,36 @@ Vendedor Abmix`;
                             />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <ActionButtons 
-                              onView={() => handleViewProposal(proposal)}
-                              onCopyLink={() => handleCopyLink(proposal)}
-                              onWhatsApp={() => handleWhatsAppShare(proposal)}
-                              onEmail={() => handleEmailShare(proposal)}
-                              onMessage={() => handleInternalMessage(proposal)}
-                              onEdit={() => handleEditProposal(proposal)}
-                              onDelete={() => handleDeleteProposal(proposal.id, proposal.cliente)}
-                            />
+                            <div className="flex items-center space-x-2">
+                              {/* INDICADOR DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL */}
+                              {proposal.approved ? (
+                                <span
+                                  className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium animate-pulse"
+                                  title="Proposta Aprovada pelo Portal de Implementação"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Aprovada ✅
+                                </span>
+                              ) : (
+                                <span
+                                  className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs"
+                                  title="Aguardando Aprovação"
+                                >
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Pendente
+                                </span>
+                              )}
+                              
+                              <ActionButtons 
+                                onView={() => handleViewProposal(proposal)}
+                                onCopyLink={() => handleCopyLink(proposal)}
+                                onWhatsApp={() => handleWhatsAppShare(proposal)}
+                                onEmail={() => handleEmailShare(proposal)}
+                                onMessage={() => handleInternalMessage(proposal)}
+                                onEdit={() => handleEditProposal(proposal)}
+                                onDelete={() => handleDeleteProposal(proposal.id, proposal.cliente)}
+                              />
+                            </div>
                           </td>
                         </tr>
                       ))}

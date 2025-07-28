@@ -152,6 +152,38 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // const handlePriorityUpdate = async (proposalId: string, newPriority: 'low' | 'medium' | 'high') => {
   //   ... funcionalidade removida
   // };
+
+  // ✅ FUNÇÃO PARA APROVAR PROPOSTA - Sistema de sincronização em tempo real
+  const handleApproveProposal = async (proposalId: string, empresa: string) => {
+    try {
+      console.log(`✅ IMPLEMENTAÇÃO - Aprovando proposta ${proposalId} para ${empresa}`);
+      
+      const response = await fetch(`/api/proposals/${proposalId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao aprovar proposta');
+      }
+
+      const result = await response.json();
+      console.log(`✅ Proposta ${proposalId} aprovada com sucesso - Sincronização ativada`);
+      
+      // Forçar atualização das queries para sincronização em tempo real
+      await updateProposal.mutateAsync({ 
+        id: proposalId, 
+        approved: true 
+      });
+      
+      showInternalNotification(`Proposta de ${empresa} aprovada com sucesso! ✅`, 'success');
+    } catch (error) {
+      console.error(`❌ Erro ao aprovar proposta ${proposalId}:`, error);
+      showInternalNotification('Erro ao aprovar proposta. Tente novamente.', 'error');
+    }
+  };
   
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -622,20 +654,32 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                     >
                       <Trash2 className={`w-4 h-4 ${deleteProposal.isPending ? 'animate-spin' : ''}`} />
                     </button>
-                    <button
-                      onClick={() => showNotification('Proposta aprovada!', 'success')}
-                      className="p-2 text-lime-600 hover:text-lime-800 dark:text-white hover:bg-lime-50 rounded-md transition-colors"
-                      title="Aprovar Proposta"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => showNotification('Alerta enviado!', 'warning')}
-                      className="p-2 text-amber-600 hover:text-amber-800 dark:text-white hover:bg-amber-50 rounded-md transition-colors"
-                      title="Alerta"
-                    >
-                      <AlertCircle className="w-4 h-4" />
-                    </button>
+                    {/* SISTEMA DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL */}
+                    {!proposal.approved ? (
+                      <>
+                        <button
+                          onClick={() => handleApproveProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                          className="p-2 text-lime-600 hover:text-lime-800 dark:text-white hover:bg-lime-50 rounded-md transition-colors"
+                          title="Aprovar Proposta"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => showNotification('Alerta: Proposta pendente de aprovação!', 'warning')}
+                          className="p-2 text-amber-600 hover:text-amber-800 dark:text-white hover:bg-amber-50 rounded-md transition-colors"
+                          title="Alerta - Pendente Aprovação"
+                        >
+                          <AlertCircle className="w-4 h-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <span
+                        className="px-3 py-2 bg-green-100 text-green-800 rounded-md text-sm font-medium"
+                        title="Proposta Aprovada"
+                      >
+                        ✅ Aprovada
+                      </span>
+                    )}
                     <button
                       onClick={() => {
                         setSelectedProposalForMessage(proposal);

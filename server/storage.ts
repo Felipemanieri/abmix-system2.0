@@ -24,6 +24,7 @@ export interface IStorage {
   getVendorProposals(vendorId: number): Promise<any[]>;
   getAllProposals(): Promise<any[]>;
   getProposalCount(): Promise<number>;
+  approveProposal(id: string): Promise<any>;
   
   // Vendor Target operations
   createVendorTarget(target: InsertVendorTarget): Promise<VendorTarget>;
@@ -217,6 +218,15 @@ export class DatabaseStorage implements IStorage {
   async getProposalCount(): Promise<number> {
     const result = await db.select({ count: sql`count(*)` }).from(proposals);
     return Number(result[0]?.count) || 0;
+  }
+
+  async approveProposal(id: string): Promise<any> {
+    const [proposal] = await db
+      .update(proposals)
+      .set({ approved: true, updatedAt: new Date() })
+      .where(eq(proposals.id, id))
+      .returning();
+    return proposal;
   }
 
   // Vendor Target operations

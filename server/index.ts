@@ -304,6 +304,28 @@ async function startServer() {
       }
     });
 
+    // ENDPOINT PARA APROVAR PROPOSTA - Sistema de sincronização em tempo real
+    app.post('/api/proposals/:id/approve', async (req: Request, res: Response) => {
+      try {
+        console.log(`✅ Aprovando proposta ${req.params.id} - Portal de Implementação`);
+        const proposal = await storage.approveProposal(req.params.id);
+        
+        if (!proposal) {
+          return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+
+        console.log(`✅ Proposta ${req.params.id} aprovada com sucesso - Sincronização em tempo real ativa`);
+        res.json({ 
+          success: true, 
+          proposal,
+          message: 'Proposta aprovada com sucesso' 
+        });
+      } catch (error) {
+        console.error(`❌ Erro ao aprovar proposta ${req.params.id}:`, error);
+        res.status(500).json({ error: 'Erro ao aprovar proposta' });
+      }
+    });
+
     app.delete('/api/proposals/:id', async (req: Request, res: Response) => {
       try {
         await storage.deleteProposal(req.params.id);
