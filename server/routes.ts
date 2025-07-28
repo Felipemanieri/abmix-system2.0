@@ -53,38 +53,38 @@ export function setupRoutes(app: any) {
   });
 
   // NOVA ROTA: Reset de contadores do sistema
-  app.post('/api/system/reset-counter', async (req: Request, res: Response) => {
+  app.post('/api/reset-counter', async (req: Request, res: Response) => {
     try {
-      const { counterType } = req.body;
-      console.log(`🔄 Resetando contador: ${counterType}`);
+      const { counter } = req.body;
+      console.log(`🔄 Resetando contador: ${counter}`);
       
       // Implementar lógica de reset baseada no tipo
       const currentDate = new Date().toISOString().split('T')[0];
       
-      switch (counterType) {
-        case 'Propostas Hoje':
+      switch (counter) {
+        case 'propostas_hoje':
           await storage.setSystemSetting('counter_proposals_today', '0');
           break;
-        case 'Aprovadas Hoje':
+        case 'aprovadas_hoje':
           await storage.setSystemSetting('counter_approved_today', '0');
           break;
-        case 'Rejeitadas Hoje':
+        case 'rejeitadas_hoje':
           await storage.setSystemSetting('counter_rejected_today', '0');
           break;
-        case 'Propostas Semana':
+        case 'propostas_semana':
           await storage.setSystemSetting('counter_proposals_week', '0');
           break;
-        case 'Propostas Mês':
+        case 'propostas_mes':
           await storage.setSystemSetting('counter_proposals_month', '0');
           break;
-        case 'Propostas Ano':
+        case 'propostas_ano':
           await storage.setSystemSetting('counter_proposals_year', '0');
           break;
       }
       
       res.json({ 
         success: true, 
-        message: `Contador ${counterType} zerado com sucesso`,
+        message: `Contador ${counter} zerado com sucesso`,
         resetAt: new Date().toISOString()
       });
     } catch (error) {
