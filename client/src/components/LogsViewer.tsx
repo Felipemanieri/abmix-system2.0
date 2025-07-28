@@ -694,7 +694,7 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Tempo Ativo</span>
-                            <p className="text-lg font-bold text-green-600">{realStats.system.uptime}</p>
+                            <p className="text-lg font-bold text-green-600">0h 0m</p>
                           </div>
                           <div className="flex space-x-2">
                             <button 
@@ -715,7 +715,7 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Conexões Ativas</span>
-                            <p className="text-lg font-bold text-blue-600">{realStats.system.activeConnections}</p>
+                            <p className="text-lg font-bold text-blue-600">0</p>
                           </div>
                           <div className="flex space-x-2">
                             <button 
@@ -736,7 +736,7 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Cache do Sistema</span>
-                            <p className="text-lg font-bold text-purple-600">{realStats.system.cacheSize}</p>
+                            <p className="text-lg font-bold text-purple-600">0 MB</p>
                           </div>
                           <div className="flex space-x-2">
                             <button 
@@ -759,7 +759,7 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Arquivos Temporários</span>
-                            <p className="text-lg font-bold text-red-600">{realStats.files.tempFiles}</p>
+                            <p className="text-lg font-bold text-red-600">0</p>
                           </div>
                           <div className="flex space-x-2">
                             <button 
@@ -1073,7 +1073,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-green-900">Propostas Hoje</p>
-                              <p className="text-sm text-green-700">Atual: {realStats.proposals.today} propostas</p>
+                              <p className="text-sm text-green-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1102,7 +1102,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-green-900">Aprovadas Hoje</p>
-                              <p className="text-sm text-green-700">Atual: {realStats.proposals.approved} propostas</p>
+                              <p className="text-sm text-green-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1131,7 +1131,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-green-900">Rejeitadas Hoje</p>
-                              <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected} propostas</p>
+                              <p className="text-sm text-green-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1165,7 +1165,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-blue-900">Propostas Esta Semana</p>
-                              <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.25)} propostas</p>
+                              <p className="text-sm text-blue-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1194,7 +1194,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-purple-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-purple-900">Propostas Este Mês</p>
-                              <p className="text-sm text-purple-700">Atual: {realStats.proposals.thisMonth} propostas</p>
+                              <p className="text-sm text-purple-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -1223,7 +1223,7 @@ export default function LogsViewer() {
                             <div className="w-3 h-3 bg-orange-500 rounded-full mr-3 animate-pulse"></div>
                             <div>
                               <p className="font-medium text-orange-900">Propostas Este Ano</p>
-                              <p className="text-sm text-orange-700">Atual: {realStats.proposals.thisYear} propostas</p>
+                              <p className="text-sm text-orange-700">Atual: 0 propostas</p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
