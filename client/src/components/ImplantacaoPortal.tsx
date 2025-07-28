@@ -243,38 +243,44 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     showNotification('Proposta salva e sincronizada com Google Sheets!', 'success');
   };
   
+  // SISTEMA DE CONTAGEM AUTOMÁTICA BASEADO EM APROVAÇÃO/REJEIÇÃO
+  const aguardandoValidacao = realProposalsData.filter(p => !p.approved && !p.rejected).length;
+  const validadas = realProposalsData.filter(p => p.approved === true).length;
+  const emProcessamento = realProposalsData.filter(p => p.status !== 'implantada').length;
+  const concluidas = realProposalsData.filter(p => p.status === 'implantada').length;
+
   const implantacaoStats = [
     {
       name: 'Aguardando Validação',
-      value: realProposalsData.filter(p => p.status === 'observacao').length.toString(),
-      change: 'Para revisar',
-      changeType: 'warning',
+      value: aguardandoValidacao.toString(),
+      change: 'Pendentes de aprovação',
+      changeType: 'warning' as const,
       icon: AlertCircle,
-      color: 'orange',
+      color: 'orange' as const,
     },
     {
       name: 'Validadas',
-      value: realProposalsData.filter(p => p.status === 'analise').length.toString(),
-      change: 'Prontas para envio',
-      changeType: 'positive',
+      value: validadas.toString(),
+      change: 'Aprovadas pelos portais',
+      changeType: 'positive' as const,
       icon: CheckCircle,
-      color: 'green',
+      color: 'green' as const,
     },
     {
       name: 'Em Processamento',
-      value: realProposalsData.filter(p => p.status === 'assinatura_ds').length.toString(),
-      change: 'Automação ativa',
-      changeType: 'positive',
+      value: emProcessamento.toString(),
+      change: 'Em andamento',
+      changeType: 'positive' as const,
       icon: Settings,
-      color: 'blue',
+      color: 'blue' as const,
     },
     {
       name: 'Concluídas',
-      value: realProposalsData.filter(p => p.status === 'implantado').length.toString(),
-      change: 'Finalizadas',
-      changeType: 'positive',
+      value: concluidas.toString(),
+      change: 'Implantadas',
+      changeType: 'positive' as const,
       icon: TrendingUp,
-      color: 'purple',
+      color: 'purple' as const,
     },
   ];
 
