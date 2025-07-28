@@ -1253,14 +1253,12 @@ async function startServer() {
     console.log("📦 Servidor de produção configurado com todas as rotas");
   }
 
-  // Inicializar WebSocket Server ANTES de iniciar o servidor
-  const realTimeManager = new RealTimeManager(server);
+  // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
+  // const realTimeManager = new RealTimeManager(server);
+  // (global as any).realTimeManager = realTimeManager;
+  // app.set('wss', realTimeManager.wss);
   
-  // Tornar disponível globalmente para as rotas
-  (global as any).realTimeManager = realTimeManager;
-  
-  // Armazenar WebSocket server no app para acesso nas rotas
-  app.set('wss', realTimeManager.wss);
+  console.log('⚠️ WebSocket temporariamente desabilitado para correção');
 
   // Try to start server with proper error handling
   server.listen(Number(PORT), "0.0.0.0", () => {

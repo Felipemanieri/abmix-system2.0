@@ -175,9 +175,10 @@ export function useVendorProposals(vendorId: number) {
         priority: proposal.priority || 'medium'
       }));
     },
-    refetchInterval: 30000, // Atualizar a cada 30 segundos
+    refetchInterval: 45000, // 45 segundos - intervalo moderado para vendedores
     refetchIntervalInBackground: false, // NÃO atualizar em background
-    refetchOnWindowFocus: true, // Atualizar quando janela receber foco
+    refetchOnWindowFocus: false, // Evitar recargas desnecessárias
+    staleTime: 20000, // 20 segundos
     enabled: vendorId > 0, // Só fazer a consulta se o vendorId for válido
   });
 

@@ -55,8 +55,9 @@ interface RealSystemStats {
 }
 
 export default function LogsViewer() {
-  // WEBSOCKET PARA TEMPO REAL ADMIN
-  const { isConnected: isWebSocketConnected } = useAdminWebSocket(1); // Admin user ID
+  // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
+  // const { isConnected: isWebSocketConnected } = useAdminWebSocket(1); // Admin user ID
+  const isWebSocketConnected = false;
   
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);

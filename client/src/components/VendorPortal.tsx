@@ -86,12 +86,13 @@ const VendorPortal: React.FC<VendorPortalProps> = ({ user, onLogout }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCelebration, setShowCelebration] = useState(false);
   
-  // WEBSOCKET PARA TEMPO REAL - Substitui polling
-  const { isConnected: isWebSocketConnected } = useVendorWebSocket(user.id);
+  // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
+  // const { isConnected: isWebSocketConnected } = useVendorWebSocket(user.id);
+  const isWebSocketConnected = false;
   
   // Hook para propostas do vendedor
   const { proposals: realProposals, isLoading: proposalsLoading } = useVendorProposals(user?.id || 0);
-  useRealTimeProposals(user?.id); // Ativa a atualização em tempo real para este vendedor
+  // useRealTimeProposals(user?.id); // DESABILITADO - causando erros repetidos
   
   // Hook para exclusão de propostas
   const deleteProposal = useDeleteProposal();

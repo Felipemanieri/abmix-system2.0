@@ -71,8 +71,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [activeView, setActiveView] = useState<SupervisorView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
   
-  // WEBSOCKET PARA TEMPO REAL - Substitui polling
-  const { isConnected: isWebSocketConnected } = useSupervisorWebSocket(user.id);
+  // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
+  // const { isConnected: isWebSocketConnected } = useSupervisorWebSocket(user.id);
+  const isWebSocketConnected = false;
   
   // DESABILITAR TODAS AS NOTIFICAÇÕES DO SUPERVISOR PORTAL
   const [notifications, setNotifications] = useState([]);
@@ -88,38 +89,38 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas - Sistema híbrido WebSocket + polling
+  // Buscar propostas - Sistema estável sem polling excessivo
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
+    refetchInterval: 30000, // 30 segundos - intervalo seguro
+    refetchOnWindowFocus: false,
+    staleTime: 15000, // 15 segundos
   });
 
-  // Buscar vendedores - Sistema híbrido WebSocket + polling
+  // Buscar vendedores - Sistema estável sem polling excessivo  
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['/api/vendors'],
     queryFn: () => apiRequest('/api/vendors'),
     retry: false,
-    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
+    refetchInterval: 60000, // 1 minuto - vendedores mudam menos
+    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 segundos
   });
   
-  // Ativar sincronização em tempo real
-  useEffect(() => {
-    realTimeSync.enableAggressivePolling();
-  }, []);
+  // REALTIME SYNC TEMPORARIAMENTE DESABILITADO - causando erros repetidos
+  // useEffect(() => {
+  //   realTimeSync.enableAggressivePolling();
+  // }, []);
 
-  // Efeito para monitorar mudanças nos vendedores e atualizar gráfico
-  useEffect(() => {
-    if (vendors.length > 0 && proposals.length > 0) {
-      // Forçar recálculo dos dados do gráfico quando vendedores ou propostas mudam
-      console.log('Sincronizando dados: Vendedores atualizado:', vendors.length, 'Propostas:', proposals.length);
-      
-      // Aguardar um momento para garantir que os dados estejam consistentes
-      setTimeout(() => {
-        realTimeSync.forceRefresh();
-      }, 100);
-    }
-  }, [vendors.length, proposals.length]);
+  // useEffect(() => {
+  //   if (vendors.length > 0 && proposals.length > 0) {
+  //     console.log('Sincronizando dados: Vendedores atualizado:', vendors.length, 'Propostas:', proposals.length);
+  //     setTimeout(() => {
+  //       realTimeSync.forceRefresh();
+  //     }, 100);
+  //   }
+  // }, [vendors.length, proposals.length]);
 
 
 

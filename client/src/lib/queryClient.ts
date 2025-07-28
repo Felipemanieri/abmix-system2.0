@@ -3,36 +3,59 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: false,
+      staleTime: 1000 * 60 * 1, // 1 minuto - dados considerados frescos por pouco tempo
+      retry: false, // Sem retry automático
+      refetchOnWindowFocus: false, // Não recarregar quando janela ganha foco
+      refetchOnMount: true, // Permitir carregamento inicial
       queryFn: async ({ queryKey }) => {
         const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
-        return apiRequest(url as string);
+        try {
+          return await apiRequest(url as string);
+        } catch (error) {
+          // Suprimir logs de erro - já tratado no error handler global
+          throw error;
+        }
       },
+    },
+    mutations: {
+      retry: false,
     },
   },
 });
 
 export async function apiRequest(url: string, options: RequestInit = {}) {
-  const requestOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  };
+  try {
+    const requestOptions: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      timeout: 10000, // 10 segundos timeout
+      ...options,
+    };
 
-  // Serialize body to JSON if it's an object
-  if (options.body && typeof options.body === 'object') {
-    requestOptions.body = JSON.stringify(options.body);
+    // Serialize body to JSON if it's an object
+    if (options.body && typeof options.body === 'object') {
+      requestOptions.body = JSON.stringify(options.body);
+    }
+
+    const response = await fetch(url, requestOptions);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error = new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      console.error(`❌ API Error ${url}:`, error.message);
+      throw error;
+    }
+
+    return response.json();
+  } catch (error) {
+    // Log específico para diferentes tipos de erro
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error(`🌐 Network Error ${url}:`, 'Conexão falhou - servidor pode estar offline');
+    } else {
+      console.error(`⚠️ Request Error ${url}:`, error);
+    }
+    throw error;
   }
-
-  const response = await fetch(url, requestOptions);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `${response.status}: ${response.statusText}`);
-  }
-
-  return response.json();
 }

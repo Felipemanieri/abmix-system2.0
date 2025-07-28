@@ -30,8 +30,16 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   // Função para conectar ao WebSocket
   const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return; // Já conectado
+    // EVITAR MÚLTIPLAS CONEXÕES
+    if (wsRef.current?.readyState === WebSocket.OPEN || 
+        wsRef.current?.readyState === WebSocket.CONNECTING) {
+      return; // Já conectado ou conectando
+    }
+
+    // Fechar conexão anterior se existir
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
     }
 
     try {
@@ -108,14 +116,20 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }
   }, [userId, userType, channels, onMessage, onConnect, onDisconnect]);
 
-  // Agendar reconexão com backoff exponencial
+  // Agendar reconexão com backoff exponencial - LIMITADO
   const scheduleReconnect = useCallback(() => {
+    // LIMITAR TENTATIVAS DE RECONEXÃO
+    if (connectionAttempts >= 5) {
+      console.log('❌ Máximo de tentativas de reconexão atingido');
+      return;
+    }
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
 
     const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000); // Max 30 segundos
-    console.log(`🔄 Reagendando conexão em ${delay}ms (tentativa ${connectionAttempts + 1})`);
+    console.log(`🔄 Reagendando conexão em ${delay}ms (tentativa ${connectionAttempts + 1}/5)`);
     
     reconnectTimeoutRef.current = setTimeout(() => {
       setConnectionAttempts(prev => prev + 1);
@@ -193,19 +207,19 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     return () => clearInterval(pingInterval);
   }, [isConnected, sendMessage]);
 
-  // Conectar ao montar e limpar ao desmontar
-  useEffect(() => {
-    connect();
+  // DESABILITADO TEMPORARIAMENTE - múltiplas conexões causando problemas
+  // useEffect(() => {
+  //   connect();
 
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmounted');
-      }
-    };
-  }, [connect]);
+  //   return () => {
+  //     if (reconnectTimeoutRef.current) {
+  //       clearTimeout(reconnectTimeoutRef.current);
+  //     }
+  //     if (wsRef.current) {
+  //       wsRef.current.close(1000, 'Component unmounted');
+  //     }
+  //   };
+  // }, [connect]);
 
   return {
     isConnected,
@@ -215,27 +229,30 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   };
 }
 
-// Hook específico para diferentes tipos de usuário
+// HOOKS WEBSOCKET TEMPORARIAMENTE DESABILITADOS - corrigindo múltiplas conexões
 export function useVendorWebSocket(userId: number) {
-  return useWebSocket({
-    userId,
-    userType: 'vendor',
-    channels: ['proposals', 'messages', 'targets', 'sheets']
-  });
+  // return useWebSocket({
+  //   userId,
+  //   userType: 'vendor',
+  //   channels: ['proposals', 'messages', 'targets', 'sheets']
+  // });
+  return { isConnected: false, sendMessage: () => false, reconnect: () => {}, connectionAttempts: 0 };
 }
 
 export function useSupervisorWebSocket(userId: number) {
-  return useWebSocket({
-    userId,
-    userType: 'supervisor',
-    channels: ['proposals', 'messages', 'targets', 'sheets', 'analytics']
-  });
+  // return useWebSocket({
+  //   userId,
+  //   userType: 'supervisor',
+  //   channels: ['proposals', 'messages', 'targets', 'sheets', 'analytics']
+  // });
+  return { isConnected: false, sendMessage: () => false, reconnect: () => {}, connectionAttempts: 0 };
 }
 
 export function useAdminWebSocket(userId: number) {
-  return useWebSocket({
-    userId,
-    userType: 'admin',
-    channels: ['proposals', 'messages', 'targets', 'sheets', 'analytics', 'system']
-  });
+  // return useWebSocket({
+  //   userId,
+  //   userType: 'admin',
+  //   channels: ['proposals', 'messages', 'targets', 'sheets', 'analytics', 'system']
+  // });
+  return { isConnected: false, sendMessage: () => false, reconnect: () => {}, connectionAttempts: 0 };
 }
