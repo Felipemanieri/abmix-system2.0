@@ -331,14 +331,14 @@ export default function UnifiedUserManagement() {
             <button
               onClick={() => refetch()}
               disabled={isLoading}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 hover:border-slate-300 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
             </button>
             <button
               onClick={exportUsers}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 hover:border-emerald-300 transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar
@@ -466,7 +466,7 @@ export default function UnifiedUserManagement() {
             </button>
             <button
               onClick={handleCreateUser}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              className="flex items-center px-4 py-2 bg-sky-50 border border-sky-200 text-sky-700 rounded-lg hover:bg-sky-100 hover:border-sky-300 transition-colors font-medium"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Usuário

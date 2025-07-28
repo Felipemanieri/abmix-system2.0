@@ -126,7 +126,7 @@ export default function UnifiedUserManagement() {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setShowPasswords(!showPasswords)}
-              className="flex items-center px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex items-center px-3 py-2 text-sm bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors border border-slate-200 dark:border-slate-600"
             >
               {showPasswords ? <EyeOff className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
               {showPasswords ? 'Ocultar' : 'Mostrar'} Senhas
@@ -137,7 +137,7 @@ export default function UnifiedUserManagement() {
                   window.alert('Exportando lista de usuários...');
                 }
               }}
-              className="flex items-center px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center px-3 py-2 text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 hover:border-emerald-300 transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar
@@ -145,7 +145,7 @@ export default function UnifiedUserManagement() {
             <button
               onClick={handleAddUser}
               disabled={isLoading}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg border border-sky-200 hover:border-sky-300 disabled:opacity-50 transition-colors"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Usuário

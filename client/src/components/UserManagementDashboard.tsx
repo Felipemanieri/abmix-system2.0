@@ -424,14 +424,14 @@ export default function UserManagementDashboard() {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => refetch()}
-            className="flex items-center px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="flex items-center px-3 py-2 text-sm bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors border border-slate-200 dark:border-slate-600"
           >
             <RefreshCw className="w-4 h-4 mr-1" />
             Atualizar
           </button>
           <button
             onClick={exportUsers}
-            className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            className="flex items-center px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 hover:border-emerald-300 transition-colors"
           >
             <Download className="w-4 h-4 mr-2" />
             Exportar
