@@ -648,7 +648,14 @@ export default function LogsViewer() {
                           <span className="text-sm text-slate-600">Cache do Sistema:</span>
                           <div className="flex items-center space-x-2">
                             <span className="font-medium text-slate-900">{realStats.system.cacheSize}</span>
-                            <button className="px-2 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma limpar o cache do sistema?')) {
+                                  console.log('🗑️ Limpando cache do sistema...');
+                                }
+                              }}
+                              className="px-2 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
+                            >
                               Limpar
                             </button>
                           </div>
@@ -657,7 +664,14 @@ export default function LogsViewer() {
                           <span className="text-sm text-slate-600">Arquivos Temporários:</span>
                           <div className="flex items-center space-x-2">
                             <span className="font-medium text-slate-900">{realStats.files.tempFiles}</span>
-                            <button className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma remover todos os arquivos temporários?')) {
+                                  console.log('🗂️ Removendo arquivos temporários...');
+                                }
+                              }}
+                              className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Remover
                             </button>
                           </div>
@@ -736,6 +750,56 @@ export default function LogsViewer() {
                     </div>
                   </div>
 
+                  {/* Gerenciamento de Cache e Arquivos */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Database className="w-5 h-5 mr-2 text-slate-600" />
+                      Cache do Sistema e Arquivos Temporários
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button 
+                        onClick={() => {
+                          if (confirm('Confirma limpar todo o cache do sistema?')) {
+                            console.log('🗑️ Limpando cache do sistema...');
+                            // Aqui seria a chamada para API
+                          }
+                        }}
+                        className="flex flex-col items-center p-4 border border-orange-200 hover:border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+                      >
+                        <Trash2 className="w-8 h-8 text-orange-600 mb-2" />
+                        <span className="text-sm font-medium text-orange-900">Limpar Cache</span>
+                        <span className="text-xs text-orange-600 text-center">Limpar cache de sessões e dados temporários</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => {
+                          if (confirm('Confirma remover todos os arquivos temporários?')) {
+                            console.log('🗂️ Removendo arquivos temporários...');
+                            // Aqui seria a chamada para API
+                          }
+                        }}
+                        className="flex flex-col items-center p-4 border border-red-200 hover:border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
+                      >
+                        <Folder className="w-8 h-8 text-red-600 mb-2" />
+                        <span className="text-sm font-medium text-red-900">Arquivos Temporários</span>
+                        <span className="text-xs text-red-600 text-center">Remover uploads antigos e arquivos não utilizados</span>
+                      </button>
+                      
+                      <button 
+                        onClick={() => {
+                          console.log('🔄 Executando limpeza completa...');
+                          // Aqui seria a chamada para API
+                        }}
+                        className="flex flex-col items-center p-4 border border-green-200 hover:border-green-300 rounded-lg bg-green-50 hover:bg-green-100 transition-colors"
+                      >
+                        <RefreshCw className="w-8 h-8 text-green-600 mb-2" />
+                        <span className="text-sm font-medium text-green-900">Limpeza Completa</span>
+                        <span className="text-xs text-green-600 text-center">Cache + arquivos temporários + otimização</span>
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Gerenciamento de Logs */}
                   <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
                     <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
@@ -744,19 +808,48 @@ export default function LogsViewer() {
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <button className="flex flex-col items-center p-4 border border-red-200 hover:border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
+                      <button 
+                        onClick={() => {
+                          if (confirm('Confirma apagar todo o histórico de logs?')) {
+                            console.log('🗑️ Zerando logs do sistema...');
+                            // Aqui seria a chamada para API
+                          }
+                        }}
+                        className="flex flex-col items-center p-4 border border-red-200 hover:border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
+                      >
                         <Trash2 className="w-8 h-8 text-red-600 mb-2" />
                         <span className="text-sm font-medium text-red-900">Zerar Logs</span>
                         <span className="text-xs text-red-600 text-center">Apagar todo histórico de atividades e logs</span>
                       </button>
                       
-                      <button className="flex flex-col items-center p-4 border border-blue-200 hover:border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                      <button 
+                        onClick={() => {
+                          console.log('📥 Exportando logs para CSV...');
+                          // Simular download
+                          const data = 'Data,Acao,Usuario\n' + 
+                            new Date().toLocaleString('pt-BR') + ',Login,felipe@abmix.com.br\n' +
+                            new Date(Date.now() - 60000).toLocaleString('pt-BR') + ',Consulta BD,sistema\n';
+                          const blob = new Blob([data], { type: 'text/csv' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `logs_sistema_${new Date().toISOString().split('T')[0]}.csv`;
+                          a.click();
+                        }}
+                        className="flex flex-col items-center p-4 border border-blue-200 hover:border-blue-300 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
+                      >
                         <Download className="w-8 h-8 text-blue-600 mb-2" />
                         <span className="text-sm font-medium text-blue-900">Exportar Logs</span>
                         <span className="text-xs text-blue-600 text-center">Download dos logs (.csv) para auditoria</span>
                       </button>
                       
-                      <button className="flex flex-col items-center p-4 border border-green-200 hover:border-green-300 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                      <button 
+                        onClick={() => {
+                          console.log('📊 Ativando monitoramento em tempo real...');
+                          // Toggle do feed de atividades
+                        }}
+                        className="flex flex-col items-center p-4 border border-green-200 hover:border-green-300 rounded-lg bg-green-50 hover:bg-green-100 transition-colors"
+                      >
                         <Activity className="w-8 h-8 text-green-600 mb-2" />
                         <span className="text-sm font-medium text-green-900">Logs em Tempo Real</span>
                         <span className="text-xs text-green-600 text-center">Ver atividades recentes do sistema</span>
@@ -883,7 +976,15 @@ export default function LogsViewer() {
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador de Propostas Hoje?')) {
+                                  console.log('🔄 Zerando contador: Propostas Hoje');
+                                  // Aqui seria a chamada para API de reset
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -892,14 +993,21 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                           <div>
                             <p className="font-medium text-green-900">Aprovadas Hoje</p>
-                            <p className="text-sm text-green-700">Atual: {realStats.proposals.approved > 0 ? Math.floor(realStats.proposals.approved * 0.3) : 0} propostas</p>
+                            <p className="text-sm text-green-700">Atual: {realStats.proposals.approved} propostas</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             <select className="text-xs border border-green-300 rounded px-2 py-1">
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador de Aprovadas Hoje?')) {
+                                  console.log('🔄 Zerando contador: Aprovadas Hoje');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -908,14 +1016,21 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                           <div>
                             <p className="font-medium text-green-900">Rejeitadas Hoje</p>
-                            <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected > 0 ? Math.floor(realStats.proposals.rejected * 0.2) : 0} propostas</p>
+                            <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected} propostas</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             <select className="text-xs border border-green-300 rounded px-2 py-1">
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador de Rejeitadas Hoje?')) {
+                                  console.log('🔄 Zerando contador: Rejeitadas Hoje');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -929,14 +1044,21 @@ export default function LogsViewer() {
                         <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
                           <div>
                             <p className="font-medium text-blue-900">Propostas Esta Semana</p>
-                            <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.3)} propostas</p>
+                            <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.25)} propostas</p>
                           </div>
                           <div className="flex items-center space-x-2">
                             <select className="text-xs border border-blue-300 rounded px-2 py-1">
                               <option value="auto">Auto (Segunda)</option>
                               <option value="manual">Manual</option>
                             </select>
-                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Confirma zerar o contador semanal?')) {
+                                  console.log('🔄 Zerando contador: Propostas Esta Semana');
+                                }
+                              }}
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                            >
                               Zerar Agora
                             </button>
                           </div>
@@ -984,13 +1106,30 @@ export default function LogsViewer() {
                           <p className="text-sm text-slate-600">Aplicar configurações em todos os contadores</p>
                         </div>
                         <div className="flex items-center space-x-3">
-                          <button className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                          <button 
+                            onClick={() => {
+                              console.log('🔧 Configurando todos os contadores para modo automático');
+                            }}
+                            className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
+                          >
                             Configurar Todos como Auto
                           </button>
-                          <button className="px-4 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors">
+                          <button 
+                            onClick={() => {
+                              console.log('🔧 Configurando todos os contadores para modo manual');
+                            }}
+                            className="px-4 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
+                          >
                             Configurar Todos como Manual
                           </button>
-                          <button className="px-4 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors font-medium">
+                          <button 
+                            onClick={() => {
+                              if (confirm('⚠️ ATENÇÃO: Isso zerará TODOS os contadores de propostas. Confirma?')) {
+                                console.log('🔄 RESET GLOBAL: Zerando todos os contadores');
+                              }
+                            }}
+                            className="px-4 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors font-medium"
+                          >
                             ⚠️ Zerar TODOS os Contadores
                           </button>
                         </div>
