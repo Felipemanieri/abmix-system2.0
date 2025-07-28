@@ -581,7 +581,7 @@ export default function UserManagementDashboard() {
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="flex items-center px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg border border-sky-200 hover:border-sky-300 transition-colors font-medium"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Usuário
