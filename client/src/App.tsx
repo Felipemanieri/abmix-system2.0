@@ -70,18 +70,6 @@ function App() {
 
   // Sistema de carregamento da visibilidade persistente dos portais
   useEffect(() => {
-    // Handler global para promises rejeitadas
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Promise rejeitada não tratada:', event.reason);
-      event.preventDefault(); // Previne que o erro apareça no console
-    };
-
-    const handleError = (event: ErrorEvent) => {
-      console.error('Erro não tratado:', event.error);
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
 
     // PRIMEIRO: Carrega do localStorage (ESTADO PERMANENTE)
     const loadPortalVisibility = async () => {
@@ -148,8 +136,6 @@ function App() {
     console.log('🔄 Portal visibility:', portalVisibility);
 
     return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
       window.removeEventListener('portalVisibilityChanged', handlePortalVisibilityChanged);
     };
   }, []); // Removido portalVisibility das dependências para evitar loop infinito
