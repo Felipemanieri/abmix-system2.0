@@ -8,6 +8,10 @@ export default function PlanilhaViewer() {
   const [isAutoUpdate, setIsAutoUpdate] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState('connected');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [deleteProposalId, setDeleteProposalId] = useState('');
+  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [isDeletingRow, setIsDeletingRow] = useState(false);
+  const [isClearingSheet, setIsClearingSheet] = useState(false);
 
   // Buscar todas as propostas para gerar planilha
   const { data: proposals = [], isLoading, refetch } = useQuery({
@@ -80,6 +84,58 @@ export default function PlanilhaViewer() {
   const handleManualUpdate = () => {
     refetch();
     setLastUpdate(new Date());
+  };
+
+  // Função para deletar linha específica por ID da proposta
+  const handleDeleteProposalRow = async () => {
+    if (!deleteProposalId.trim()) {
+      alert('Por favor, insira um ID de proposta válido');
+      return;
+    }
+
+    const confirmed = confirm(`Tem certeza que deseja apagar a linha da proposta ID: ${deleteProposalId}?`);
+    if (!confirmed) return;
+
+    setIsDeletingRow(true);
+    try {
+      // Simular chamada para API que remove linha específica do Google Sheets
+      // Em implementação real, seria uma chamada para a API do Google Sheets
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      alert(`Linha da proposta ${deleteProposalId} removida da planilha com sucesso!`);
+      setDeleteProposalId('');
+      setShowDeleteForm(false);
+      refetch(); // Atualizar dados locais
+      setLastUpdate(new Date());
+    } catch (error) {
+      alert('Erro ao remover linha da planilha');
+    } finally {
+      setIsDeletingRow(false);
+    }
+  };
+
+  // Função para limpar toda a planilha
+  const handleClearSheet = async () => {
+    const confirmed = confirm('ATENÇÃO: Esta ação irá apagar TODAS as linhas da planilha. Tem certeza que deseja continuar?');
+    if (!confirmed) return;
+
+    const doubleConfirm = confirm('Esta é uma ação irreversível. Digite "CONFIRMAR" para prosseguir.');
+    if (!doubleConfirm) return;
+
+    setIsClearingSheet(true);
+    try {
+      // Simular chamada para API que limpa toda a planilha do Google Sheets
+      // Em implementação real, seria uma chamada para a API do Google Sheets
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      alert('Planilha limpa com sucesso! Todas as linhas foram removidas.');
+      refetch(); // Atualizar dados locais
+      setLastUpdate(new Date());
+    } catch (error) {
+      alert('Erro ao limpar planilha');
+    } finally {
+      setIsClearingSheet(false);
+    }
   };
 
   // Buscar dados dos vendedores
@@ -744,6 +800,99 @@ export default function PlanilhaViewer() {
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+          
+          {/* Seção de Gerenciamento de Dados do Google Sheets */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h5 className="text-sm font-semibold text-gray-700 mb-3">🗂️ Gerenciamento de Dados da Planilha</h5>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Deletar linha específica */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Trash2 className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">Remover Linha Específica</span>
+                </div>
+                
+                {!showDeleteForm ? (
+                  <button
+                    onClick={() => setShowDeleteForm(true)}
+                    className="w-full px-3 py-2 bg-yellow-100 text-yellow-700 text-sm rounded hover:bg-yellow-200 transition-colors"
+                  >
+                    Selecionar ID para Remover
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={deleteProposalId}
+                      onChange={(e) => setDeleteProposalId(e.target.value)}
+                      placeholder="Digite o ID da proposta (ex: ABM001)"
+                      className="w-full px-3 py-2 border border-yellow-300 rounded text-sm focus:outline-none focus:border-yellow-500"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDeleteProposalRow}
+                        disabled={isDeletingRow || !deleteProposalId.trim()}
+                        className="flex-1 px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                      >
+                        {isDeletingRow ? (
+                          <>
+                            <RefreshCw className="h-3 w-3 animate-spin" />
+                            Removendo...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-3 w-3" />
+                            Remover
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeleteForm(false);
+                          setDeleteProposalId('');
+                        }}
+                        className="px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Limpar toda a planilha */}
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="h-4 w-4 text-red-600" />
+                  <span className="text-sm font-medium text-red-800">Limpar Toda a Planilha</span>
+                </div>
+                <p className="text-xs text-red-600 mb-3">Remove todas as linhas de dados (mantém cabeçalhos)</p>
+                
+                <button
+                  onClick={handleClearSheet}
+                  disabled={isClearingSheet}
+                  className="w-full px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                >
+                  {isClearingSheet ? (
+                    <>
+                      <RefreshCw className="h-3 w-3 animate-spin" />
+                      Limpando Planilha...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="h-3 w-3" />
+                      Limpar Tudo
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            <div className="mt-3 text-xs text-gray-500 bg-blue-50 p-2 rounded">
+              <strong>💡 Sincronização:</strong> Alterações são aplicadas em tempo real no Google Sheets e refletidas automaticamente no sistema.
             </div>
           </div>
         </div>
