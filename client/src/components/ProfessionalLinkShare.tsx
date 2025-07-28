@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Mail, MessageCircle, Share2, Check, Shield, Lock, CheckCircle, RefreshCw } from 'lucide-react';
 import { showNotification } from '@/utils/notifications';
-// Using a simple fallback since the asset path has invalid characters
-const abmixLogoPath = '/vite.svg'; // Temporary fallback for logo
+import AbmixLogo from './AbmixLogo';
 
 interface ProfessionalLinkShareProps {
   clientLink: string;
@@ -65,30 +64,14 @@ Abmix Consultoria em Benefícios`;
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative overflow-hidden">
-        {/* Background com logo em marca d'água */}
-        <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div 
-            className="w-full h-full bg-center bg-no-repeat bg-contain"
-            style={{ 
-              backgroundImage: `url(${abmixLogoPath})`,
-              backgroundSize: '300px 300px',
-              backgroundPosition: 'center center'
-            }}
-          />
-        </div>
+
 
         {/* Conteúdo principal */}
         <div className="relative z-10 p-8">
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <img 
-                  src={abmixLogoPath} 
-                  alt="Abmix Logo" 
-                  className="w-10 h-10 object-contain"
-                />
-              </div>
+              <AbmixLogo size={48} />
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 dark:text-white">Abmix Consultoria em Benefícios</h2>
                 <p className="text-gray-600">Formulário de Proposta</p>
