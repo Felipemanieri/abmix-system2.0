@@ -175,10 +175,11 @@ export function useVendorProposals(vendorId: number) {
         priority: proposal.priority || 'medium'
       }));
     },
-    refetchInterval: 3000, // 3 segundos - RESPOSTA IMEDIATA para vendedores
-    refetchIntervalInBackground: true, // Atualizar em background para resposta rápida
-    refetchOnWindowFocus: true, // Recarregar sempre que possível
-    staleTime: 0, // Dados sempre considerados stale para máxima velocidade
+    refetchInterval: 500, // 500ms - RESPOSTA INSTANTÂNEA MÁXIMA
+    refetchIntervalInBackground: true, // Atualizar constantemente 
+    refetchOnWindowFocus: true, // Sempre recarregar
+    refetchOnReconnect: true, // Reconectar imediatamente
+    staleTime: 0, // ZERO cache - sempre buscar dados novos
     enabled: vendorId > 0, // Só fazer a consulta se o vendorId for válido
   });
 
