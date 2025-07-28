@@ -1,7 +1,11 @@
 import { Request, Response } from 'express';
 import { storage } from './storage';
 import { upload, formatFileSize } from './fileUpload';
+import { GoogleSheetsSimple } from './googleSheetsSimple';
 import path from 'path';
+
+// Instância do serviço Google Sheets
+const googleSheetsService = new GoogleSheetsSimple();
 
 export function setupRoutes(app: any) {
   // Estado da visibilidade dos portais

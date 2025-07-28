@@ -766,13 +766,13 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('📊 STORAGE: Buscando configurações do Drive/Sheets');
       
-      // Retornar configuração mock da planilha principal
+      // Configuração da planilha principal com ID correto
       const configs = [
         {
           id: 'main-sheet',
           name: 'PLANILHA_PRINCIPAL',
           sheetId: '1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw',
-          range: 'A:Z',
+          range: 'A1:Z1000',
           folderId: 'main-folder-id',
           status: 'active' as const
         }
