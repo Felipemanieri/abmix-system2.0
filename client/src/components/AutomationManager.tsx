@@ -75,6 +75,8 @@ export default function AutomationManager() {
     }
   ]);
 
+  const [createdAutomations, setCreatedAutomations] = useState<AutomationConfig[]>([]);
+
   const [newAutomationModal, setNewAutomationModal] = useState<NewAutomationModal>({
     isOpen: false,
     platform: null
@@ -165,9 +167,28 @@ export default function AutomationManager() {
   const handleSaveConfig = () => {
     if (!configModal.automation) return;
 
-    // Aqui você salvaria a configuração no backend
-    console.log('Salvando configuração:', formData);
-    
+    // Criar nova automação com dados reais
+    if (formData.name && formData.trigger && formData.action) {
+      const newAutomation: AutomationConfig = {
+        id: `automation_${Date.now()}`,
+        name: formData.name,
+        trigger: formData.trigger,
+        action: formData.action,
+        status: 'active',
+        executions: 0,
+        lastRun: 'Nunca'
+      };
+
+      setCreatedAutomations(prev => [...prev, newAutomation]);
+      
+      // Atualizar o contador de cenários ativos da plataforma
+      setAutomations(prev => prev.map(automation => 
+        automation.id === configModal.automation?.id 
+          ? { ...automation, activeScenarios: automation.activeScenarios + 1 }
+          : automation
+      ));
+    }
+
     setConfigModal({ isOpen: false, automation: null });
     setFormData({
       name: '',
@@ -180,6 +201,60 @@ export default function AutomationManager() {
       action: '',
       description: ''
     });
+  };
+
+  const handleExecuteAutomation = (automationId: string) => {
+    setCreatedAutomations(prev => prev.map(automation => 
+      automation.id === automationId 
+        ? { 
+            ...automation, 
+            executions: automation.executions + 1,
+            lastRun: new Date().toLocaleString('pt-BR')
+          }
+        : automation
+    ));
+  };
+
+  const handleToggleAutomationStatus = (automationId: string) => {
+    setCreatedAutomations(prev => prev.map(automation => 
+      automation.id === automationId 
+        ? { ...automation, status: automation.status === 'active' ? 'paused' : 'active' }
+        : automation
+    ));
+  };
+
+  const handleDeleteAutomation = (automationId: string) => {
+    setCreatedAutomations(prev => prev.filter(automation => automation.id !== automationId));
+    
+    // Decrementar contador de cenários ativos
+    setAutomations(prev => prev.map(automation => ({
+      ...automation,
+      activeScenarios: Math.max(0, automation.activeScenarios - 1)
+    })));
+  };
+
+  const getTriggerText = (trigger: string) => {
+    const triggers = {
+      'nova_proposta': 'Nova proposta criada',
+      'proposta_aprovada': 'Proposta aprovada',
+      'proposta_rejeitada': 'Proposta rejeitada',
+      'novo_usuario': 'Novo usuário criado',
+      'backup_concluido': 'Backup concluído',
+      'agendamento': 'Agendamento (Cron)'
+    };
+    return triggers[trigger] || trigger;
+  };
+
+  const getActionText = (action: string) => {
+    const actions = {
+      'enviar_email': 'Enviar Email',
+      'enviar_whatsapp': 'Enviar WhatsApp',
+      'atualizar_planilha': 'Atualizar Google Sheets',
+      'criar_backup': 'Criar Backup',
+      'notificar_slack': 'Notificar Slack',
+      'webhook_personalizado': 'Webhook Personalizado'
+    };
+    return actions[action] || action;
   };
 
   const renderConfigForm = () => {
