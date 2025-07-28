@@ -1,323 +1,537 @@
 import { useState } from 'react';
-import { Zap, Play, Pause, Settings, BarChart3, Clock, AlertCircle } from 'lucide-react';
+import { 
+  Plus, 
+  Settings, 
+  Zap, 
+  Check, 
+  X,
+  ExternalLink,
+  Play,
+  Pause,
+  AlertCircle,
+  Calendar,
+  Clock
+} from 'lucide-react';
 
-interface AutomationRule {
+interface Automation {
   id: string;
   name: string;
+  platform: 'make' | 'zapier' | 'n8n';
   description: string;
+  status: 'connected' | 'disconnected' | 'error';
+  activeScenarios: number;
+  lastExecution: string;
+  webhookUrl?: string;
+  apiKey?: string;
+  configurations: AutomationConfig[];
+}
+
+interface AutomationConfig {
+  id: string;
+  name: string;
   trigger: string;
   action: string;
-  status: 'active' | 'paused' | 'error';
-  lastRun: string;
-  successRate: number;
+  status: 'active' | 'paused';
   executions: number;
+  lastRun: string;
+}
+
+interface NewAutomationModal {
+  isOpen: boolean;
+  platform: 'make' | 'zapier' | 'n8n' | null;
 }
 
 export default function AutomationManager() {
-  const [automations, setAutomations] = useState<AutomationRule[]>([
+  const [automations, setAutomations] = useState<Automation[]>([
     {
       id: '1',
-      name: 'Make.com - Processamento de Propostas',
-      description: 'Automatiza o processamento de novas propostas criadas pelos vendedores',
-      trigger: 'Nova proposta criada',
-      action: 'Enviar para Make.com → Google Sheets → Notificação',
-      status: 'active',
-      lastRun: new Date(Date.now() - 300000).toISOString(), // 5 min ago
-      successRate: 98.5,
-      executions: 247
+      name: 'Make.com',
+      platform: 'make',
+      description: 'Plataforma de automação visual para conectar aplicativos e automatizar fluxos de trabalho complexos',
+      status: 'connected',
+      activeScenarios: 0,
+      lastExecution: 'Nunca',
+      configurations: []
     },
     {
       id: '2',
-      name: 'Zapier - Backup Automático',
-      description: 'Realiza backup diário dos dados do banco PostgreSQL',
-      trigger: 'Todos os dias às 02:00',
-      action: 'Backup PostgreSQL → Upload Google Drive',
-      status: 'active',
-      lastRun: new Date(Date.now() - 18000000).toISOString(), // 5 hours ago
-      successRate: 100,
-      executions: 127
+      name: 'Zapier',
+      platform: 'zapier',
+      description: 'Conecte seus aplicativos favoritos e automatize tarefas repetitivas sem código',
+      status: 'connected',
+      activeScenarios: 0,
+      lastExecution: 'Nunca',
+      configurations: []
     },
     {
       id: '3',
-      name: 'Make.com - Notificações WhatsApp',
-      description: 'Envia notificações automáticas via WhatsApp para clientes',
-      trigger: 'Status da proposta alterado',
-      action: 'Enviar mensagem WhatsApp personalizada',
-      status: 'error',
-      lastRun: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
-      successRate: 85.2,
-      executions: 89
-    },
-    {
-      id: '4',
-      name: 'Zapier - Sincronização Vendedores',
-      description: 'Sincroniza dados de vendedores com sistema externo de CRM',
-      trigger: 'Vendedor criado/editado',
-      action: 'Atualizar CRM → Enviar email boas-vindas',
-      status: 'paused',
-      lastRun: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      successRate: 92.1,
-      executions: 34
-    },
-    {
-      id: '5',
-      name: 'Make.com - Relatórios Automáticos',
-      description: 'Gera relatórios mensais e envia para supervisores',
-      trigger: 'Todo dia 1º do mês às 08:00',
-      action: 'Gerar relatório → Enviar por email',
-      status: 'active',
-      lastRun: new Date(Date.now() - 2592000000).toISOString(), // 30 days ago
-      successRate: 96.8,
-      executions: 12
+      name: 'n8n',
+      platform: 'n8n',
+      description: 'Plataforma de automação de código aberto para conectar qualquer coisa a qualquer coisa',
+      status: 'disconnected',
+      activeScenarios: 0,
+      lastExecution: 'Nunca',
+      configurations: []
     }
   ]);
 
-  const toggleAutomation = (id: string) => {
-    setAutomations(prev => prev.map(automation => 
-      automation.id === id 
-        ? { 
-            ...automation, 
-            status: automation.status === 'active' ? 'paused' : 'active' 
-          }
-        : automation
-    ));
+  const [newAutomationModal, setNewAutomationModal] = useState<NewAutomationModal>({
+    isOpen: false,
+    platform: null
+  });
+
+  const [configModal, setConfigModal] = useState<{
+    isOpen: boolean;
+    automation: Automation | null;
+  }>({
+    isOpen: false,
+    automation: null
+  });
+
+  const [formData, setFormData] = useState({
+    name: '',
+    webhookUrl: '',
+    apiKey: '',
+    secretKey: '',
+    teamId: '',
+    organizationId: '',
+    trigger: '',
+    action: '',
+    description: ''
+  });
+
+  const getPlatformColor = (platform: string, status: string) => {
+    if (status === 'connected') {
+      switch (platform) {
+        case 'make':
+          return 'border-purple-200 bg-purple-50';
+        case 'zapier':
+          return 'border-orange-200 bg-orange-50';
+        case 'n8n':
+          return 'border-blue-200 bg-blue-50';
+        default:
+          return 'border-gray-200 bg-gray-50';
+      }
+    }
+    return 'border-gray-200 bg-gray-50';
   };
 
-  const runAutomation = async (id: string) => {
-    const automation = automations.find(a => a.id === id);
-    if (!automation) return;
-
-    // Simular execução
-    setAutomations(prev => prev.map(a => 
-      a.id === id 
-        ? { 
-            ...a, 
-            lastRun: new Date().toISOString(),
-            executions: a.executions + 1
-          }
-        : a
-    ));
-
-    // Simular notificação de sucesso
-    setTimeout(() => {
-      alert(`Automação "${automation.name}" executada com sucesso!`);
-    }, 2000);
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'make':
+        return '🟣';
+      case 'zapier':
+        return '🟠';
+      case 'n8n':
+        return '🔵';
+      default:
+        return '⚙️';
+    }
   };
 
-  const getStatusIcon = (status: AutomationRule['status']) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'active':
-        return <Play className="w-4 h-4 text-green-500" />;
-      case 'paused':
-        return <Pause className="w-4 h-4 text-yellow-500" />;
+      case 'connected':
+        return <Check className="w-4 h-4 text-green-600" />;
+      case 'disconnected':
+        return <X className="w-4 h-4 text-gray-400" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-400" />;
     }
   };
 
-  const getStatusColor = (status: AutomationRule['status']) => {
+  const getStatusText = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20';
-      case 'paused':
-        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/20';
+      case 'connected':
+        return 'Conectado';
+      case 'disconnected':
+        return 'Desconectado';
       case 'error':
-        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/20';
+        return 'Erro';
+      default:
+        return 'Desconhecido';
     }
   };
 
-  const getSuccessRateColor = (rate: number) => {
-    if (rate >= 95) return 'text-green-600 dark:text-green-400';
-    if (rate >= 85) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+  const handleOpenConfig = (automation: Automation) => {
+    setConfigModal({
+      isOpen: true,
+      automation
+    });
   };
 
-  const getAutomationType = (name: string) => {
-    if (name.includes('Make.com')) {
-      return { type: 'Make.com', color: 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200' };
-    } else if (name.includes('Zapier')) {
-      return { type: 'Zapier', color: 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200' };
-    }
-    return { type: 'Sistema', color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' };
+  const handleSaveConfig = () => {
+    if (!configModal.automation) return;
+
+    // Aqui você salvaria a configuração no backend
+    console.log('Salvando configuração:', formData);
+    
+    setConfigModal({ isOpen: false, automation: null });
+    setFormData({
+      name: '',
+      webhookUrl: '',
+      apiKey: '',
+      secretKey: '',
+      teamId: '',
+      organizationId: '',
+      trigger: '',
+      action: '',
+      description: ''
+    });
   };
 
-  const totalExecutions = automations.reduce((acc, auto) => acc + auto.executions, 0);
-  const activeCount = automations.filter(a => a.status === 'active').length;
-  const averageSuccessRate = automations.reduce((acc, auto) => acc + auto.successRate, 0) / automations.length;
+  const renderConfigForm = () => {
+    if (!configModal.automation) return null;
+
+    const { platform } = configModal.automation;
+
+    return (
+      <div className="space-y-6">
+        {/* Configurações específicas por plataforma */}
+        {platform === 'make' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                API Key do Make.com
+              </label>
+              <input
+                type="password"
+                value={formData.apiKey}
+                onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Insira sua API Key do Make.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Team ID (Opcional)
+              </label>
+              <input
+                type="text"
+                value={formData.teamId}
+                onChange={(e) => setFormData({...formData, teamId: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="ID do time no Make.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Webhook URL
+              </label>
+              <input
+                type="url"
+                value={formData.webhookUrl}
+                onChange={(e) => setFormData({...formData, webhookUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="https://hook.make.com/..."
+              />
+            </div>
+          </>
+        )}
+
+        {platform === 'zapier' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                API Key do Zapier
+              </label>
+              <input
+                type="password"
+                value={formData.apiKey}
+                onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="Insira sua API Key do Zapier"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Webhook URL
+              </label>
+              <input
+                type="url"
+                value={formData.webhookUrl}
+                onChange={(e) => setFormData({...formData, webhookUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="https://hooks.zapier.com/hooks/catch/..."
+              />
+            </div>
+          </>
+        )}
+
+        {platform === 'n8n' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                URL do n8n
+              </label>
+              <input
+                type="url"
+                value={formData.webhookUrl}
+                onChange={(e) => setFormData({...formData, webhookUrl: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="https://your-n8n-instance.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                API Key / Token
+              </label>
+              <input
+                type="password"
+                value={formData.apiKey}
+                onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Token de autenticação do n8n"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Configurações de automação */}
+        <div className="border-t pt-6">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">Configuração da Automação</h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nome da Automação
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Ex: Notificar Nova Proposta"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gatilho
+              </label>
+              <select
+                value={formData.trigger}
+                onChange={(e) => setFormData({...formData, trigger: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Selecione um gatilho</option>
+                <option value="nova_proposta">Nova Proposta Criada</option>
+                <option value="proposta_aprovada">Proposta Aprovada</option>
+                <option value="proposta_rejeitada">Proposta Rejeitada</option>
+                <option value="novo_usuario">Novo Usuário Criado</option>
+                <option value="backup_concluido">Backup Concluído</option>
+                <option value="agendamento">Agendamento (Cron)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Ação
+            </label>
+            <select
+              value={formData.action}
+              onChange={(e) => setFormData({...formData, action: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Selecione uma ação</option>
+              <option value="enviar_email">Enviar Email</option>
+              <option value="enviar_whatsapp">Enviar WhatsApp</option>
+              <option value="atualizar_planilha">Atualizar Google Sheets</option>
+              <option value="criar_backup">Criar Backup</option>
+              <option value="notificar_slack">Notificar Slack</option>
+              <option value="webhook_personalizado">Webhook Personalizado</option>
+            </select>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Descrição
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Descreva o que esta automação faz..."
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Estatísticas Gerais */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Automações</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{automations.length}</p>
-            </div>
-            <Zap className="w-8 h-8 text-blue-500" />
-          </div>
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            <Zap className="inline-block w-8 h-8 mr-3 text-blue-600" />
+            Sistema de Automação
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Configure automações com Make.com, Zapier e n8n para otimizar seus processos
+          </p>
         </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Ativas</p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{activeCount}</p>
-            </div>
-            <Play className="w-8 h-8 text-green-500" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Taxa Sucesso</p>
-              <p className={`text-2xl font-bold ${getSuccessRateColor(averageSuccessRate)}`}>
-                {averageSuccessRate.toFixed(1)}%
-              </p>
-            </div>
-            <BarChart3 className="w-8 h-8 text-purple-500" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Execuções</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalExecutions}</p>
-            </div>
-            <Clock className="w-8 h-8 text-orange-500" />
-          </div>
-        </div>
+        
+        <button
+          onClick={() => setNewAutomationModal({ isOpen: true, platform: null })}
+          className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors border border-gray-300"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Adicionar Automação
+        </button>
       </div>
 
-      {/* Lista de Automações */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-              <Zap className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
-              Gerenciador de Automações
-            </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {activeCount} de {automations.length} ativas
-            </div>
-          </div>
-        </div>
-
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {automations.map((automation) => {
-            const automationType = getAutomationType(automation.name);
-            
-            return (
-              <div key={automation.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      {getStatusIcon(automation.status)}
-                      <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {automation.name}
-                      </h4>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${automationType.color}`}>
-                        {automationType.type}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(automation.status).split(' ').slice(2).join(' ')}`}>
-                        {automation.status === 'active' ? 'Ativa' : 
-                         automation.status === 'paused' ? 'Pausada' : 'Erro'}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">
-                      {automation.description}
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">Trigger: </span>
-                        <span className="text-gray-600 dark:text-gray-400">{automation.trigger}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">Ação: </span>
-                        <span className="text-gray-600 dark:text-gray-400">{automation.action}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-6 mt-3 text-sm text-gray-500 dark:text-gray-400">
-                      <span>
-                        Última execução: {new Date(automation.lastRun).toLocaleString('pt-BR')}
-                      </span>
-                      <span>
-                        Execuções: {automation.executions}
-                      </span>
-                      <span className={getSuccessRateColor(automation.successRate)}>
-                        Taxa de sucesso: {automation.successRate}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => runAutomation(automation.id)}
-                      disabled={automation.status === 'error'}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors flex items-center text-sm"
-                      title="Executar agora"
-                    >
-                      <Play className="w-4 h-4 mr-1" />
-                      Executar
-                    </button>
-                    
-                    <button
-                      onClick={() => toggleAutomation(automation.id)}
-                      className={`px-3 py-2 rounded-lg transition-colors flex items-center text-sm ${
-                        automation.status === 'active'
-                          ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                      }`}
-                      title={automation.status === 'active' ? 'Pausar' : 'Ativar'}
-                    >
-                      {automation.status === 'active' ? (
-                        <>
-                          <Pause className="w-4 h-4 mr-1" />
-                          Pausar
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-1" />
-                          Ativar
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => alert(`Configurações da automação: ${automation.name}`)}
-                      className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center text-sm"
-                      title="Configurações"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+      {/* Plataformas de Automação */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {automations.map((automation) => (
+          <div 
+            key={automation.id}
+            className={`rounded-lg border p-6 ${getPlatformColor(automation.platform, automation.status)}`}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">{getPlatformIcon(automation.platform)}</span>
+                <h3 className="text-lg font-bold text-gray-900">{automation.name}</h3>
               </div>
-            );
-          })}
-        </div>
+              {getStatusIcon(automation.status)}
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              {automation.description}
+            </p>
+
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Status:</span>
+                <span className={`font-medium ${
+                  automation.status === 'connected' ? 'text-green-600' : 'text-gray-500'
+                }`}>
+                  {getStatusText(automation.status)}
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Cenários ativos:</span>
+                <span className="font-medium text-gray-900">{automation.activeScenarios}</span>
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Última execução:</span>
+                <span className="font-medium text-gray-900">{automation.lastExecution}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleOpenConfig(automation)}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                automation.platform === 'make' 
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : automation.platform === 'zapier'
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              Configurar {automation.name}
+            </button>
+          </div>
+        ))}
       </div>
 
-      {/* Informações Importantes */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-2" />
-          Informações Importantes:
-        </h4>
-        <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-          <li>• Automações Make.com processam dados em tempo real</li>
-          <li>• Automações Zapier têm intervalo mínimo de 15 minutos</li>
-          <li>• Verifique logs regularmente para identificar erros</li>
-          <li>• Taxa de sucesso abaixo de 85% indica problemas na automação</li>
-          <li>• Pause automações com problemas para evitar loops de erro</li>
-        </ul>
-      </div>
+      {/* Modal de Configuração */}
+      {configModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">
+                Configurar {configModal.automation?.name}
+              </h3>
+              <button
+                onClick={() => setConfigModal({ isOpen: false, automation: null })}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {renderConfigForm()}
+
+            <div className="flex justify-end space-x-3 mt-8 pt-6 border-t">
+              <button
+                onClick={() => setConfigModal({ isOpen: false, automation: null })}
+                className="px-6 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveConfig}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+              >
+                Salvar Configuração
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Nova Automação */}
+      {newAutomationModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">
+                Adicionar Nova Automação
+              </h3>
+              <button
+                onClick={() => setNewAutomationModal({ isOpen: false, platform: null })}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Selecione uma plataforma de automação para configurar uma nova integração:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {['make', 'zapier', 'n8n'].map((platform) => (
+                <button
+                  key={platform}
+                  onClick={() => {
+                    const automation = automations.find(a => a.platform === platform);
+                    if (automation) {
+                      setNewAutomationModal({ isOpen: false, platform: null });
+                      handleOpenConfig(automation);
+                    }
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-center"
+                >
+                  <span className="text-2xl block mb-2">
+                    {getPlatformIcon(platform)}
+                  </span>
+                  <span className="font-medium text-gray-900 capitalize">
+                    {platform === 'n8n' ? 'n8n' : platform}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setNewAutomationModal({ isOpen: false, platform: null })}
+                className="px-6 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
