@@ -152,40 +152,40 @@ Abmix Consultoria em Benefícios`;
               />
               <button
                 onClick={handleCopy}
-                className={`px-3 py-2 rounded-lg border font-medium transition-colors text-xs ${
+                className={`px-2 py-1.5 rounded-md border font-medium transition-colors text-xs ${
                   copied 
-                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-150' 
-                    : 'bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-150'
+                    ? 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100' 
+                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
                 }`}
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? <Check size={12} /> : <Copy size={12} />}
               </button>
             </div>
           </div>
 
           {/* Botões de compartilhamento */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <button
               onClick={handleCopy}
-              className="flex items-center justify-center space-x-1 px-3 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-150 transition-colors text-xs font-medium"
+              className="flex items-center justify-center space-x-1 px-2 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
             >
-              <Copy size={14} />
-              <span>Copiar Link</span>
+              <Copy size={12} />
+              <span>Copiar</span>
             </button>
             
             <button
               onClick={handleWhatsApp}
-              className="flex items-center justify-center space-x-1 px-3 py-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-150 transition-colors text-xs font-medium"
+              className="flex items-center justify-center space-x-1 px-2 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
             >
-              <MessageCircle size={14} />
+              <MessageCircle size={12} />
               <span>WhatsApp</span>
             </button>
             
             <button
               onClick={handleEmail}
-              className="flex items-center justify-center space-x-1 px-3 py-2 bg-sky-100 text-sky-700 border border-sky-200 rounded-lg hover:bg-sky-150 transition-colors text-xs font-medium"
+              className="flex items-center justify-center space-x-1 px-2 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
             >
-              <Mail size={14} />
+              <Mail size={12} />
               <span>Email</span>
             </button>
           </div>
@@ -193,27 +193,27 @@ Abmix Consultoria em Benefícios`;
           {/* Botões Nova Proposta e Retornar ao Dashboard */}
           {onGenerateNewProposal && (
             <div className="mb-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => {
                     onGenerateNewProposal();
                     onClose();
                   }}
-                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-amber-100 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-150 transition-colors text-xs font-medium"
+                  className="flex items-center justify-center space-x-1 px-2 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
                 >
-                  <RefreshCw size={14} />
-                  <span>Gerar Proposta para o Mesmo Link</span>
+                  <RefreshCw size={12} />
+                  <span>Nova Proposta</span>
                 </button>
                 
                 <button
                   onClick={onClose}
-                  className="flex items-center justify-center space-x-1 px-3 py-2 bg-violet-100 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-150 transition-colors text-xs font-medium"
+                  className="flex items-center justify-center space-x-1 px-2 py-1.5 bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors text-xs font-medium"
                 >
-                  <CheckCircle size={14} />
-                  <span>Retornar ao Dashboard</span>
+                  <CheckCircle size={12} />
+                  <span>Dashboard</span>
                 </button>
               </div>
-              <p className="text-xs text-gray-600 mt-3 text-center">
+              <p className="text-xs text-gray-500 mt-2 text-center">
                 Mantém os dados da empresa e cria nova proposta com dados pessoais em branco
               </p>
             </div>
