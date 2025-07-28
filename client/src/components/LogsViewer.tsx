@@ -931,17 +931,20 @@ export default function LogsViewer() {
                     </h4>
                     
                     <div className="grid grid-cols-2 gap-3">
-                      {/* Console Cleaner */}
+                      {/* Promise Error Fix - RESTAURADO */}
                       <button 
                         onClick={() => {
-                          console.clear();
-                          setNotification({ message: 'Console limpo com sucesso', type: 'success' });
+                          window.addEventListener('unhandledrejection', (event) => {
+                            console.error('Promise interceptada:', event.reason);
+                            event.preventDefault();
+                          });
+                          setNotification({ message: 'Promise handler ativado', type: 'success' });
                           setTimeout(() => setNotification(null), 2000);
                         }}
-                        className="flex items-center px-3 py-2 text-sm bg-green-50 hover:bg-green-100 border border-green-200 rounded transition-colors"
+                        className="flex items-center px-3 py-2 text-sm bg-red-50 hover:bg-red-100 border border-red-200 rounded transition-colors"
                       >
-                        <RefreshCw className="w-4 h-4 mr-2 text-green-600" />
-                        Limpar Console
+                        <AlertTriangle className="w-4 h-4 mr-2 text-red-600" />
+                        Corrigir Promises
                       </button>
 
                       {/* Sync Interval */}
