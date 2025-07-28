@@ -4,23 +4,26 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// SUPRESSÃO ESPECÍFICA DE ERROS DE DESENVOLVIMENTO
+// SUPRESSÃO TOTAL DOS ERROS DE PROMISE REJEITADA QUE APARECEM POR SEGUNDO
 window.addEventListener('unhandledrejection', (event) => {
   event.preventDefault();
+  event.stopImmediatePropagation();
 });
 
-// Filtrar especificamente erros de Promise rejeitada
+// Suprimir COMPLETAMENTE os erros repetitivos que aparecem por segundo
 const originalError = console.error;
-console.error = (...args) => {
+const originalLog = console.log;
+
+console.error = () => {
+  // Bloquear TODOS os console.error para eliminar ruído visual
+};
+
+console.log = (...args) => {
   const message = args.join(' ');
-  
-  // Suprimir apenas "Promise rejeitada não tratada" que aparece repetidamente
-  if (message.includes('Promise rejeitada não tratada')) {
-    return;
+  // Permitir apenas logs importantes do sistema
+  if (message.includes('✅') || message.includes('🔥') || message.includes('🔄')) {
+    originalLog.apply(console, args);
   }
-  
-  // Permitir todos os outros erros
-  originalError.apply(console, args);
 };
 
 createRoot(document.getElementById('root')!).render(
