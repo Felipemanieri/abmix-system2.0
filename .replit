@@ -85,5 +85,22 @@ args = "sleep 2"
 task = "shell.exec"
 args = "NODE_ENV=development PORT=5000 tsx server/index.ts"
 
+[[workflows.workflow]]
+name = "RESTART LIMPO"
+author = 44914105
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"tsx server/index.ts\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sleep 3"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "NODE_ENV=development PORT=5000 tsx server/index.ts"
+
 [agent]
 integrations = ["javascript_websocket==1.0.0"]

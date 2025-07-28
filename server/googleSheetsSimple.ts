@@ -1,15 +1,14 @@
-
 import { google } from 'googleapis';
 
 export class GoogleSheetsSimple {
   private static instance: GoogleSheetsSimple;
   private sheets: any;
   private auth: any;
-  
+
   constructor() {
     this.initializeAuth();
   }
-  
+
   static getInstance(): GoogleSheetsSimple {
     if (!GoogleSheetsSimple.instance) {
       GoogleSheetsSimple.instance = new GoogleSheetsSimple();
@@ -44,13 +43,33 @@ export class GoogleSheetsSimple {
     }
   }
 
-  async testConnection() {
+  async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('✅ GoogleSheetsSimple: Conexão testada com sucesso');
-      return { success: true };
+      console.log('🧪 Testando conexão Google Sheets...');
+      const auth = await this.getAuth().catch(err => {
+        throw new Error('Falha na autenticação: ' + err.message);
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+
+      // Teste simples: buscar dados da primeira aba
+      const response = await sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+      }).catch(err => {
+        throw new Error('Falha ao acessar planilha: ' + err.message);
+      });
+
+      console.log(`✅ Conexão Google Sheets OK: ${response.data.properties?.title}`);
+      return { 
+        success: true, 
+        message: `Conectado à planilha: ${response.data.properties?.title}` 
+      };
     } catch (error) {
-      console.error('❌ GoogleSheetsSimple: Erro na conexão:', error);
-      return { success: false };
+      console.error('❌ Erro na conexão Google Sheets:', error);
+      return { 
+        success: false, 
+        message: `Erro: ${(error as Error).message}` 
+      };
     }
   }
 
@@ -58,33 +77,33 @@ export class GoogleSheetsSimple {
   async getAvailableSheets(sheetId: string) {
     try {
       console.log(`📊 GoogleSheetsSimple: Buscando planilhas disponíveis para ${sheetId}`);
-      
+
       // Primeiro tenta autenticação completa
       if (this.sheets && this.auth) {
         try {
           const response = await this.sheets.spreadsheets.get({
             spreadsheetId: sheetId
           });
-          
+
           const sheets = response.data.sheets?.map((sheet: any) => ({
             name: sheet.properties.title,
             sheetId: sheet.properties.sheetId,
             index: sheet.properties.index
           })) || [];
-          
+
           console.log(`✅ GoogleSheetsSimple: ${sheets.length} planilhas encontradas`);
           return sheets;
         } catch (authError) {
           console.log('⚠️ Falha na autenticação, tentando acesso público...');
         }
       }
-      
+
       // Fallback: retorna apenas a planilha principal conhecida
       console.log('🔄 Usando planilha principal padrão...');
       return [
         { name: 'PLANILHA_PRINCIPAL', sheetId: 0, index: 0 }
       ];
-      
+
     } catch (error) {
       console.error('❌ GoogleSheetsSimple: Erro ao buscar planilhas:', error);
       return [
@@ -152,7 +171,7 @@ export class GoogleSheetsSimple {
   async getSheetData(sheetId: string, range: string) {
     try {
       console.log(`📊 GoogleSheetsSimple: Buscando dados REAIS da planilha ${sheetId}, range: ${range}`);
-      
+
       if (!this.sheets) {
         await this.initializeAuth();
         if (!this.sheets) {
@@ -167,7 +186,7 @@ export class GoogleSheetsSimple {
 
       const values = response.data.values || [];
       console.log(`✅ GoogleSheetsSimple: Dados REAIS retornados - ${values.length > 0 ? values.length - 1 : 0} linhas, ${values[0]?.length || 0} colunas`);
-      
+
       return {
         values: values,
         spreadsheetId: sheetId,
@@ -175,19 +194,19 @@ export class GoogleSheetsSimple {
       };
     } catch (error) {
       console.log('⚠️ Falha na autenticação, tentando acesso público...');
-      
+
       try {
         // Tenta acesso público via CSV export
         const publicUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
         console.log(`🌐 Tentando acesso público: ${publicUrl}`);
-        
+
         const fetch = (await import('node-fetch')).default;
         const response = await fetch(publicUrl);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         const csvData = await response.text();
         const lines = csvData.trim().split('\n');
         const values = lines.map(line => {
@@ -195,7 +214,7 @@ export class GoogleSheetsSimple {
           const cells = [];
           let currentCell = '';
           let insideQuotes = false;
-          
+
           for (let i = 0; i < line.length; i++) {
             const char = line[i];
             if (char === '"') {
@@ -225,7 +244,7 @@ export class GoogleSheetsSimple {
 
       } catch (publicError) {
         console.error('❌ GoogleSheetsSimple: Erro ao acessar planilha pública:', publicError);
-        
+
         const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
         console.error('');
         console.error('🚨 PROBLEMA DE ACESSO À PLANILHA:');
@@ -233,7 +252,7 @@ export class GoogleSheetsSimple {
         console.error('📝 Ou verifique se a planilha está pública para visualização');
         console.error('🔗 Link da planilha: https://docs.google.com/spreadsheets/d/' + sheetId);
         console.error('');
-        
+
         throw new Error(`ACESSO NEGADO: Planilha não acessível. Erro: ${publicError.message}`);
       }
     }
@@ -243,7 +262,7 @@ export class GoogleSheetsSimple {
   async updateCell(sheetId: string, cellAddress: string, value: string) {
     try {
       console.log(`💾 GoogleSheetsSimple: Atualizando célula REAL ${cellAddress} = ${value} na planilha ${sheetId}`);
-      
+
       if (!this.sheets) {
         await this.initializeAuth();
         if (!this.sheets) {
@@ -270,7 +289,7 @@ export class GoogleSheetsSimple {
       };
     } catch (error) {
       console.error('❌ GoogleSheetsSimple: Erro ao atualizar célula REAL:', error);
-      
+
       // Retornar sucesso simulado em caso de erro para não quebrar a interface
       console.log('🔄 Simulando atualização temporariamente...');
       return {
