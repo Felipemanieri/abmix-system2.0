@@ -4,7 +4,8 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// Sistema de logs limpo - removendo listener problemático para restaurar funcionalidade normal
+// SOLUÇÃO DEFINITIVA - Remover completamente os handlers customizados
+// Deixar o navegador gerenciar normalmente os erros
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={queryClient}>
