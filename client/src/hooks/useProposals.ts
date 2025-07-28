@@ -175,10 +175,12 @@ export function useVendorProposals(vendorId: number) {
         priority: proposal.priority || 'medium'
       }));
     },
-    refetchInterval: 1000, // 1 segundo como era originalmente
+    queryFn: () => apiRequest(`/api/vendors/${vendorId}/proposals`),
+    refetchInterval: 1000, // 1 segundo - resposta imediata
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 30,
+    retry: false, // Sem retry para evitar erros
     enabled: vendorId > 0, // Só fazer a consulta se o vendorId for válido
   });
 

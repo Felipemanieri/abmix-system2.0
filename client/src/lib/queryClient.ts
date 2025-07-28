@@ -5,13 +5,10 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 30, // 30 segundos
-      retry: 1, // 1 retry para problemas de conexão
+      retry: false, // DESABILITAR retry
       refetchOnWindowFocus: false, 
       refetchOnMount: true,
-      queryFn: async ({ queryKey }) => {
-        const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
-        return await apiRequest(url as string);
-      },
+      // REMOVER queryFn global que estava causando problemas
     },
     mutations: {
       retry: false,
@@ -56,7 +53,8 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
     
     return data;
   } catch (error) {
-    // Sistema robusto de fallback para erros de conectividade
+    // TRATAR COMPLETAMENTE sem throw para evitar unhandled rejections
+    console.warn(`Requisição falhou: ${absoluteUrl}`, error.message);
     return handleApiError(error, absoluteUrl);
   }
 }

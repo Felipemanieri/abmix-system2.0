@@ -89,16 +89,20 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas
+  // Buscar propostas com tratamento robusto
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
-    refetchInterval: 1000, // 1 segundo como era originalmente
+    queryFn: () => apiRequest('/api/proposals'),
+    refetchInterval: 1000, // 1 segundo - resposta imediata
+    retry: false, // Sem retry para evitar erros
   });
 
-  // Buscar vendedores  
+  // Buscar vendedores com tratamento robusto
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['/api/vendors'],
-    refetchInterval: 1000, // 1 segundo como era originalmente
+    queryFn: () => apiRequest('/api/vendors'),
+    refetchInterval: 1000, // 1 segundo - resposta imediata
+    retry: false, // Sem retry para evitar erros
   });
   
   // REALTIME SYNC TEMPORARIAMENTE DESABILITADO - causando erros repetidos

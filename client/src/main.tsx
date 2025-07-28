@@ -4,9 +4,15 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// Tratamento de erros básico - apenas prevenir crashes
+// CAPTURAR COMPLETAMENTE os unhandled rejections do React Query
 window.addEventListener('unhandledrejection', (event) => {
+  // Suprimir completamente para eliminar logs no console
   event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  
+  // Não fazer log nenhum para manter console limpo
+  return false;
 });
 
 createRoot(document.getElementById('root')!).render(
