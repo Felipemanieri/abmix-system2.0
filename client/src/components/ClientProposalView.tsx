@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Building, FileText, User, Upload, Camera, CheckCircle, Lock, Save, Download, Eye, EyeOff, Plus, Trash2, Users, Phone, Mail, MapPin, Calendar, Shield, Check, Image } from 'lucide-react';
+import { ArrowLeft, Building, FileText, User, Upload, Camera, CheckCircle, Lock, Save, Download, Eye, EyeOff, Plus, Trash2, Users, Phone, Mail, MapPin, Calendar, Shield, Check, Image, X } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
 import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
 
@@ -716,23 +716,21 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           {/* Header */}
           <div className="bg-blue-600 text-white dark:bg-blue-50 dark:bg-blue-9000 dark:text-white p-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('clientProposalToken');
-                    window.location.href = '/';
-                  }}
-                  className="hover:opacity-80 transition-opacity flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar ao Sistema
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold">Completar Proposta de Plano de Saúde</h1>
-                  <p className="text-blue-100 mt-2">Preencha seus dados pessoais para finalizar a proposta</p>
-                </div>
+              <div>
+                <h1 className="text-2xl font-bold">Completar Proposta de Plano de Saúde</h1>
+                <p className="text-blue-100 mt-2">Preencha seus dados pessoais para finalizar a proposta</p>
               </div>
-
+              
+              <button
+                onClick={() => {
+                  localStorage.removeItem('clientProposalToken');
+                  window.location.href = '/';
+                }}
+                className="hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-white/10"
+                title="Fechar"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
             </div>
           </div>
 
@@ -974,24 +972,28 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
             <div className="mb-8">
               <div className="flex items-center mb-4">
                 <Upload className="h-6 w-6 text-blue-600 mr-2" />
-                <h2 className="text-xl font-semibold text-gray-900">Enviar Documentos</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Anexar Cotação</h2>
               </div>
               
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6">
-                <div className="text-center mb-4">
-                  <p className="text-lg text-gray-600 mb-2">Escolha como enviar seus documentos</p>
-                  <p className="text-sm text-gray-500 dark:text-white mb-4">
-                    Aceitos: PDF, JPG, PNG (máx. 10MB cada)
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8">
+                <div className="text-center mb-6">
+                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    Arraste arquivos aqui ou escolha uma opção
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-white mb-6">
+                    Suporte para PDF, DOC, DOCX, JPG, PNG - Sem limite de quantidade
                   </p>
                   
-                  <div className="flex flex-wrap justify-center gap-4">
-                    <label className="bg-blue-600 text-white dark:bg-blue-50 dark:bg-blue-9000 dark:text-white px-6 py-3 rounded-md hover:bg-blue-700 cursor-pointer inline-flex items-center">
-                      <Upload className="h-5 w-5 mr-2" />
-                      Escolher Arquivo
+                  <div className="grid grid-cols-3 gap-4">
+                    <label className="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                      <FileText className="h-8 w-8 text-blue-600 mb-2" />
+                      <span className="text-sm font-medium text-blue-700">Escolher Arquivo</span>
+                      <span className="text-xs text-blue-500">Do computador/celular</span>
                       <input
                         type="file"
                         multiple
-                        accept=".pdf,.jpg,.jpeg,.png"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         onChange={(e) => handleFileUpload(e.target.files)}
                         className="hidden"
                       />
@@ -999,18 +1001,20 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                     
                     <button
                       onClick={handleCameraCapture}
-                      className="bg-green-600 text-white dark:bg-green-50 dark:bg-green-9000 dark:text-white px-6 py-3 rounded-md hover:bg-green-700 inline-flex items-center"
+                      className="flex flex-col items-center justify-center p-4 bg-green-50 dark:bg-green-900 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
                     >
-                      <Camera className="h-5 w-5 mr-2" />
-                      Tirar Foto
+                      <Camera className="h-8 w-8 text-green-600 mb-2" />
+                      <span className="text-sm font-medium text-green-700">Tirar Foto</span>
+                      <span className="text-xs text-green-500">Câmera do dispositivo</span>
                     </button>
                     
                     <button
                       onClick={handleGallerySelect}
-                      className="bg-purple-600 text-white dark:bg-purple-50 dark:bg-purple-9000 dark:text-white px-6 py-3 rounded-md hover:bg-purple-700 inline-flex items-center"
+                      className="flex flex-col items-center justify-center p-4 bg-purple-50 dark:bg-purple-900 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
                     >
-                      <Image className="h-5 w-5 mr-2" />
-                      Da Galeria
+                      <User className="h-8 w-8 text-purple-600 mb-2" />
+                      <span className="text-sm font-medium text-purple-700">Da Galeria</span>
+                      <span className="text-xs text-purple-500">Fotos salvas</span>
                     </button>
                   </div>
                 </div>
