@@ -218,7 +218,6 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
   const tabs = [
     { id: 'interface', name: 'Interface', icon: Monitor },
     { id: 'gestao-usuarios-unificada', name: 'Gestão Unificada de Usuários', icon: Users },
-    { id: 'controle-senhas', name: 'Controle Senhas', icon: Shield },
     { id: 'visualizar-planilha', name: 'Visualizar Planilha', icon: FileText },
     { id: 'logs-sistema', name: 'Logs Sistema', icon: Terminal },
     { id: 'automacao', name: 'Automação', icon: Zap },
@@ -506,28 +505,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
 
 
 
-      case 'controle-senhas':
-        return (
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center mb-6">
-              <Shield className="w-6 h-6 text-red-600 dark:text-red-400 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Controle Individual de Senhas
-              </h3>
-            </div>
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Sistema integrado com Gestão de Usuários
-              </p>
-              <button
-                onClick={() => setActiveTab('gestao-usuarios-unificada')}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
-              >
-                Ir para Gestão de Usuários
-              </button>
-            </div>
-          </div>
-        );
+
 
       case 'visualizar-planilha':
         return <PlanilhaViewer />;
