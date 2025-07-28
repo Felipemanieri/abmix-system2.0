@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import StatusManager, { ProposalStatus } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
+import { globalSyncConfig } from '@/utils/globalSyncConfig';
 
 interface VendorPortalProps {
   user: any;
@@ -702,25 +703,25 @@ Vendedor Abmix`;
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
-  // Hook para buscar metas do vendedor - SOMENTE SUAS METAS INDIVIDUAIS - SINCRONIZAÇÃO ALTA
+  // Hook para buscar metas do vendedor - SOMENTE SUAS METAS INDIVIDUAIS - SINCRONIZAÇÃO CONTROLADA
   const { data: vendorTargets = [], isLoading: vendorTargetsLoading } = useQuery({
     queryKey: ['/api/vendor-targets'],
     queryFn: () => apiRequest('/api/vendor-targets'),
-    refetchInterval: 1000, // SINCRONIZAÇÃO EM TEMPO REAL - 1 segundo
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
-  // Hook para buscar metas de equipe - TODAS AS METAS DE EQUIPE - SINCRONIZAÇÃO ALTA
+  // Hook para buscar metas de equipe - TODAS AS METAS DE EQUIPE - SINCRONIZAÇÃO CONTROLADA
   const { data: teamTargets = [], isLoading: teamTargetsLoading } = useQuery({
     queryKey: ['/api/team-targets'],
     queryFn: () => apiRequest('/api/team-targets'),
-    refetchInterval: 1000, // SINCRONIZAÇÃO EM TEMPO REAL - 1 segundo
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
-  // Hook para buscar premiações - SOMENTE PREMIAÇÕES DO VENDEDOR LOGADO - SINCRONIZAÇÃO ALTA
+  // Hook para buscar premiações - SOMENTE PREMIAÇÕES DO VENDEDOR LOGADO - SINCRONIZAÇÃO CONTROLADA
   const { data: awards = [], isLoading: awardsLoading } = useQuery({
     queryKey: ['/api/awards'],
     queryFn: () => apiRequest('/api/awards'),
-    refetchInterval: 1000, // SINCRONIZAÇÃO EM TEMPO REAL - 1 segundo
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Filtrar apenas as metas individuais DO VENDEDOR LOGADO E PEGAR APENAS A MAIS RECENTE

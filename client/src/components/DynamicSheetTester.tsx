@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Database, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { globalSyncConfig } from '@/utils/globalSyncConfig';
 
 interface TestResult {
   test: string;
@@ -17,17 +18,17 @@ export default function DynamicSheetTester() {
   // Buscar dados para teste
   const { data: proposals = [] } = useQuery({
     queryKey: ['/api/proposals'],
-    refetchInterval: 1000
+    refetchInterval: globalSyncConfig.getReactQueryInterval()
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
-    refetchInterval: 5000
+    refetchInterval: globalSyncConfig.getReactQueryInterval()
   });
 
   const { data: sheetData } = useQuery({
     queryKey: ['/api/proposals/sheet'],
-    refetchInterval: 2000
+    refetchInterval: globalSyncConfig.getReactQueryInterval()
   });
 
   const runTests = async () => {

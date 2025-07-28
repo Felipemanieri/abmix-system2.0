@@ -23,6 +23,7 @@ import { showNotification } from '@/utils/notifications';
 import { realTimeSync } from '@/utils/realTimeSync';
 import { useSupervisorReport } from '@/hooks/useSupervisorReport';
 import { getDynamicGreeting } from '../utils/greetingHelper';
+import { globalSyncConfig } from '@/utils/globalSyncConfig';
 
 interface SupervisorPortalProps {
   user: any;
@@ -87,7 +88,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Buscar vendedores (movido para antes dos useEffects)
@@ -95,7 +96,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     queryKey: ['/api/vendors'],
     queryFn: () => apiRequest('/api/vendors'),
     retry: false,
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
   
   // Ativar sincronização em tempo real
@@ -773,28 +774,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
   const { data: vendorTargets = [], isLoading: targetsLoading } = useQuery({
     queryKey: ['/api/vendor-targets'],
     queryFn: () => apiRequest('/api/vendor-targets'),
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Buscar metas da equipe
   const { data: teamTargets = [], isLoading: teamTargetsLoading } = useQuery({
     queryKey: ['/api/team-targets'],
     queryFn: () => apiRequest('/api/team-targets'),
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Buscar premiações
   const { data: awards = [], isLoading: awardsLoading } = useQuery({
     queryKey: ['/api/awards'],
     queryFn: () => apiRequest('/api/awards'),
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Buscar estatísticas da equipe
   const { data: teamStats = {}, isLoading: teamStatsLoading } = useQuery({
     queryKey: ['/api/analytics/team', selectedMonth, selectedYear],
     queryFn: () => apiRequest(`/api/analytics/team?month=${selectedMonth}&year=${selectedYear}`),
-    refetchInterval: 1000,
+    refetchInterval: globalSyncConfig.getReactQueryInterval(),
   });
 
   // Mutation para criar vendedor

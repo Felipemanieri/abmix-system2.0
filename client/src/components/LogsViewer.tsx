@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Monitor, Download, RefreshCw, Trash2, Search, Filter, AlertTriangle, CheckCircle, Info, X, BarChart3, Database, Users, FileText, Calendar, Clock, Settings, Activity, Folder, FileSpreadsheet, Server } from 'lucide-react';
+import { globalSyncConfig } from '@/utils/globalSyncConfig';
 
 interface LogEntry {
   id: string;
@@ -62,7 +63,7 @@ export default function LogsViewer() {
   const [isLive, setIsLive] = useState(true);
   const [activeTab, setActiveTab] = useState<'logs' | 'control'>('logs');
   const [syncInterval, setSyncInterval] = useState<number>(() => {
-    const saved = localStorage.getItem('syncInterval');
+    const saved = localStorage.getItem('globalSyncInterval');
     return saved ? parseInt(saved) : 1;
   });
   const [logLevel, setLogLevel] = useState<string>(() => {
@@ -949,9 +950,10 @@ export default function LogsViewer() {
                           onChange={(e) => {
                             const interval = parseInt(e.target.value);
                             setSyncInterval(interval);
-                            localStorage.setItem('syncInterval', interval.toString());
-                            setNotification({ message: `Intervalo: ${interval}s`, type: 'success' });
-                            setTimeout(() => setNotification(null), 2000);
+                            globalSyncConfig.setSyncInterval(interval);
+                            globalSyncConfig.invalidateAllQueries(); // Forçar todas as queries a usar novo intervalo
+                            setNotification({ message: `✅ Intervalo global alterado: ${interval}s - Aplicado a TODOS os componentes`, type: 'success' });
+                            setTimeout(() => setNotification(null), 3000);
                           }}
                           className="text-sm bg-white border border-orange-300 rounded px-1 py-0.5 ml-auto"
                         >
