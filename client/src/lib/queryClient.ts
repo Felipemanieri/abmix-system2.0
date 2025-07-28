@@ -1,21 +1,16 @@
 import { QueryClient } from '@tanstack/react-query';
+import { cacheData, getCachedData, handleApiError } from './errorHandler';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000, // 1 segundo - cache mínimo para resposta imediata
-      retry: false, // Sem retry
-      refetchOnWindowFocus: true, // Recarregar no foco para dados frescos
-      refetchOnMount: true, // Carregar imediatamente no mount
-      refetchOnReconnect: true, // Reconectar imediatamente
+      staleTime: 1000 * 30, // 30 segundos
+      retry: 1, // 1 retry para problemas de conexão
+      refetchOnWindowFocus: false, 
+      refetchOnMount: true,
       queryFn: async ({ queryKey }) => {
         const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
-        try {
-          return await apiRequest(url as string);
-        } catch (error) {
-          // Suprimir logs de erro - já tratado no error handler global
-          throw error;
-        }
+        return await apiRequest(url as string);
       },
     },
     mutations: {
@@ -25,13 +20,19 @@ export const queryClient = new QueryClient({
 });
 
 export async function apiRequest(url: string, options: RequestInit = {}) {
+  // Garantir URL absoluta correta
+  const absoluteUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+
     const requestOptions: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      timeout: 10000, // 10 segundos timeout
+      signal: controller.signal,
       ...options,
     };
 
@@ -40,23 +41,22 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
       requestOptions.body = JSON.stringify(options.body);
     }
 
-    const response = await fetch(url, requestOptions);
+    const response = await fetch(absoluteUrl, requestOptions);
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const error = new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-      console.error(`❌ API Error ${url}:`, error.message);
-      throw error;
+      throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    
+    // Salvar dados válidos no cache local
+    cacheData(absoluteUrl, data);
+    
+    return data;
   } catch (error) {
-    // Log específico para diferentes tipos de erro
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      console.error(`🌐 Network Error ${url}:`, 'Conexão falhou - servidor pode estar offline');
-    } else {
-      console.error(`⚠️ Request Error ${url}:`, error);
-    }
-    throw error;
+    // Sistema robusto de fallback para erros de conectividade
+    return handleApiError(error, absoluteUrl);
   }
 }
