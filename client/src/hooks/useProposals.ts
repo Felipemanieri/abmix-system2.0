@@ -111,11 +111,38 @@ export function useProposals() {
     }
   });
 
+  // Mutation para rejeitar proposta com sincronização em tempo real
+  const rejectProposal = useMutation({
+    mutationFn: async (proposalId: string) => {
+      console.log(`❌ REJECTING PROPOSAL: ${proposalId}`);
+      const response = await fetch(`/api/proposals/${proposalId}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Erro ao rejeitar proposta');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log(`❌ REJECTION SUCCESS:`, data);
+      // Invalidar e forçar refetch imediato de todas as consultas relacionadas
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
+      
+      // Sincronização completa após rejeição
+      console.log(`🔄 Forcing immediate update after rejection`);
+      console.log(`✅ All proposal queries invalidated and refetched after rejection`);
+    },
+    onError: (error) => {
+      console.error(`❌ REJECTION ERROR:`, error);
+    }
+  });
+
   return {
     proposals: proposalsWithVendor,
     isLoading,
     error,
     updateProposal,
+    rejectProposal,
     refetch: () => queryClient.invalidateQueries({ queryKey: ['/api/proposals'] })
   };
 }

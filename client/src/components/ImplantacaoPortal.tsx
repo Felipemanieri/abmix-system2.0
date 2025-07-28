@@ -85,7 +85,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   const [proposalStatuses, setProposalStatuses] = useState<Map<string, ProposalStatus>>(new Map());
   
   // Hook para propostas com sincronização em tempo real
-  const { proposals: realProposals, isLoading: proposalsLoading } = useProposals();
+  const { proposals: realProposals, isLoading: proposalsLoading, rejectProposal } = useProposals();
   useRealTimeProposals();
   
   // Hook para exclusão de propostas
@@ -115,6 +115,19 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     } catch (error) {
       console.error('Erro ao excluir proposta:', error);
       showInternalNotification('Erro ao excluir proposta. Tente novamente.', 'error');
+    }
+  };
+
+  // Função para rejeitar proposta com sincronização em tempo real
+  const handleRejectProposal = async (proposalId: string, cliente: string) => {
+    try {
+      console.log(`❌ Rejeitando proposta ${proposalId} - Portal de Implementação`);
+      await rejectProposal.mutateAsync(proposalId);
+      showNotification(`Proposta de ${cliente} rejeitada com sucesso!`, 'success');
+      console.log(`✅ Proposta ${proposalId} rejeitada - Aparecerá imediatamente para vendedor e supervisor`);
+    } catch (error) {
+      console.error('Erro ao rejeitar proposta:', error);
+      showNotification('Erro ao rejeitar proposta. Tente novamente.', 'error');
     }
   };
 
@@ -654,8 +667,8 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                     >
                       <Trash2 className={`w-4 h-4 ${deleteProposal.isPending ? 'animate-spin' : ''}`} />
                     </button>
-                    {/* SISTEMA DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL */}
-                    {!proposal.approved ? (
+                    {/* SISTEMA DE APROVAÇÃO E REJEIÇÃO SINCRONIZADO EM TEMPO REAL */}
+                    {!proposal.approved && !proposal.rejected ? (
                       <>
                         <button
                           onClick={() => handleApproveProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
@@ -665,6 +678,14 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           <CheckCircle className="w-4 h-4" />
                         </button>
                         <button
+                          onClick={() => handleRejectProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                          className="p-2 text-red-600 hover:text-red-800 dark:text-white hover:bg-red-50 rounded-md transition-colors"
+                          title="Rejeitar Proposta"
+                          disabled={rejectProposal.isPending}
+                        >
+                          <XCircle className={`w-4 h-4 ${rejectProposal.isPending ? 'animate-spin' : ''}`} />
+                        </button>
+                        <button
                           onClick={() => showNotification('Alerta: Proposta pendente de aprovação!', 'warning')}
                           className="p-2 text-amber-600 hover:text-amber-800 dark:text-white hover:bg-amber-50 rounded-md transition-colors"
                           title="Alerta - Pendente Aprovação"
@@ -672,14 +693,21 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           <AlertCircle className="w-4 h-4" />
                         </button>
                       </>
-                    ) : (
+                    ) : proposal.approved ? (
                       <span
                         className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full cursor-pointer"
                         title="Proposta Aprovada"
                       >
                         <CheckCircle className="w-4 h-4" />
                       </span>
-                    )}
+                    ) : proposal.rejected ? (
+                      <span
+                        className="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full cursor-pointer"
+                        title="Proposta Rejeitada"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </span>
+                    ) : null}
                     <button
                       onClick={() => {
                         setSelectedProposalForMessage(proposal);

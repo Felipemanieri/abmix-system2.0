@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, DollarSign, TrendingUp, CheckCircle, AlertCircle, Eye, Calculator, Calendar, FileText, User, CreditCard, PieChart, BarChart3, Wallet, MessageSquare, Zap, Users, Upload, Database, Filter, Search, Settings, Mail, Download, Share2, ExternalLink, Send, Copy, X } from 'lucide-react';
+import { LogOut, DollarSign, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Calculator, Calendar, FileText, User, CreditCard, PieChart, BarChart3, Wallet, MessageSquare, Zap, Users, Upload, Database, Filter, Search, Settings, Mail, Download, Share2, ExternalLink, Send, Copy, X } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import ActionButtons from './ActionButtons';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
@@ -91,7 +91,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     realTimeSync.enableAggressivePolling();
   }, []);
   // Usar propostas reais da API
-  const { proposals: realProposals, isLoading: proposalsLoading } = useProposals();
+  const { proposals: realProposals, isLoading: proposalsLoading, rejectProposal } = useProposals();
   const { getClientDocuments } = useGoogleDrive();
   const updateProposal = useUpdateProposal();
   
@@ -118,6 +118,35 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       showNotification('Erro ao atualizar status', 'error');
+    }
+  };
+
+  // Função para aprovar proposta com sincronização em tempo real
+  const handleApproveProposal = async (proposalId: string, cliente: string) => {
+    try {
+      console.log(`✅ Aprovando proposta ${proposalId} - Portal Financeiro`);
+      await updateProposal.mutateAsync({ 
+        id: proposalId, 
+        approved: true 
+      });
+      showNotification(`Proposta de ${cliente} aprovada com sucesso!`, 'success');
+      console.log(`✅ Proposta ${proposalId} aprovada - Aparecerá imediatamente para vendedor e supervisor`);
+    } catch (error) {
+      console.error('Erro ao aprovar proposta:', error);
+      showNotification('Erro ao aprovar proposta. Tente novamente.', 'error');
+    }
+  };
+
+  // Função para rejeitar proposta com sincronização em tempo real
+  const handleRejectProposal = async (proposalId: string, cliente: string) => {
+    try {
+      console.log(`❌ Rejeitando proposta ${proposalId} - Portal Financeiro`);
+      await rejectProposal.mutateAsync(proposalId);
+      showNotification(`Proposta de ${cliente} rejeitada com sucesso!`, 'success');
+      console.log(`✅ Proposta ${proposalId} rejeitada - Aparecerá imediatamente para vendedor e supervisor`);
+    } catch (error) {
+      console.error('Erro ao rejeitar proposta:', error);
+      showNotification('Erro ao rejeitar proposta. Tente novamente.', 'error');
     }
   };
 
@@ -672,19 +701,58 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                     {new Date(proposal.createdAt).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button 
-                      onClick={() => handleAutomateProposal(proposal.id, proposal.contractData?.nomeEmpresa)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs mr-2"
-                    >
-                      <Zap className="h-3 w-3 inline mr-1" />
-                      Automatizar
-                    </button>
-                    <button 
-                      onClick={() => window.open(`${window.location.origin}/cliente/proposta/${proposal.clientToken}`, '_blank')}
-                      className="text-blue-600 hover:text-blue-900 dark:text-white"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      {/* SISTEMA DE APROVAÇÃO E REJEIÇÃO SINCRONIZADO EM TEMPO REAL */}
+                      {!proposal.approved && !proposal.rejected ? (
+                        <>
+                          <button
+                            onClick={() => handleApproveProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                            className="p-2 text-lime-600 hover:text-lime-800 dark:text-white hover:bg-lime-50 rounded-md transition-colors"
+                            title="Aprovar Proposta"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleRejectProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                            className="p-2 text-red-600 hover:text-red-800 dark:text-white hover:bg-red-50 rounded-md transition-colors"
+                            title="Rejeitar Proposta"
+                            disabled={rejectProposal.isPending}
+                          >
+                            <XCircle className={`w-4 h-4 ${rejectProposal.isPending ? 'animate-spin' : ''}`} />
+                          </button>
+                        </>
+                      ) : proposal.approved ? (
+                        <span
+                          className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full cursor-pointer"
+                          title="Proposta Aprovada"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </span>
+                      ) : proposal.rejected ? (
+                        <span
+                          className="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full cursor-pointer"
+                          title="Proposta Rejeitada"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </span>
+                      ) : null}
+                      
+                      <button 
+                        onClick={() => handleAutomateProposal(proposal.id, proposal.contractData?.nomeEmpresa)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs"
+                        title="Automatizar Proposta"
+                      >
+                        <Zap className="h-3 w-3 inline mr-1" />
+                        Automatizar
+                      </button>
+                      <button 
+                        onClick={() => window.open(`${window.location.origin}/cliente/proposta/${proposal.clientToken}`, '_blank')}
+                        className="text-blue-600 hover:text-blue-900 dark:text-white"
+                        title="Visualizar Proposta"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
