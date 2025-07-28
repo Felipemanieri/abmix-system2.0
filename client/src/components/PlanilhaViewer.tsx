@@ -38,8 +38,14 @@ export default function PlanilhaViewer() {
   ];
 
   // Funções para controlar a planilha
+  const realSheetUrl = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+  
   const handleOpenSheet = () => {
-    window.open('https://docs.google.com/spreadsheets/d/1JiC3ksTCdnY3uL9GhG9u8gJO', '_blank');
+    window.open(realSheetUrl, '_blank');
+  };
+
+  const handleAccessLink = () => {
+    window.open(realSheetUrl, '_blank');
   };
 
   const handleRemoveSheet = () => {
@@ -633,7 +639,7 @@ export default function PlanilhaViewer() {
       {/* Controle de Planilhas Conectadas */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b bg-gray-50">
-          <h4 className="text-base font-semibold">Planilhas Conectadas (1)</h4>
+          <h4 className="text-base font-semibold">Planilha conectada</h4>
         </div>
         <div className="p-4">
           <div className="flex items-center justify-between">
@@ -647,11 +653,19 @@ export default function PlanilhaViewer() {
               <div className="text-xs text-gray-600 space-y-1">
                 <div>
                   <span className="font-medium">URL:</span>
-                  <span className="ml-2 text-blue-600">https://docs.google.com/spreadsheets/d/1JiC3ksTCdnY3uL9GhG9u8gJO...</span>
+                  <span className="ml-2 text-blue-600">{realSheetUrl.substring(0, 70)}...</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <span><span className="font-medium">👤 Proprietário:</span> Admin</span>
-                  <span><span className="font-medium">🔗 Link Compartilhamento:</span> <span className="text-green-600">Acessar</span></span>
+                  <span>
+                    <span className="font-medium">🔗 Link Compartilhamento:</span> 
+                    <button 
+                      onClick={handleAccessLink}
+                      className="ml-2 text-green-600 hover:text-green-700 underline cursor-pointer"
+                    >
+                      Acessar
+                    </button>
+                  </span>
                 </div>
                 <div className="flex items-center gap-4">
                   <span>
@@ -708,7 +722,7 @@ export default function PlanilhaViewer() {
                 <select 
                   value={updateInterval}
                   onChange={(e) => handleTimeChange(Number(e.target.value))}
-                  className="px-2 py-1 border border-gray-300 rounded text-xs bg-white focus:border-blue-500 focus:outline-none"
+                  className="px-2 py-1 border border-gray-300 rounded text-xs bg-blue-50 text-blue-700 focus:border-blue-500 focus:outline-none hover:bg-blue-100 transition-colors"
                 >
                   {timeOptions.map(option => (
                     <option key={option.value} value={option.value}>
