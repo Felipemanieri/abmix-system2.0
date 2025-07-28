@@ -561,8 +561,65 @@ export default function PlanilhaViewer() {
     setLastUpdate(new Date());
   };
 
+  // Dados específicos para cada planilha
+  const getPlanilhaData = (planilhaId: number) => {
+    switch(planilhaId) {
+      case 1:
+        return {
+          nome: 'Planilha Principal Abmix',
+          departamento: 'Comercial',
+          dados: proposals,
+          hasData: true
+        };
+      case 2:
+        return {
+          nome: 'Financeiro',
+          departamento: 'Financeiro', 
+          dados: [],
+          hasData: false
+        };
+      case 3:
+        return {
+          nome: 'Relatórios',
+          departamento: 'Administração',
+          dados: [],
+          hasData: false
+        };
+      default:
+        return {
+          nome: 'Planilha Principal Abmix',
+          departamento: 'Comercial',
+          dados: proposals,
+          hasData: true
+        };
+    }
+  };
+
+  const currentPlanilha = getPlanilhaData(selectedPlanilha);
+  const currentProposals = currentPlanilha.dados;
+  const currentDadosFormatados = currentPlanilha.hasData ? dadosFormatados : [];
+  const currentColunas = currentPlanilha.hasData ? colunas : [];
+
   return (
     <div className="space-y-6">
+      {/* Seletor de Planilhas */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="flex items-center gap-4">
+          <label className="text-sm font-medium text-gray-700">Selecionar Planilha:</label>
+          <select
+            value={selectedPlanilha}
+            onChange={(e) => setSelectedPlanilha(Number(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {planilhas.map(planilha => (
+              <option key={planilha.id} value={planilha.id}>
+                {planilha.nome} ({planilha.departamento})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
