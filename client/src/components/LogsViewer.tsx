@@ -24,7 +24,7 @@ export default function LogsViewer() {
   // Simular logs do sistema (em produção, viria do backend)
   const generateMockLog = (): LogEntry => {
     const levels: ('info' | 'warning' | 'error' | 'success')[] = ['info', 'warning', 'error', 'success'];
-    const modules = ['API', 'Database', 'Auth', 'FileUpload', 'GoogleSheets', 'WhatsApp', 'Email', 'Proposal', 'User'];
+    const modules = ['API', 'Banco de Dados', 'Autenticação', 'Upload de Arquivos', 'Google Sheets', 'WhatsApp', 'Email', 'Propostas', 'Usuários'];
     const messages = {
       info: [
         'Sistema iniciado com sucesso',
@@ -251,10 +251,10 @@ export default function LogsViewer() {
           <div className="flex gap-3">
             <button
               onClick={() => setIsLive(!isLive)}
-              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              className={`flex items-center px-4 py-2 rounded-lg border transition-colors font-medium ${
                 isLive 
-                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                  ? 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200 hover:border-orange-300' 
+                  : 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200 hover:border-green-300'
               }`}
             >
               <Monitor className="w-4 h-4 mr-2" />
@@ -262,7 +262,7 @@ export default function LogsViewer() {
             </button>
             <button
               onClick={clearLogs}
-              className="flex items-center px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors font-medium"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Limpar
@@ -270,7 +270,7 @@ export default function LogsViewer() {
             <button
               onClick={exportLogs}
               disabled={filteredLogs.length === 0}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 hover:border-emerald-300 transition-colors disabled:opacity-50 font-medium"
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar
@@ -284,7 +284,7 @@ export default function LogsViewer() {
             <div className="flex items-center">
               <Info className="w-5 h-5 text-blue-600 mr-2" />
               <div>
-                <p className="text-sm text-blue-700">Info</p>
+                <p className="text-sm text-blue-700">Informações</p>
                 <p className="text-xl font-bold text-blue-900">
                   {logs.filter(l => l.level === 'info').length}
                 </p>
@@ -296,7 +296,7 @@ export default function LogsViewer() {
             <div className="flex items-center">
               <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
               <div>
-                <p className="text-sm text-green-700">Success</p>
+                <p className="text-sm text-green-700">Sucesso</p>
                 <p className="text-xl font-bold text-green-900">
                   {logs.filter(l => l.level === 'success').length}
                 </p>
@@ -308,7 +308,7 @@ export default function LogsViewer() {
             <div className="flex items-center">
               <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
               <div>
-                <p className="text-sm text-yellow-700">Warning</p>
+                <p className="text-sm text-yellow-700">Alerta</p>
                 <p className="text-xl font-bold text-yellow-900">
                   {logs.filter(l => l.level === 'warning').length}
                 </p>
@@ -320,7 +320,7 @@ export default function LogsViewer() {
             <div className="flex items-center">
               <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
               <div>
-                <p className="text-sm text-red-700">Error</p>
+                <p className="text-sm text-red-700">Erro</p>
                 <p className="text-xl font-bold text-red-900">
                   {logs.filter(l => l.level === 'error').length}
                 </p>
@@ -358,10 +358,10 @@ export default function LogsViewer() {
               className="px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="all">Todos os níveis</option>
-              <option value="info">Info</option>
-              <option value="success">Success</option>
-              <option value="warning">Warning</option>
-              <option value="error">Error</option>
+              <option value="info">Informações</option>
+              <option value="success">Sucesso</option>
+              <option value="warning">Alertas</option>
+              <option value="error">Erros</option>
             </select>
           </div>
 
@@ -387,7 +387,7 @@ export default function LogsViewer() {
               className="rounded"
             />
             <label htmlFor="autoscroll" className="text-sm text-gray-700">
-              Auto scroll
+              Rolagem automática
             </label>
           </div>
         </div>
