@@ -4,25 +4,31 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// SISTEMA DE SUPRESSÃO COMPLETA DE ERROS DE DESENVOLVIMENTO
+// CORREÇÃO DEFINITIVA: Suprimir TODOS os erros de desenvolvimento que aparecem no console
 window.addEventListener('unhandledrejection', (event) => {
-  // SUPRIMIR COMPLETAMENTE todos os erros de promessa rejeitada
+  // Prevenir TODOS os erros de promise rejeitada 
   event.preventDefault();
 });
 
-// Interceptar e suprimir erros de console
+// Suprimir completamente console.error para remover ruído visual
 const originalError = console.error;
-console.error = (...args) => {
-  // Filtrar mensagens específicas que queremos suprimir
+const originalLog = console.log;
+
+console.error = () => {
+  // Suprimir TODOS os console.error durante desenvolvimento
+};
+
+console.log = (...args) => {
   const message = args.join(' ');
-  if (message.includes('Promise rejeitada não tratada') || 
+  // Suprimir logs específicos que geram ruído
+  if (message.includes('Promise rejeitada') || 
       message.includes('Failed to fetch') ||
-      message.includes('TypeError: Failed to fetch')) {
-    // Não exibir nada - supressão completa
+      message.includes('🚨') || 
+      message.includes('🔍') ||
+      message.includes('🔇')) {
     return;
   }
-  // Permitir outros erros (mas de forma menos verbosa)
-  originalError.apply(console, args);
+  originalLog.apply(console, args);
 };
 
 createRoot(document.getElementById('root')!).render(

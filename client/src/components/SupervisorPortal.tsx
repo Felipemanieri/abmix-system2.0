@@ -89,23 +89,23 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas - Sistema estável sem polling excessivo
+  // Buscar propostas - RESPOSTA IMEDIATA
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: 30000, // 30 segundos - intervalo seguro
-    refetchOnWindowFocus: false,
-    staleTime: 15000, // 15 segundos
+    refetchInterval: 5000, // 5 segundos para resposta imediata
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Sempre recarregar para dados mais frescos
   });
 
-  // Buscar vendedores - Sistema estável sem polling excessivo  
+  // Buscar vendedores - RESPOSTA IMEDIATA
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['/api/vendors'],
     queryFn: () => apiRequest('/api/vendors'),
     retry: false,
-    refetchInterval: 60000, // 1 minuto - vendedores mudam menos
-    refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 segundos
+    refetchInterval: 5000, // 5 segundos para resposta imediata
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Sempre recarregar para dados mais frescos
   });
   
   // REALTIME SYNC TEMPORARIAMENTE DESABILITADO - causando erros repetidos
