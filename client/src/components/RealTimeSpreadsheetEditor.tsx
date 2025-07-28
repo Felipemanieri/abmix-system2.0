@@ -59,6 +59,7 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
   const [searchTerm, setSearchTerm] = useState('');
   const [searchByCNPJ, setSearchByCNPJ] = useState('');
   const [filterColumn, setFilterColumn] = useState('');
+  const [selectedSheet, setSelectedSheet] = useState('PLANILHA_PRINCIPAL');
   const [editingCell, setEditingCell] = useState<{row: number, column: string} | null>(null);
   const [editValue, setEditValue] = useState('');
   const [pendingChanges, setPendingChanges] = useState<Map<string, SheetCell>>(new Map());
@@ -71,6 +72,21 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
 
   const queryClient = useQueryClient();
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Buscar planilhas disponíveis
+  const { data: availableSheets } = useQuery({
+    queryKey: ['/api/sheets/available-sheets'],
+    queryFn: async () => {
+      const response = await fetch('/api/sheets/available-sheets');
+      if (!response.ok) {
+        throw new Error('Falha ao carregar planilhas disponíveis');
+      }
+      const data = await response.json();
+      return data.sheets || [];
+    },
+    refetchInterval: 60000, // Verificar novas planilhas a cada minuto
+    staleTime: 30000,
+  });
 
   // Buscar dados da planilha em tempo real
   const { data: spreadsheetData, isLoading, error, refetch } = useQuery<SpreadsheetData>({
@@ -292,16 +308,40 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
 
         {/* Controles de busca e filtro */}
         <div className="space-y-4">
-          {/* Busca por CNPJ - Prioritária */}
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-orange-400" />
-            <input
-              type="text"
-              placeholder="🔍 Buscar por CNPJ (filtro prioritário)..."
-              value={searchByCNPJ}
-              onChange={(e) => setSearchByCNPJ(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-orange-50"
-            />
+          {/* Linha superior com seleção de planilha e filtro CNPJ */}
+          <div className="flex items-center space-x-4">
+            {/* Seleção de planilha */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700">Planilha:</span>
+              <select 
+                value={selectedSheet}
+                onChange={(e) => setSelectedSheet(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm min-w-[200px]"
+              >
+                {availableSheets?.map((sheet: any) => (
+                  <option key={sheet.name} value={sheet.name}>
+                    {sheet.name}
+                  </option>
+                )) || (
+                  <option value="PLANILHA_PRINCIPAL">PLANILHA_PRINCIPAL</option>
+                )}
+              </select>
+            </div>
+            
+            {/* Filtro CNPJ - Compacto */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-orange-600">CNPJ:</span>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="00.000.000/0000-00"
+                  value={searchByCNPJ}
+                  onChange={(e) => setSearchByCNPJ(e.target.value)}
+                  className="w-[180px] px-3 py-2 text-sm border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 bg-orange-50 placeholder-orange-400"
+                  maxLength={18}
+                />
+              </div>
+            </div>
           </div>
           
           {/* Busca geral */}

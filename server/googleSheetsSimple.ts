@@ -54,6 +54,45 @@ export class GoogleSheetsSimple {
     }
   }
 
+  // Método para listar todas as planilhas/abas disponíveis
+  async getAvailableSheets(sheetId: string) {
+    try {
+      console.log(`📊 GoogleSheetsSimple: Buscando planilhas disponíveis para ${sheetId}`);
+      
+      // Primeiro tenta autenticação completa
+      if (this.sheets && this.auth) {
+        try {
+          const response = await this.sheets.spreadsheets.get({
+            spreadsheetId: sheetId
+          });
+          
+          const sheets = response.data.sheets?.map((sheet: any) => ({
+            name: sheet.properties.title,
+            sheetId: sheet.properties.sheetId,
+            index: sheet.properties.index
+          })) || [];
+          
+          console.log(`✅ GoogleSheetsSimple: ${sheets.length} planilhas encontradas`);
+          return sheets;
+        } catch (authError) {
+          console.log('⚠️ Falha na autenticação, tentando acesso público...');
+        }
+      }
+      
+      // Fallback: retorna apenas a planilha principal conhecida
+      console.log('🔄 Usando planilha principal padrão...');
+      return [
+        { name: 'PLANILHA_PRINCIPAL', sheetId: 0, index: 0 }
+      ];
+      
+    } catch (error) {
+      console.error('❌ GoogleSheetsSimple: Erro ao buscar planilhas:', error);
+      return [
+        { name: 'PLANILHA_PRINCIPAL', sheetId: 0, index: 0 }
+      ];
+    }
+  }
+
   async syncProposalToSheet(proposal: any) {
     try {
       console.log(`📊 GoogleSheetsSimple: Sincronizando proposta ${proposal.id}...`);

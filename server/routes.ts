@@ -638,6 +638,36 @@ export function setupRoutes(app: any) {
   // ROTAS PARA EDIÇÃO EM TEMPO REAL DE PLANILHAS
   // ========================================
 
+  // Rota para buscar planilhas disponíveis
+  app.get('/api/sheets/available-sheets', async (req, res) => {
+    try {
+      console.log('📊 Buscando planilhas disponíveis...');
+
+      // Buscar configuração da planilha principal
+      const driveConfigs = await storage.getDriveConfigs();
+      const mainConfig = driveConfigs.find(config => config.name === 'PLANILHA_PRINCIPAL');
+
+      if (!mainConfig || !mainConfig.sheetId) {
+        return res.status(404).json({ 
+          error: 'Planilha principal não configurada' 
+        });
+      }
+
+      // Buscar planilhas disponíveis via Google Sheets API
+      const availableSheets = await googleSheetsService.getAvailableSheets(mainConfig.sheetId);
+
+      console.log(`✅ ${availableSheets.length} planilhas encontradas`);
+      res.json({ sheets: availableSheets });
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar planilhas disponíveis:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // Rota para buscar dados da planilha em tempo real para edição
   app.get('/api/sheets/realtime-data', async (req, res) => {
     try {
