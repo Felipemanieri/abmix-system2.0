@@ -42,10 +42,15 @@ export class GlobalSyncConfig {
     this.listeners = this.listeners.filter(l => l !== listener);
   }
 
-  // Para React Query - retorna false se intervalo for muito alto
-  getReactQueryInterval(): number | false {
-    // Se intervalo for maior que 30 segundos, desabilitar refetch automático
-    return this._syncInterval > 30000 ? false : this._syncInterval;
+  // Para React Query - sistema híbrido inteligente
+  getReactQueryInterval(isWebSocketConnected: boolean = false): number | false {
+    if (isWebSocketConnected) {
+      // WebSocket conectado = reduzir polling drasticamente (apenas fallback)
+      return this._syncInterval > 10000 ? false : Math.max(this._syncInterval * 10, 60000); // Mín 60s
+    } else {
+      // WebSocket desconectado = usar polling normal
+      return this._syncInterval > 30000 ? false : this._syncInterval;
+    }
   }
 
   // Invalidar todas as queries quando intervalo muda

@@ -24,6 +24,7 @@ import { realTimeSync } from '@/utils/realTimeSync';
 import { useSupervisorReport } from '@/hooks/useSupervisorReport';
 import { getDynamicGreeting } from '../utils/greetingHelper';
 import { globalSyncConfig } from '@/utils/globalSyncConfig';
+import { useSupervisorWebSocket } from '@/hooks/useWebSocket';
 
 interface SupervisorPortalProps {
   user: any;
@@ -70,6 +71,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [activeView, setActiveView] = useState<SupervisorView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
   
+  // WEBSOCKET PARA TEMPO REAL - Substitui polling
+  const { isConnected: isWebSocketConnected } = useSupervisorWebSocket(user.id);
+  
   // DESABILITAR TODAS AS NOTIFICAÇÕES DO SUPERVISOR PORTAL
   const [notifications, setNotifications] = useState([]);
   
@@ -84,19 +88,19 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas (movido para antes dos useEffects)
+  // Buscar propostas - Sistema híbrido WebSocket + polling
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: globalSyncConfig.getReactQueryInterval(),
+    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
   });
 
-  // Buscar vendedores (movido para antes dos useEffects)
+  // Buscar vendedores - Sistema híbrido WebSocket + polling
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['/api/vendors'],
     queryFn: () => apiRequest('/api/vendors'),
     retry: false,
-    refetchInterval: globalSyncConfig.getReactQueryInterval(),
+    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
   });
   
   // Ativar sincronização em tempo real

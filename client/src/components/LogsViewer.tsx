@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Monitor, Download, RefreshCw, Trash2, Search, Filter, AlertTriangle, CheckCircle, Info, X, BarChart3, Database, Users, FileText, Calendar, Clock, Settings, Activity, Folder, FileSpreadsheet, Server } from 'lucide-react';
 import { globalSyncConfig } from '@/utils/globalSyncConfig';
+import { useAdminWebSocket } from '@/hooks/useWebSocket';
 
 interface LogEntry {
   id: string;
@@ -54,6 +55,9 @@ interface RealSystemStats {
 }
 
 export default function LogsViewer() {
+  // WEBSOCKET PARA TEMPO REAL ADMIN
+  const { isConnected: isWebSocketConnected } = useAdminWebSocket(1); // Admin user ID
+  
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -1005,12 +1009,12 @@ export default function LogsViewer() {
                     <div className="mt-3 p-2 bg-slate-50 rounded text-xs">
                       <div className="flex items-center justify-between">
                         <span className="flex items-center">
-                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1"></span>
-                          Promise errors: ATIVO
+                          <span className={`w-1.5 h-1.5 rounded-full mr-1 ${isWebSocketConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          WebSocket: {isWebSocketConnected ? 'CONECTADO' : 'DESCONECTADO'}
                         </span>
                         <span className="flex items-center">
                           <span className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1"></span>
-                          Google: PÚBLICO
+                          Tempo Real: {isLive && isWebSocketConnected ? 'ATIVO' : 'POLLING'}
                         </span>
                       </div>
                     </div>

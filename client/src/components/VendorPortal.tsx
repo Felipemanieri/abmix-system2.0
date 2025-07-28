@@ -24,6 +24,7 @@ import { apiRequest } from '@/lib/queryClient';
 import StatusManager, { ProposalStatus } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
 import { globalSyncConfig } from '@/utils/globalSyncConfig';
+import { useVendorWebSocket } from '@/hooks/useWebSocket';
 
 interface VendorPortalProps {
   user: any;
@@ -84,6 +85,9 @@ const VendorPortal: React.FC<VendorPortalProps> = ({ user, onLogout }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCelebration, setShowCelebration] = useState(false);
+  
+  // WEBSOCKET PARA TEMPO REAL - Substitui polling
+  const { isConnected: isWebSocketConnected } = useVendorWebSocket(user.id);
   
   // Hook para propostas do vendedor
   const { proposals: realProposals, isLoading: proposalsLoading } = useVendorProposals(user?.id || 0);
@@ -703,25 +707,25 @@ Vendedor Abmix`;
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
-  // Hook para buscar metas do vendedor - SOMENTE SUAS METAS INDIVIDUAIS - SINCRONIZAÇÃO CONTROLADA
+  // Hook para buscar metas do vendedor - Sistema híbrido WebSocket + polling
   const { data: vendorTargets = [], isLoading: vendorTargetsLoading } = useQuery({
     queryKey: ['/api/vendor-targets'],
     queryFn: () => apiRequest('/api/vendor-targets'),
-    refetchInterval: globalSyncConfig.getReactQueryInterval(),
+    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
   });
 
-  // Hook para buscar metas de equipe - TODAS AS METAS DE EQUIPE - SINCRONIZAÇÃO CONTROLADA
+  // Hook para buscar metas de equipe - Sistema híbrido WebSocket + polling
   const { data: teamTargets = [], isLoading: teamTargetsLoading } = useQuery({
     queryKey: ['/api/team-targets'],
     queryFn: () => apiRequest('/api/team-targets'),
-    refetchInterval: globalSyncConfig.getReactQueryInterval(),
+    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
   });
 
-  // Hook para buscar premiações - SOMENTE PREMIAÇÕES DO VENDEDOR LOGADO - SINCRONIZAÇÃO CONTROLADA
+  // Hook para buscar premiações - Sistema híbrido WebSocket + polling
   const { data: awards = [], isLoading: awardsLoading } = useQuery({
     queryKey: ['/api/awards'],
     queryFn: () => apiRequest('/api/awards'),
-    refetchInterval: globalSyncConfig.getReactQueryInterval(),
+    refetchInterval: globalSyncConfig.getReactQueryInterval(isWebSocketConnected),
   });
 
   // Filtrar apenas as metas individuais DO VENDEDOR LOGADO E PEGAR APENAS A MAIS RECENTE

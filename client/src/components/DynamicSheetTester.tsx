@@ -15,20 +15,20 @@ export default function DynamicSheetTester() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Buscar dados para teste
+  // Buscar dados para teste - Polling reduzido (não crítico)
   const { data: proposals = [] } = useQuery({
     queryKey: ['/api/proposals'],
-    refetchInterval: globalSyncConfig.getReactQueryInterval()
+    refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
-    refetchInterval: globalSyncConfig.getReactQueryInterval()
+    refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 
   const { data: sheetData } = useQuery({
     queryKey: ['/api/proposals/sheet'],
-    refetchInterval: globalSyncConfig.getReactQueryInterval()
+    refetchInterval: globalSyncConfig.getReactQueryInterval(false) // Sempre usar polling lento
   });
 
   const runTests = async () => {

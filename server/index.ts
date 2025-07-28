@@ -8,6 +8,7 @@ import { GoogleDriveService } from "./googleDriveService";
 import { GoogleSheetsSimple } from "./googleSheetsSimple";
 import { generateDynamicSheet } from "../shared/dynamicSheetGenerator";
 import { setupRoutes } from "./routes";
+import RealTimeManager from "./websocket";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -254,6 +255,21 @@ async function startServer() {
         const proposal = await storage.createProposal(proposalData);
         console.log('✅ Proposta criada com sucesso:', proposal.id);
 
+        // NOTIFICAÇÃO WEBSOCKET EM TEMPO REAL
+        const wss = req.app.get('wss');
+        if (wss) {
+          wss.clients.forEach((client: any) => {
+            if (client.readyState === 1) { // WebSocket.OPEN
+              client.send(JSON.stringify({
+                type: 'proposal_created',
+                data: proposal,
+                timestamp: new Date().toISOString()
+              }));
+            }
+          });
+          console.log('📡 WebSocket notification sent: proposal_created');
+        }
+
         // Tentar sincronizar com Google Sheets
         try {
           await sheetsService.syncProposalToSheet(proposal);
@@ -291,6 +307,21 @@ async function startServer() {
       try {
         const proposal = await storage.updateProposal(req.params.id, req.body);
 
+        // NOTIFICAÇÃO WEBSOCKET EM TEMPO REAL
+        const wss = req.app.get('wss');
+        if (wss) {
+          wss.clients.forEach((client: any) => {
+            if (client.readyState === 1) { // WebSocket.OPEN
+              client.send(JSON.stringify({
+                type: 'proposal_updated',
+                data: proposal,
+                timestamp: new Date().toISOString()
+              }));
+            }
+          });
+          console.log('📡 WebSocket notification sent: proposal_updated');
+        }
+
         // Tentar sincronizar com Google Sheets
         try {
           await sheetsService.syncProposalToSheet(proposal);
@@ -312,6 +343,21 @@ async function startServer() {
         
         if (!proposal) {
           return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+
+        // NOTIFICAÇÃO WEBSOCKET EM TEMPO REAL
+        const wss = req.app.get('wss');
+        if (wss) {
+          wss.clients.forEach((client: any) => {
+            if (client.readyState === 1) { // WebSocket.OPEN
+              client.send(JSON.stringify({
+                type: 'proposal_approved',
+                data: proposal,
+                timestamp: new Date().toISOString()
+              }));
+            }
+          });
+          console.log('📡 WebSocket notification sent: proposal_approved');
         }
 
         console.log(`✅ Proposta ${req.params.id} aprovada com sucesso - Sincronização em tempo real ativa`);
@@ -342,6 +388,21 @@ async function startServer() {
         
         // Get updated proposal to return
         const updatedProposal = await storage.getProposal(req.params.id);
+
+        // NOTIFICAÇÃO WEBSOCKET EM TEMPO REAL
+        const wss = req.app.get('wss');
+        if (wss) {
+          wss.clients.forEach((client: any) => {
+            if (client.readyState === 1) { // WebSocket.OPEN
+              client.send(JSON.stringify({
+                type: 'proposal_rejected',
+                data: updatedProposal,
+                timestamp: new Date().toISOString()
+              }));
+            }
+          });
+          console.log('📡 WebSocket notification sent: proposal_rejected');
+        }
 
         console.log(`❌ Proposta ${req.params.id} rejeitada com sucesso - Sincronização em tempo real ativa`);
         res.json({ 
@@ -1192,10 +1253,20 @@ async function startServer() {
     console.log("📦 Servidor de produção configurado com todas as rotas");
   }
 
+  // Inicializar WebSocket Server ANTES de iniciar o servidor
+  const realTimeManager = new RealTimeManager(server);
+  
+  // Tornar disponível globalmente para as rotas
+  (global as any).realTimeManager = realTimeManager;
+  
+  // Armazenar WebSocket server no app para acesso nas rotas
+  app.set('wss', realTimeManager.wss);
+
   // Try to start server with proper error handling
   server.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔌 WebSocket server ready at ws://localhost:${PORT}/ws`);
   }).on('error', (error: any) => {
     if (error.code === 'EADDRINUSE') {
       console.log(`⚠️ Porta ${PORT} em uso - tentando encerrar processo anterior`);
