@@ -39,6 +39,7 @@ export default function PlanilhaViewer() {
 
   // Funções para controlar a planilha
   const realSheetUrl = 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link';
+  const sheetName = 'Planilha Principal Abmix';
   
   const handleOpenSheet = () => {
     window.open(realSheetUrl, '_blank');
@@ -395,23 +396,24 @@ export default function PlanilhaViewer() {
             <div>
               <h3 className="text-xl font-bold text-gray-900">Visualizador de Planilha em Tempo Real</h3>
               <p className="text-gray-600">Formato de dados antes da integração com Google Sheets</p>
+              <p className="text-xs text-gray-500 italic">Fonte: {sheetName}</p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <button
               onClick={forcarAtualizacao}
               disabled={isLoading}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center px-3 py-1.5 border border-gray-200 rounded text-xs bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
               Atualizar
             </button>
             <button
               onClick={exportarCSV}
               disabled={dadosFormatados.length === 0}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 border border-green-200 rounded text-xs hover:bg-green-100 transition-colors disabled:opacity-50"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-3 h-3 mr-1.5" />
               Baixar CSV
             </button>
           </div>
@@ -552,6 +554,7 @@ export default function PlanilhaViewer() {
             <h4 className="text-base font-semibold flex items-center gap-2">
               <FileText className="h-4 w-4 text-green-600" />
               Preview dos Dados da Planilha
+              <span className="text-xs text-gray-500 italic font-normal">({sheetName})</span>
             </h4>
             <span className="text-gray-600 text-sm">
               Visualização em tempo real dos dados formatados para Google Sheets
@@ -640,6 +643,7 @@ export default function PlanilhaViewer() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b bg-gray-50">
           <h4 className="text-base font-semibold">Planilha conectada</h4>
+          <p className="text-xs text-gray-500 italic mt-1">Fonte: {sheetName}</p>
         </div>
         <div className="p-4">
           <div className="flex items-center justify-between">
