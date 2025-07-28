@@ -304,7 +304,7 @@ export default function PlanilhaViewer() {
     return { maxTitulares, maxDependentes };
   };
 
-  const { maxTitulares, maxDependentes } = getMaxCounts(currentProposals);
+  // Remover esta linha - será declarada mais tarde
 
   // Função para extrair TODOS os campos dinâmicos automaticamente
   const extrairTodosCamposDinamicos = (obj: any, prefix: string = ''): any => {
@@ -340,7 +340,7 @@ export default function PlanilhaViewer() {
   };
 
   const formatarDados = (dataToFormat: any[]) => {
-    return dataToFormat.map((proposal: any) => {
+    return dataToFormat.map((proposal: any): Record<string, any> => {
       const contractData = proposal.contractData || {};
       const titulares = proposal.titulares || [];
       const dependentes = proposal.dependentes || [];
@@ -419,8 +419,8 @@ export default function PlanilhaViewer() {
         RESPONSAVEL_APROVACAO: proposal.responsavelAprovacao || '',
         
         // === ARQUIVOS E DOCUMENTOS ===
-        LISTA_ARQUIVOS_VENDEDOR: vendorAttachments.map(a => a.name || a.fileName || '').join('; '),
-        LISTA_ARQUIVOS_CLIENTE: clientAttachments.map(a => a.name || a.fileName || '').join('; '),
+        LISTA_ARQUIVOS_VENDEDOR: vendorAttachments.map((a: any) => a.name || a.fileName || '').join('; '),
+        LISTA_ARQUIVOS_CLIENTE: clientAttachments.map((a: any) => a.name || a.fileName || '').join('; '),
         DOCUMENTOS_PENDENTES: proposal.documentosPendentes ? JSON.stringify(proposal.documentosPendentes) : '',
         
         // === LOGS E HISTÓRICO ===
@@ -431,7 +431,7 @@ export default function PlanilhaViewer() {
       };
 
       // === TITULARES DINÂMICOS (CAMPOS BASEADOS NOS DADOS REAIS) ===
-      for (let i = 1; i <= maxTitulares; i++) {
+      for (let i = 1; i <= currentMaxCounts.maxTitulares; i++) {
         const titular = titulares[i - 1] || {}; // Array começa em 0, mas numeração em 1
         Object.assign(linhaUnica, {
           [`TITULAR${i}_NOME_COMPLETO`]: titular.nomeCompleto || '',
@@ -454,7 +454,7 @@ export default function PlanilhaViewer() {
       }
 
       // === DEPENDENTES DINÂMICOS (CAMPOS BASEADOS NOS DADOS REAIS) ===
-      for (let i = 1; i <= maxDependentes; i++) {
+      for (let i = 1; i <= currentMaxCounts.maxDependentes; i++) {
         const dependente = dependentes[i - 1] || {}; // Array começa em 0, mas numeração em 1
         Object.assign(linhaUnica, {
           [`DEPENDENTE${i}_NOME_COMPLETO`]: dependente.nomeCompleto || '',
@@ -595,7 +595,7 @@ export default function PlanilhaViewer() {
     }
   };
 
-  // Dados específicos da planilha selecionada
+  // Dados específicos da planilha selecionada (movido para cá)
   const currentPlanilha = getPlanilhaData(selectedPlanilha);
   const currentProposals = currentPlanilha.dados;
   
@@ -758,9 +758,9 @@ export default function PlanilhaViewer() {
             </div>
 
             <div className="space-y-2">
-              <div className="font-medium text-purple-800">👥 Pessoas ({maxTitulares * 16 + maxDependentes * 17})</div>
+              <div className="font-medium text-purple-800">👥 Pessoas ({currentMaxTitulares * 16 + currentMaxDependentes * 17})</div>
               <div className="text-xs text-gray-600 space-y-1">
-                <div>• <strong>Titulares ({maxTitulares} × 16 campos):</strong></div>
+                <div>• <strong>Titulares ({currentMaxTitulares} × 16 campos):</strong></div>
                 <div>  Nome, CPF, RG, Data Nascimento</div>
                 <div>  Nome Mãe, Sexo, Estado Civil</div>
                 <div>  Peso, Altura, Emails, Telefones</div>
