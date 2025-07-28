@@ -1232,25 +1232,35 @@ async function startServer() {
 
     console.log("🚀 Servidor com Vite iniciado");
   } else {
-    // Production mode - todas as mesmas rotas do desenvolvimento
-    console.log("📦 Modo produção - configurando todas as rotas da API");
+    // Production mode - configurar todas as rotas necessárias
+    console.log("📦 Modo produção - configurando servidor completo");
 
     // INSTÂNCIAS DOS SERVIÇOS GOOGLE
     const driveService = GoogleDriveService.getInstance();
     const sheetsService = GoogleSheetsSimple.getInstance();
 
-    // Copiar todas as rotas do modo desenvolvimento aqui também
-    // (mesmo código das rotas acima)
-
-    // Servir arquivos estáticos
-    const distPath = path.resolve(__dirname, "public");
-    app.use(express.static(distPath));
-
-    app.use("*", (_req: Request, res: Response) => {
-      res.sendFile(path.resolve(distPath, "index.html"));
+    // Rota de teste básica
+    app.get('/api/test', (req: Request, res: Response) => {
+      res.json({ success: true, message: 'API funcionando em produção' });
     });
 
-    console.log("📦 Servidor de produção configurado com todas as rotas");
+    // Configurar todas as rotas da API usando setupRoutes
+    console.log("📎 Registrando rotas completas para produção...");
+    setupRoutes(app);
+
+    // Servir arquivos estáticos do build
+    const distPath = path.resolve(__dirname, "..", "dist");
+    console.log(`📦 Servindo arquivos estáticos de: ${distPath}`);
+    app.use(express.static(distPath));
+
+    // Fallback para SPA
+    app.use("*", (_req: Request, res: Response) => {
+      const indexPath = path.resolve(distPath, "index.html");
+      console.log(`📄 Enviando index.html de: ${indexPath}`);
+      res.sendFile(indexPath);
+    });
+
+    console.log("✅ Servidor de produção configurado com todas as rotas");
   }
 
   // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
