@@ -79,6 +79,7 @@ export const proposals = pgTable("proposals", {
   status: varchar("status").default("observacao"),
   priority: varchar("priority").default("medium"),
   approved: boolean("approved").default(false),
+  rejected: boolean("rejected").default(false),
   // NOVOS CAMPOS PARA INTEGRAÇÃO GOOGLE DRIVE
   driveFolder: text("drive_folder"), // Link da pasta no Google Drive
   folderName: text("folder_name"), // Nome editável da pasta

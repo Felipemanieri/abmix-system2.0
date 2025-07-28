@@ -326,6 +326,28 @@ async function startServer() {
       }
     });
 
+    // ENDPOINT PARA REJEITAR PROPOSTA - Sistema de sincronização em tempo real
+    app.post('/api/proposals/:id/reject', async (req: Request, res: Response) => {
+      try {
+        console.log(`❌ Rejeitando proposta ${req.params.id} - Portal de Implementação/Financeiro`);
+        const proposal = await storage.rejectProposal(req.params.id);
+        
+        if (!proposal) {
+          return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+
+        console.log(`❌ Proposta ${req.params.id} rejeitada com sucesso - Sincronização em tempo real ativa`);
+        res.json({ 
+          success: true, 
+          proposal,
+          message: 'Proposta rejeitada com sucesso' 
+        });
+      } catch (error) {
+        console.error(`❌ Erro ao rejeitar proposta ${req.params.id}:`, error);
+        res.status(500).json({ error: 'Erro ao rejeitar proposta' });
+      }
+    });
+
     app.delete('/api/proposals/:id', async (req: Request, res: Response) => {
       try {
         await storage.deleteProposal(req.params.id);

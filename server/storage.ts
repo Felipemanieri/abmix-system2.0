@@ -732,6 +732,27 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  async rejectProposal(proposalId: string): Promise<void> {
+    console.log(`❌ STORAGE: Rejeitando proposta ${proposalId}`);
+    
+    try {
+      await db
+        .update(proposals)
+        .set({ 
+          rejected: true,
+          approved: false,
+          status: 'rejeitado',
+          updatedAt: new Date()
+        })
+        .where(eq(proposals.id, proposalId));
+      
+      console.log(`✅ STORAGE: Proposta ${proposalId} rejeitada com sucesso`);
+    } catch (error) {
+      console.error(`❌ STORAGE: Erro ao rejeitar proposta ${proposalId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
