@@ -3,11 +3,10 @@ import { QueryClient } from '@tanstack/react-query';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0, // DADOS SEMPRE FRESCOS - RESPOSTA INSTANTÂNEA
-      retry: false, // Zero retry para máxima velocidade
-      refetchOnWindowFocus: true, // Atualizar sempre
-      refetchOnMount: true, // Carregamento instantâneo
-      refetchOnReconnect: true, // Reconectar imediatamente
+      staleTime: 1000 * 60 * 2, // 2 minutos - cache razoável
+      retry: false, // Sem retry para evitar sobrecarga
+      refetchOnWindowFocus: false, // Não recarregar no foco
+      refetchOnMount: true, // Carregar uma vez no mount
       queryFn: async ({ queryKey }) => {
         const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
         try {
