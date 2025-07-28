@@ -804,48 +804,41 @@ export default function PlanilhaViewer() {
           </div>
           
           {/* Seção de Gerenciamento de Dados do Google Sheets */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <h5 className="text-sm font-semibold text-gray-700 mb-3">🗂️ Gerenciamento de Dados da Planilha</h5>
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <h5 className="text-xs font-medium text-gray-600 mb-2">Gerenciamento de Dados</h5>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex gap-2">
               {/* Deletar linha específica */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Trash2 className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-800">Remover Linha Específica</span>
-                </div>
-                
+              <div className="flex-1">
                 {!showDeleteForm ? (
                   <button
                     onClick={() => setShowDeleteForm(true)}
-                    className="w-full px-3 py-2 bg-yellow-100 text-yellow-700 text-sm rounded hover:bg-yellow-200 transition-colors"
+                    className="w-full px-2 py-1.5 bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs rounded hover:bg-yellow-100 transition-colors flex items-center justify-center gap-1"
                   >
-                    Selecionar ID para Remover
+                    <Trash2 className="h-3 w-3" />
+                    Remover Linha
                   </button>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <input
                       type="text"
                       value={deleteProposalId}
                       onChange={(e) => setDeleteProposalId(e.target.value)}
-                      placeholder="Digite o ID da proposta (ex: ABM001)"
-                      className="w-full px-3 py-2 border border-yellow-300 rounded text-sm focus:outline-none focus:border-yellow-500"
+                      placeholder="ID da proposta"
+                      className="w-full px-2 py-1 border border-yellow-300 rounded text-xs focus:outline-none focus:border-yellow-500"
                     />
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <button
                         onClick={handleDeleteProposalRow}
                         disabled={isDeletingRow || !deleteProposalId.trim()}
-                        className="flex-1 px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                        className="flex-1 px-2 py-1 bg-red-50 text-red-600 text-xs rounded hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                       >
                         {isDeletingRow ? (
-                          <>
-                            <RefreshCw className="h-3 w-3 animate-spin" />
-                            Removendo...
-                          </>
+                          <RefreshCw className="h-3 w-3 animate-spin" />
                         ) : (
                           <>
                             <Trash2 className="h-3 w-3" />
-                            Remover
+                            Excluir
                           </>
                         )}
                       </button>
@@ -854,9 +847,9 @@ export default function PlanilhaViewer() {
                           setShowDeleteForm(false);
                           setDeleteProposalId('');
                         }}
-                        className="px-3 py-2 bg-gray-100 text-gray-600 text-sm rounded hover:bg-gray-200 transition-colors"
+                        className="px-2 py-1 bg-gray-50 text-gray-600 text-xs rounded hover:bg-gray-100 transition-colors"
                       >
-                        Cancelar
+                        ✕
                       </button>
                     </div>
                   </div>
@@ -864,22 +857,16 @@ export default function PlanilhaViewer() {
               </div>
 
               {/* Limpar toda a planilha */}
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Database className="h-4 w-4 text-red-600" />
-                  <span className="text-sm font-medium text-red-800">Limpar Toda a Planilha</span>
-                </div>
-                <p className="text-xs text-red-600 mb-3">Remove todas as linhas de dados (mantém cabeçalhos)</p>
-                
+              <div className="flex-1">
                 <button
                   onClick={handleClearSheet}
                   disabled={isClearingSheet}
-                  className="w-full px-3 py-2 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                  className="w-full px-2 py-1.5 bg-red-50 border border-red-200 text-red-700 text-xs rounded hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                 >
                   {isClearingSheet ? (
                     <>
                       <RefreshCw className="h-3 w-3 animate-spin" />
-                      Limpando Planilha...
+                      Limpando...
                     </>
                   ) : (
                     <>
@@ -889,10 +876,6 @@ export default function PlanilhaViewer() {
                   )}
                 </button>
               </div>
-            </div>
-            
-            <div className="mt-3 text-xs text-gray-500 bg-blue-50 p-2 rounded">
-              <strong>💡 Sincronização:</strong> Alterações são aplicadas em tempo real no Google Sheets e refletidas automaticamente no sistema.
             </div>
           </div>
         </div>
