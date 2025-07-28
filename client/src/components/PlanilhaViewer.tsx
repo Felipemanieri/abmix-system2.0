@@ -483,13 +483,15 @@ export default function PlanilhaViewer() {
       {/* Preview da Planilha */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b bg-gray-50">
-          <h4 className="text-base font-semibold flex items-center gap-2 mb-2">
-            <FileText className="h-4 w-4 text-green-600" />
-            Preview dos Dados da Planilha
-          </h4>
-          <p className="text-gray-600 text-sm mb-2">
-            Visualização em tempo real dos dados formatados para Google Sheets
-          </p>
+          <div className="flex items-center gap-3 mb-2">
+            <h4 className="text-base font-semibold flex items-center gap-2">
+              <FileText className="h-4 w-4 text-green-600" />
+              Preview dos Dados da Planilha
+            </h4>
+            <span className="text-gray-600 text-sm">
+              Visualização em tempo real dos dados formatados para Google Sheets
+            </span>
+          </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <span className="flex items-center gap-1">
               ↔️ Role horizontalmente para ver todos os {colunas.length} campos
