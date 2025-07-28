@@ -482,17 +482,24 @@ export default function PlanilhaViewer() {
 
       {/* Preview da Planilha */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-6 border-b">
-          <h4 className="text-lg font-semibold flex items-center gap-2">
-            <FileText className="h-5 w-5 text-green-600" />
+        <div className="p-4 border-b bg-gray-50">
+          <h4 className="text-base font-semibold flex items-center gap-2 mb-2">
+            <FileText className="h-4 w-4 text-green-600" />
             Preview dos Dados da Planilha
           </h4>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 text-sm mb-2">
             Visualização em tempo real dos dados formatados para Google Sheets
           </p>
-          <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
-            <span>↔️ Role horizontalmente para ver todos os {colunas.length} campos</span>
-            <span>🔄 Atualização automática a cada 5 segundos</span>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              ↔️ Role horizontalmente para ver todos os {colunas.length} campos
+            </span>
+            <span className="flex items-center gap-1">
+              🔄 Atualização automática a cada 5 segundos
+            </span>
+            <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded">
+              📊 {proposals.length} propostas carregadas
+            </span>
           </div>
         </div>
 
