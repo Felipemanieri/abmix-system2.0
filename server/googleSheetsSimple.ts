@@ -31,7 +31,10 @@ export class GoogleSheetsSimple {
         clientEmail,
         undefined,
         privateKey,
-        ['https://www.googleapis.com/auth/spreadsheets']
+        [
+          'https://www.googleapis.com/auth/spreadsheets',
+          'https://www.googleapis.com/auth/drive.readonly'
+        ]
       );
 
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
@@ -132,26 +135,68 @@ export class GoogleSheetsSimple {
         range: range
       };
     } catch (error) {
-      console.error('❌ GoogleSheetsSimple: Erro ao buscar dados REAIS:', error);
-      console.error('Detalhes do erro:', error);
+      console.log('⚠️ Falha na autenticação, tentando acesso público...');
       
-      // Dados simulados com estrutura completa da planilha real
-      console.log('🔄 Usando dados simulados com estrutura completa da planilha...');
-      const mockData = {
-        values: [
-          // Headers completos baseados na estrutura típica da planilha
-          ['ID', 'Nome', 'CNPJ', 'Email', 'Telefone', 'Empresa', 'Endereço', 'Cidade', 'Estado', 'CEP', 'Plano', 'Valor', 'Status', 'Data_Criacao', 'Vendedor', 'Observacoes', 'Aprovado', 'Data_Aprovacao', 'Implementacao', 'Data_Implementacao'],
-          // Dados simulados com CNPJ para teste de filtro
-          ['001', 'João Silva Santos', '12.345.678/0001-90', 'joao.silva@empresaa.com.br', '(11) 99999-9999', 'Empresa A Ltda', 'Rua das Flores, 123', 'São Paulo', 'SP', '01234-567', 'Plano Premium', 'R$ 50.000,00', 'Ativo', '01/01/2025', 'Vendedor A', 'Cliente potencial', 'Sim', '05/01/2025', 'Em andamento', '10/01/2025'],
-          ['002', 'Maria Santos Lima', '98.765.432/0001-10', 'maria.santos@empresab.com.br', '(11) 88888-8888', 'Empresa B S.A.', 'Av. Principal, 456', 'Rio de Janeiro', 'RJ', '20000-000', 'Plano Básico', 'R$ 75.000,00', 'Pendente', '02/01/2025', 'Vendedor B', 'Aguardando aprovação', 'Não', '', 'Pendente', ''],
-          ['003', 'Pedro Costa Oliveira', '11.222.333/0001-44', 'pedro.costa@empresac.com.br', '(11) 77777-7777', 'Empresa C Eireli', 'Rua do Comércio, 789', 'Belo Horizonte', 'MG', '30000-000', 'Plano Intermediário', 'R$ 30.000,00', 'Ativo', '03/01/2025', 'Vendedor A', 'Renovação anual', 'Sim', '06/01/2025', 'Concluído', '08/01/2025'],
-          ['004', 'Ana Paula Ferreira', '55.666.777/0001-88', 'ana.paula@empresad.com.br', '(11) 66666-6666', 'Empresa D Corp', 'Alameda dos Negócios, 101', 'Curitiba', 'PR', '80000-000', 'Plano Premium Plus', 'R$ 120.000,00', 'Concluído', '04/01/2025', 'Vendedor C', 'Cliente VIP', 'Sim', '07/01/2025', 'Concluído', '12/01/2025'],
-          ['005', 'Carlos Lima Souza', '99.888.777/0001-66', 'carlos.lima@empresae.com.br', '(11) 55555-5555', 'Empresa E Ltda ME', 'Praça Central, 202', 'Salvador', 'BA', '40000-000', 'Plano Básico', 'R$ 85.000,00', 'Ativo', '05/01/2025', 'Vendedor B', 'Primeira contratação', 'Sim', '08/01/2025', 'Em andamento', '15/01/2025'],
-          ['006', 'Fernanda Rocha Silva', '33.444.555/0001-22', 'fernanda.rocha@empresaf.com.br', '(11) 44444-4444', 'Empresa F S.A.', 'Rua da Tecnologia, 303', 'Brasília', 'DF', '70000-000', 'Plano Corporativo', 'R$ 200.000,00', 'Negociação', '06/01/2025', 'Vendedor A', 'Grande empresa', 'Em análise', '', 'Aguardando', ''],
-          ['007', 'Ricardo Alves Pereira', '77.666.555/0001-33', 'ricardo.alves@empresag.com.br', '(11) 33333-3333', 'Empresa G Eireli', 'Av. da Inovação, 404', 'Fortaleza', 'CE', '60000-000', 'Plano Premium', 'R$ 95.000,00', 'Ativo', '07/01/2025', 'Vendedor C', 'Referência de cliente', 'Sim', '09/01/2025', 'Em andamento', '20/01/2025']
-        ]
-      };
-      return mockData;
+      try {
+        // Tenta acesso público via CSV export
+        const publicUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+        console.log(`🌐 Tentando acesso público: ${publicUrl}`);
+        
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(publicUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const csvData = await response.text();
+        const lines = csvData.trim().split('\n');
+        const values = lines.map(line => {
+          // Parse CSV simples - divide por vírgula e remove aspas
+          const cells = [];
+          let currentCell = '';
+          let insideQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+              cells.push(currentCell.trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          cells.push(currentCell.trim());
+          return cells;
+        });
+
+        if (values.length === 0) {
+          throw new Error('Nenhum dado encontrado na planilha');
+        }
+
+        console.log(`✅ GoogleSheetsSimple: ${values.length} linhas encontradas (acesso público)`);
+        return {
+          values: values,
+          spreadsheetId: sheetId,
+          range: range,
+          accessMethod: 'public'
+        };
+
+      } catch (publicError) {
+        console.error('❌ GoogleSheetsSimple: Erro ao acessar planilha pública:', publicError);
+        
+        const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+        console.error('');
+        console.error('🚨 PROBLEMA DE ACESSO À PLANILHA:');
+        console.error(`📧 Compartilhe a planilha com: ${clientEmail}`);
+        console.error('📝 Ou verifique se a planilha está pública para visualização');
+        console.error('🔗 Link da planilha: https://docs.google.com/spreadsheets/d/' + sheetId);
+        console.error('');
+        
+        throw new Error(`ACESSO NEGADO: Planilha não acessível. Erro: ${publicError.message}`);
+      }
     }
   }
 
