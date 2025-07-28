@@ -1086,28 +1086,26 @@ export default function LogsViewer() {
                             </select>
                             <button 
                               onClick={async () => {
-                                if (confirm('Confirma zerar o contador de Propostas Hoje?')) {
-                                  try {
-                                    const response = await fetch('/api/reset-counter', {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ counter: 'propostas_hoje' })
-                                    });
-                                    
-                                    if (response.ok) {
-                                      setNotification({
-                                        message: '✅ Contador "Propostas Hoje" zerado com sucesso',
-                                        type: 'success'
-                                      });
-                                      setTimeout(() => setNotification(null), 3000);
-                                    }
-                                  } catch (error) {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'propostas_hoje' })
+                                  });
+                                  
+                                  if (response.ok) {
                                     setNotification({
-                                      message: '❌ Erro ao resetar contador',
-                                      type: 'error'
+                                      message: '✅ Contador "Propostas Hoje" zerado com sucesso',
+                                      type: 'success'
                                     });
                                     setTimeout(() => setNotification(null), 3000);
                                   }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1134,9 +1132,27 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
-                                if (confirm('Confirma zerar o contador de Aprovadas Hoje?')) {
-                                  resetCounter('Aprovadas Hoje');
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'aprovadas_hoje' })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setNotification({
+                                      message: '✅ Contador "Aprovadas Hoje" zerado com sucesso',
+                                      type: 'success'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1163,9 +1179,27 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
-                                if (confirm('Confirma zerar o contador de Rejeitadas Hoje?')) {
-                                  resetCounter('Rejeitadas Hoje');
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'rejeitadas_hoje' })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setNotification({
+                                      message: '✅ Contador "Rejeitadas Hoje" zerado com sucesso',
+                                      type: 'success'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1197,9 +1231,27 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
-                                if (confirm('Confirma zerar o contador semanal?')) {
-                                  resetCounter('Propostas Semana');
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'propostas_semana' })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setNotification({
+                                      message: '✅ Contador "Propostas Esta Semana" zerado com sucesso',
+                                      type: 'success'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1226,9 +1278,27 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
-                                if (confirm('Confirma zerar o contador mensal?')) {
-                                  resetCounter('Propostas Mês');
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'propostas_mes' })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setNotification({
+                                      message: '✅ Contador "Propostas Este Mês" zerado com sucesso',
+                                      type: 'success'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
@@ -1255,9 +1325,27 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
-                                if (confirm('Confirma zerar o contador anual?')) {
-                                  resetCounter('Propostas Ano');
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch('/api/reset-counter', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ counter: 'propostas_ano' })
+                                  });
+                                  
+                                  if (response.ok) {
+                                    setNotification({
+                                      message: '✅ Contador "Propostas Este Ano" zerado com sucesso',
+                                      type: 'success'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
+                                } catch (error) {
+                                  setNotification({
+                                    message: '❌ Erro ao resetar contador',
+                                    type: 'error'
+                                  });
+                                  setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
