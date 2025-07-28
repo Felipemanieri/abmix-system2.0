@@ -1036,8 +1036,8 @@ export default function LogsViewer() {
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <RefreshCw className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Última Sincronização</p>
-                        <p className="text-sm font-bold text-purple-700">14:10:18</p>
-                        <p className="text-xs text-slate-500 mt-1">28/07/2025</p>
+                        <p className="text-sm font-bold text-purple-700">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-xs text-slate-500 mt-1">{new Date().toLocaleDateString('pt-BR')}</p>
                       </div>
                       
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
@@ -1085,9 +1085,29 @@ export default function LogsViewer() {
                               <option value="manual">Manual</option>
                             </select>
                             <button 
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm('Confirma zerar o contador de Propostas Hoje?')) {
-                                  resetCounter('Propostas Hoje');
+                                  try {
+                                    const response = await fetch('/api/reset-counter', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ counter: 'propostas_hoje' })
+                                    });
+                                    
+                                    if (response.ok) {
+                                      setNotification({
+                                        message: '✅ Contador "Propostas Hoje" zerado com sucesso',
+                                        type: 'success'
+                                      });
+                                      setTimeout(() => setNotification(null), 3000);
+                                    }
+                                  } catch (error) {
+                                    setNotification({
+                                      message: '❌ Erro ao resetar contador',
+                                      type: 'error'
+                                    });
+                                    setTimeout(() => setNotification(null), 3000);
+                                  }
                                 }
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
