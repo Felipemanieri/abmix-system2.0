@@ -674,10 +674,10 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       </>
                     ) : (
                       <span
-                        className="px-3 py-2 bg-green-100 text-green-800 rounded-md text-sm font-medium"
+                        className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full cursor-pointer"
                         title="Proposta Aprovada"
                       >
-                        ✅ Aprovada
+                        <CheckCircle className="w-4 h-4" />
                       </span>
                     )}
                     <button

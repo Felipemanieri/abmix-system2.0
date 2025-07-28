@@ -2191,22 +2191,20 @@ Vendedor Abmix`;
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex items-center space-x-2">
-                              {/* INDICADOR DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL */}
+                              {/* INDICADOR DE APROVAÇÃO SINCRONIZADO EM TEMPO REAL - SOMENTE SÍMBOLOS */}
                               {proposal.approved ? (
                                 <span
-                                  className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium animate-pulse"
+                                  className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full animate-pulse hover:bg-green-200 transition-colors cursor-pointer"
                                   title="Proposta Aprovada pelo Portal de Implementação"
                                 >
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Aprovada ✅
+                                  <CheckCircle className="w-4 h-4" />
                                 </span>
                               ) : (
                                 <span
-                                  className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs"
+                                  className="inline-flex items-center justify-center w-8 h-8 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 transition-colors cursor-pointer"
                                   title="Aguardando Aprovação"
                                 >
-                                  <AlertCircle className="w-3 h-3 mr-1" />
-                                  Pendente
+                                  <AlertCircle className="w-4 h-4" />
                                 </span>
                               )}
                               
