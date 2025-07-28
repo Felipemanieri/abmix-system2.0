@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Download, RefreshCw, Eye, Clock, Users, Database, Play, Pause, ExternalLink, Trash2, Edit, Save, Plus, Sync } from 'lucide-react';
+import { FileText, Download, RefreshCw, Eye, Clock, Users, Database, Play, Pause, ExternalLink, Trash2, Edit, Save, Plus } from 'lucide-react';
 
 export default function PlanilhaViewer() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -1020,7 +1020,7 @@ export default function PlanilhaViewer() {
                 </>
               ) : (
                 <>
-                  <Sync className="h-4 w-4" />
+                  <RefreshCw className="h-4 w-4" />
                   Sincronizar Dados
                 </>
               )}
