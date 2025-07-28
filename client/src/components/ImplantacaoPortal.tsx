@@ -246,7 +246,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // SISTEMA DE CONTAGEM AUTOMÁTICA BASEADO EM APROVAÇÃO/REJEIÇÃO
   const aguardandoValidacao = realProposalsData.filter(p => !p.approved && !p.rejected).length;
   const validadas = realProposalsData.filter(p => p.approved === true).length;
-  const emProcessamento = realProposalsData.filter(p => p.status !== 'implantada').length;
+  const emProcessamento = realProposalsData.filter(p => p.status !== 'implantada' && p.status !== 'implantado').length;
   // MANTENDO LÓGICA ORIGINAL PARA CONCLUÍDAS (baseada no status)
   const concluidas = realProposalsData.filter(p => p.status === 'implantado').length;
 
