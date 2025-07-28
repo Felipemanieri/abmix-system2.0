@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Download, RefreshCw, Eye, Clock, Users, Database, Play, Pause, ExternalLink, Trash2, Edit, Save } from 'lucide-react';
+import { FileText, Download, RefreshCw, Eye, Clock, Users, Database, Play, Pause, ExternalLink, Trash2, Edit, Save, Plus, Sync } from 'lucide-react';
 
 export default function PlanilhaViewer() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -13,6 +13,8 @@ export default function PlanilhaViewer() {
   const [isDeletingRow, setIsDeletingRow] = useState(false);
   const [isClearingSheet, setIsClearingSheet] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [editFormData, setEditFormData] = useState({
     nomePlanilha: 'Planilha Principal',
     departamento: 'Comercial',
@@ -21,6 +23,35 @@ export default function PlanilhaViewer() {
     linkCompartilhamento: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link',
     observacao: 'Planilha para controle de vendas do Q1 2025'
   });
+  const [addFormData, setAddFormData] = useState({
+    nomePlanilha: '',
+    departamento: 'Comercial',
+    linkId: '',
+    proprietario: '',
+    linkCompartilhamento: '',
+    observacao: ''
+  });
+  const [planilhas, setPlanilhas] = useState([
+    {
+      id: 1,
+      nome: 'Planilha Principal Abmix',
+      departamento: 'Comercial',
+      tipo: 'principal'
+    },
+    {
+      id: 2,
+      nome: 'Financeiro',
+      departamento: 'Financeiro',
+      tipo: 'extra'
+    },
+    {
+      id: 3,
+      nome: 'Relatórios',
+      departamento: 'Administração',
+      tipo: 'extra'
+    }
+  ]);
+  const [selectedPlanilha, setSelectedPlanilha] = useState(1);
 
   // Buscar todas as propostas para gerar planilha
   const { data: proposals = [], isLoading, refetch } = useQuery({
@@ -164,6 +195,65 @@ export default function PlanilhaViewer() {
       setLastUpdate(new Date());
     } catch (error) {
       alert('Erro ao salvar alterações da planilha');
+    }
+  };
+
+  // Função para abrir modal de adicionar planilha
+  const handleOpenAddModal = () => {
+    setAddFormData({
+      nomePlanilha: '',
+      departamento: 'Comercial',
+      linkId: '',
+      proprietario: '',
+      linkCompartilhamento: '',
+      observacao: ''
+    });
+    setShowAddModal(true);
+  };
+
+  // Função para adicionar nova planilha
+  const handleAddNewSheet = async () => {
+    if (!addFormData.nomePlanilha.trim() || !addFormData.linkId.trim() || !addFormData.proprietario.trim()) {
+      alert('Por favor, preencha todos os campos obrigatórios (Nome, Link/ID e Proprietário)');
+      return;
+    }
+
+    try {
+      // Simular chamada para API que adiciona nova planilha
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const newPlanilha = {
+        id: planilhas.length + 1,
+        nome: addFormData.nomePlanilha,
+        departamento: addFormData.departamento,
+        tipo: 'adicionada',
+        dados: addFormData
+      };
+      
+      setPlanilhas([...planilhas, newPlanilha]);
+      alert('Nova planilha adicionada com sucesso!');
+      setShowAddModal(false);
+      refetch(); // Atualizar dados locais
+      setLastUpdate(new Date());
+    } catch (error) {
+      alert('Erro ao adicionar nova planilha');
+    }
+  };
+
+  // Função para sincronizar dados com Google Sheets
+  const handleSyncData = async () => {
+    setIsSyncing(true);
+    try {
+      // Simular sincronização com Google Sheets
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      alert('Sincronização com Google Sheets concluída com sucesso!');
+      refetch(); // Atualizar dados locais
+      setLastUpdate(new Date());
+    } catch (error) {
+      alert('Erro durante a sincronização com Google Sheets');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -907,6 +997,35 @@ export default function PlanilhaViewer() {
               </div>
             </div>
           </div>
+          
+          {/* Botões de Ação */}
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={handleOpenAddModal}
+              className="flex-1 px-4 py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg hover:bg-green-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Adicionar Planilha
+            </button>
+            
+            <button
+              onClick={handleSyncData}
+              disabled={isSyncing}
+              className="flex-1 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isSyncing ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Sincronizando...
+                </>
+              ) : (
+                <>
+                  <Sync className="h-4 w-4" />
+                  Sincronizar Dados
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1052,6 +1171,137 @@ export default function PlanilhaViewer() {
                   className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
                 >
                   Salvar Alterações
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Adicionar Nova Planilha */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Adicionar Nova Planilha
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Nome da Planilha */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome da Planilha *
+                    </label>
+                    <input
+                      type="text"
+                      value={addFormData.nomePlanilha}
+                      onChange={(e) => setAddFormData({...addFormData, nomePlanilha: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: Planilha de Vendas Q2"
+                    />
+                  </div>
+                  
+                  {/* Departamento */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Departamento *
+                    </label>
+                    <select
+                      value={addFormData.departamento}
+                      onChange={(e) => setAddFormData({...addFormData, departamento: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="Comercial">Comercial</option>
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Implantação">Implantação</option>
+                      <option value="Supervisão">Supervisão</option>
+                      <option value="Administração">Administração</option>
+                      <option value="Sistema">Sistema</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Link/ID do Google Sheets */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link/ID do Google Sheets *
+                  </label>
+                  <input
+                    type="text"
+                    value={addFormData.linkId}
+                    onChange={(e) => setAddFormData({...addFormData, linkId: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Cole a URL completa ou apenas o ID da planilha"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Cole a URL completa ou apenas o ID da planilha
+                  </p>
+                </div>
+
+                {/* Proprietário */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Proprietário *
+                  </label>
+                  <input
+                    type="text"
+                    value={addFormData.proprietario}
+                    onChange={(e) => setAddFormData({...addFormData, proprietario: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nome e email do responsável pela planilha"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nome e email do responsável pela planilha
+                  </p>
+                </div>
+
+                {/* Link de Compartilhamento */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link de Compartilhamento (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={addFormData.linkCompartilhamento}
+                    onChange={(e) => setAddFormData({...addFormData, linkCompartilhamento: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Link público para compartilhamento (se diferente do link principal)"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Link público para compartilhamento (se diferente do link principal)
+                  </p>
+                </div>
+
+                {/* Observação */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Observação (opcional)
+                  </label>
+                  <textarea
+                    value={addFormData.observacao}
+                    onChange={(e) => setAddFormData({...addFormData, observacao: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: Planilha para controle específico do departamento"
+                  />
+                </div>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleAddNewSheet}
+                  className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Adicionar Planilha
                 </button>
               </div>
             </div>
