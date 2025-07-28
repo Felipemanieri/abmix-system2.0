@@ -226,7 +226,6 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
     { id: 'config-planilhas', name: 'Config Planilhas', icon: Database },
     { id: 'google-drive', name: 'Google Drive', icon: FolderOpen },
     { id: 'backup-restore', name: 'Backup & Restore', icon: Archive },
-    { id: 'gestao-usuarios', name: 'Gestão Unificada de Usuários', icon: Users },
     { id: 'sistema', name: 'Sistema', icon: Settings }
   ];
 
@@ -505,8 +504,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
           </div>
         );
 
-      case 'gestao-usuarios':
-        return <UserManagementDashboard />;
+
 
       case 'controle-senhas':
         return (
@@ -553,22 +551,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
         return <BackupManager />;
 
       case 'gestao-usuarios-unificada':
-        return (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                <Users className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
-                Gestão Unificada de Usuários
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Sistema centralizado para gerenciar todos os usuários do sistema e vendedores
-              </p>
-            </div>
-            <div className="p-6">
-              <UserManagementDashboard />
-            </div>
-          </div>
-        );
+        return <UserManagementDashboard />;
 
       case 'sistema':
         return (

@@ -437,7 +437,7 @@ export default function UnifiedUserManagement() {
           <div className="flex gap-2">
             <button
               onClick={() => refetch()}
-              className="flex items-center px-4 py-2 border border-blue-300 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+              className="flex items-center px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 hover:border-slate-300 transition-colors font-medium"
               type="button"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
