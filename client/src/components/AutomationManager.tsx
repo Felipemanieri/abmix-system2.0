@@ -517,6 +517,124 @@ export default function AutomationManager() {
         ))}
       </div>
 
+      {/* Automações Criadas */}
+      {createdAutomations.length > 0 && (
+        <div className="space-y-4">
+          <div className="border-t pt-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Automações Ativas
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {createdAutomations.map((automation) => (
+              <div 
+                key={automation.id}
+                className="bg-white border border-gray-200 rounded-lg p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center">
+                      <Play className="w-5 h-5 text-green-600 mr-2" />
+                      <h3 className="text-lg font-bold text-gray-900">
+                        {automation.name}
+                      </h3>
+                      <span className="ml-3 px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                        Make.com
+                      </span>
+                      <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
+                        automation.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {automation.status === 'active' ? 'Ativa' : 'Pausada'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleExecuteAutomation(automation.id)}
+                      className="flex items-center px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-colors font-medium"
+                    >
+                      <Play className="w-4 h-4 mr-1" />
+                      Executar
+                    </button>
+                    
+                    <button
+                      onClick={() => handleToggleAutomationStatus(automation.id)}
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors font-medium ${
+                        automation.status === 'active'
+                          ? 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                          : 'bg-green-100 hover:bg-green-200 text-green-700'
+                      }`}
+                    >
+                      {automation.status === 'active' ? (
+                        <>
+                          <Pause className="w-4 h-4 mr-1" />
+                          Pausar
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 mr-1" />
+                          Ativar
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenConfig(automations.find(a => a.platform === 'make')!)}
+                      className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
+                    >
+                      <Settings className="w-4 h-4 mr-1" />
+                      Configurações
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Trigger:</span>
+                    <p className="font-medium text-gray-900">{getTriggerText(automation.trigger)}</p>
+                  </div>
+                  
+                  <div>
+                    <span className="text-gray-600">Ação:</span>
+                    <p className="font-medium text-gray-900">{getActionText(automation.action)}</p>
+                  </div>
+                  
+                  <div>
+                    <span className="text-gray-600">Última execução:</span>
+                    <p className="font-medium text-gray-900">{automation.lastRun}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between text-sm">
+                  <div className="flex items-center space-x-6">
+                    <div>
+                      <span className="text-gray-600">Execuções:</span>
+                      <span className="ml-1 font-medium text-gray-900">{automation.executions}</span>
+                    </div>
+                    
+                    <div>
+                      <span className="text-gray-600">Taxa de sucesso:</span>
+                      <span className="ml-1 font-medium text-green-600">98.5%</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleDeleteAutomation(automation.id)}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Modal de Configuração */}
       {configModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
