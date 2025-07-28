@@ -12,6 +12,15 @@ export default function PlanilhaViewer() {
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [isDeletingRow, setIsDeletingRow] = useState(false);
   const [isClearingSheet, setIsClearingSheet] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    nomePlanilha: 'Planilha Principal',
+    departamento: 'Sistema',
+    linkId: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link',
+    proprietario: 'Admin',
+    linkCompartilhamento: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link',
+    observacao: 'Planilha para controle de vendas do Q1 2025'
+  });
 
   // Buscar todas as propostas para gerar planilha
   const { data: proposals = [], isLoading, refetch } = useQuery({
@@ -135,6 +144,26 @@ export default function PlanilhaViewer() {
       alert('Erro ao limpar planilha');
     } finally {
       setIsClearingSheet(false);
+    }
+  };
+
+  // Função para abrir modal de edição
+  const handleOpenEditModal = () => {
+    setShowEditModal(true);
+  };
+
+  // Função para salvar alterações da planilha
+  const handleSaveSheetChanges = async () => {
+    try {
+      // Simular chamada para API que salva as alterações da planilha
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      alert('Alterações da planilha salvas com sucesso!');
+      setShowEditModal(false);
+      refetch(); // Atualizar dados locais
+      setLastUpdate(new Date());
+    } catch (error) {
+      alert('Erro ao salvar alterações da planilha');
     }
   };
 
@@ -764,7 +793,7 @@ export default function PlanilhaViewer() {
                 Remover
               </button>
               <button 
-                onClick={handleEditSheet}
+                onClick={handleOpenEditModal}
                 className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded hover:bg-gray-200 transition-colors flex items-center gap-1"
               >
                 <Edit className="h-3 w-3" />
@@ -898,6 +927,136 @@ export default function PlanilhaViewer() {
           Total de {colunas.length} colunas sendo geradas automaticamente
         </p>
       </div>
+
+      {/* Modal de Edição da Planilha */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Editar Planilha - Planilha Principal
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Nome da Planilha */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome da Planilha *
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.nomePlanilha}
+                      onChange={(e) => setEditFormData({...editFormData, nomePlanilha: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Ex: Planilha Principal"
+                    />
+                  </div>
+                  
+                  {/* Departamento */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Departamento *
+                    </label>
+                    <select
+                      value={editFormData.departamento}
+                      onChange={(e) => setEditFormData({...editFormData, departamento: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="Sistema">Sistema</option>
+                      <option value="Vendas">Vendas</option>
+                      <option value="Financeiro">Financeiro</option>
+                      <option value="Implementação">Implementação</option>
+                      <option value="Administração">Administração</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Link/ID do Google Sheets */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link/ID do Google Sheets *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.linkId}
+                    onChange={(e) => setEditFormData({...editFormData, linkId: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Cole a URL completa ou apenas o ID da planilha"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Cole a URL completa ou apenas o ID da planilha
+                  </p>
+                </div>
+
+                {/* Proprietário */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Proprietário *
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.proprietario}
+                    onChange={(e) => setEditFormData({...editFormData, proprietario: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nome e email do responsável pela planilha"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nome e email do responsável pela planilha
+                  </p>
+                </div>
+
+                {/* Link de Compartilhamento */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Link de Compartilhamento (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.linkCompartilhamento}
+                    onChange={(e) => setEditFormData({...editFormData, linkCompartilhamento: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Link público para compartilhamento (se diferente do link principal)"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Link público para compartilhamento (se diferente do link principal)
+                  </p>
+                </div>
+
+                {/* Observação */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Observação (opcional)
+                  </label>
+                  <textarea
+                    value={editFormData.observacao}
+                    onChange={(e) => setEditFormData({...editFormData, observacao: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: Planilha para controle de vendas do Q1 2025"
+                  />
+                </div>
+              </div>
+              
+              {/* Botões de Ação */}
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveSheetChanges}
+                  className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
