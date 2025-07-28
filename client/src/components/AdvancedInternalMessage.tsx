@@ -142,7 +142,9 @@ export default function AdvancedInternalMessage({
   // Buscar usuários da Gestão Unificada de Usuários (mesmo endpoint usado na Área Restrita)
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ['/api/auth/users'],
-    refetchInterval: 5000 // Sincronização mais rápida para detectar remoções de usuários
+    enabled: isOpen, // Só buscar quando modal aberto
+    refetchOnWindowFocus: false, // Não refetch automaticamente
+    staleTime: 10 * 60 * 1000 // 10 minutos - dados de usuários são estáticos
   });
 
   // Buscar mensagens do inbox - USAR URL CORRETA
@@ -158,8 +160,9 @@ export default function AdvancedInternalMessage({
       console.log('📬 MENSAGENS INBOX RECEBIDAS:', data.length, 'mensagens');
       return data;
     },
-    refetchInterval: 10000, // 10 segundos para dados reais
-    enabled: isOpen && activeTab === 'inbox'
+    enabled: isOpen && activeTab === 'inbox',
+    refetchOnWindowFocus: false,
+    staleTime: 30000 // 30 segundos - mensagens podem ser atualizadas menos frequentemente
   });
 
   // Buscar mensagens enviadas - USAR URL CORRETA
@@ -175,8 +178,9 @@ export default function AdvancedInternalMessage({
       console.log('📤 MENSAGENS ENVIADAS RECEBIDAS:', data.length, 'mensagens');
       return data;
     },
-    refetchInterval: 10000, // 10 segundos para dados reais
-    enabled: isOpen && activeTab === 'sent'
+    enabled: isOpen && activeTab === 'sent',
+    refetchOnWindowFocus: false,
+    staleTime: 30000 // 30 segundos - mensagens enviadas são estáticas
   });
 
   // Mutation para enviar mensagem

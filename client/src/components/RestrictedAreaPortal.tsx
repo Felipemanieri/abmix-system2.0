@@ -53,6 +53,7 @@ import {
 import GoogleSheetsManager from './GoogleSheetsManager';
 import IntegrationManual from './IntegrationManual';
 import SpreadsheetEditor from './SpreadsheetEditor';
+import RealTimeSpreadsheetEditor from './RealTimeSpreadsheetEditor';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
 import AutomationManager from './AutomationManager';
 import GoogleDriveSetup from './GoogleDriveSetup';
@@ -520,7 +521,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
         return <IntegrationManual />;
 
       case 'config-planilhas':
-        return <SpreadsheetEditor />;
+        return <RealTimeSpreadsheetEditor />;
 
       case 'google-drive':
         return <GoogleDriveSetup />;

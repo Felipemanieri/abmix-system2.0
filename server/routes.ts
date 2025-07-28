@@ -629,6 +629,186 @@ export function setupRoutes(app: any) {
       });
     }
   });
+
+  // ========================================
+  // ROTAS PARA EDIÇÃO EM TEMPO REAL DE PLANILHAS
+  // ========================================
+
+  // Rota para buscar dados da planilha em tempo real para edição
+  app.get('/api/sheets/realtime-data', async (req, res) => {
+    try {
+      console.log('📊 Buscando dados da planilha em tempo real...');
+
+      // Buscar configuração da planilha principal
+      const driveConfigs = await storage.getDriveConfigs();
+      const mainConfig = driveConfigs.find(config => config.name === 'PLANILHA_PRINCIPAL');
+
+      if (!mainConfig || !mainConfig.sheetId) {
+        return res.status(404).json({ 
+          error: 'Planilha principal não configurada' 
+        });
+      }
+
+      // Buscar dados da planilha via Google Sheets API
+      const sheetsData = await googleSheetsService.getSheetData(
+        mainConfig.sheetId,
+        mainConfig.range || 'A:Z'
+      );
+
+      if (!sheetsData || !sheetsData.values) {
+        return res.status(404).json({ 
+          error: 'Dados da planilha não encontrados' 
+        });
+      }
+
+      // Processar dados para formato de edição
+      const [headers, ...rows] = sheetsData.values;
+      const processedData = rows.map((row, rowIndex) => {
+        const rowData: any = {};
+        headers.forEach((header, colIndex) => {
+          const value = row[colIndex] || '';
+          rowData[header] = {
+            value,
+            type: detectCellType(value),
+            editable: true, // Por padrão, todas as células são editáveis
+            formula: value.startsWith('=') ? value : undefined
+          };
+        });
+        return rowData;
+      });
+
+      const response = {
+        sheetId: mainConfig.sheetId,
+        sheetName: mainConfig.name,
+        range: mainConfig.range || 'A:Z',
+        headers,
+        data: processedData,
+        lastSync: new Date().toISOString(),
+        totalRows: rows.length,
+        totalColumns: headers.length,
+        isReadOnly: false
+      };
+
+      console.log(`✅ Dados processados: ${response.totalRows} linhas, ${response.totalColumns} colunas`);
+      res.json(response);
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados da planilha:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // Rota para atualizar células da planilha
+  app.post('/api/sheets/update-cells', async (req, res) => {
+    try {
+      const { changes } = req.body;
+      console.log('💾 Atualizando células da planilha:', changes);
+
+      if (!changes || !Array.isArray(changes)) {
+        return res.status(400).json({ error: 'Dados de alteração inválidos' });
+      }
+
+      // Buscar configuração da planilha principal
+      const driveConfigs = await storage.getDriveConfigs();
+      const mainConfig = driveConfigs.find(config => config.name === 'PLANILHA_PRINCIPAL');
+
+      if (!mainConfig || !mainConfig.sheetId) {
+        return res.status(404).json({ 
+          error: 'Planilha principal não configurada' 
+        });
+      }
+
+      // Atualizar células no Google Sheets
+      const updateResults = [];
+      for (const change of changes) {
+        const { row, column, value } = change;
+        
+        // Buscar headers para determinar o índice da coluna
+        const sheetsData = await googleSheetsService.getSheetData(
+          mainConfig.sheetId,
+          'A1:Z1' // Apenas headers
+        );
+        
+        const headers = sheetsData?.values?.[0] || [];
+        const colIndex = headers.indexOf(column);
+        
+        if (colIndex === -1) {
+          console.warn(`⚠️ Coluna não encontrada: ${column}`);
+          continue;
+        }
+
+        // Converter índices para notação A1
+        const cellAddress = `${String.fromCharCode(65 + colIndex)}${row + 2}`; // +2 porque row é 0-indexed e temos header
+        
+        try {
+          await googleSheetsService.updateCell(
+            mainConfig.sheetId,
+            cellAddress,
+            value
+          );
+          
+          updateResults.push({
+            row,
+            column,
+            cellAddress,
+            value,
+            success: true
+          });
+          
+          console.log(`✅ Célula atualizada: ${cellAddress} = ${value}`);
+        } catch (error) {
+          console.error(`❌ Erro ao atualizar célula ${cellAddress}:`, error);
+          updateResults.push({
+            row,
+            column,
+            cellAddress,
+            value,
+            success: false,
+            error: error instanceof Error ? error.message : 'Erro desconhecido'
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        updatedCells: updateResults.filter(r => r.success).length,
+        failedCells: updateResults.filter(r => !r.success).length,
+        results: updateResults
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao atualizar células:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // Função auxiliar para detectar tipo de célula
+  function detectCellType(value: string): string {
+    if (!value) return 'text';
+    
+    // Número
+    if (!isNaN(Number(value)) && value !== '') return 'number';
+    
+    // Moeda
+    if (/^[R$]\s*[\d.,]+$/.test(value)) return 'currency';
+    
+    // Data
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(value)) return 'date';
+    
+    // Email
+    if (value.includes('@') && value.includes('.')) return 'email';
+    
+    // Telefone
+    if (/^\(?\d{2}\)?\s*\d{4,5}-?\d{4}$/.test(value)) return 'phone';
+    
+    return 'text';
+  }
   
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos e Google test)');
 }

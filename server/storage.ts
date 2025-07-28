@@ -753,6 +753,38 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // Método para buscar configurações do Google Drive/Sheets
+  async getDriveConfigs(): Promise<Array<{
+    id: string;
+    name: string;
+    sheetId: string;
+    range: string;
+    folderId?: string;
+    status: 'active' | 'inactive';
+  }>> {
+    try {
+      console.log('📊 STORAGE: Buscando configurações do Drive/Sheets');
+      
+      // Retornar configuração mock da planilha principal
+      const configs = [
+        {
+          id: 'main-sheet',
+          name: 'PLANILHA_PRINCIPAL',
+          sheetId: '1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw',
+          range: 'A:Z',
+          folderId: 'main-folder-id',
+          status: 'active' as const
+        }
+      ];
+      
+      console.log(`✅ STORAGE: ${configs.length} configurações encontradas`);
+      return configs;
+    } catch (error) {
+      console.error('❌ STORAGE: Erro ao buscar configurações do Drive:', error);
+      return [];
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
