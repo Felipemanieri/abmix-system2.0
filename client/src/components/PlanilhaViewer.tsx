@@ -429,8 +429,8 @@ export default function PlanilhaViewer() {
           </div>
         </div>
 
-        {/* Detalhamento Completo dos Campos */}
-        <div className="bg-white border rounded-lg p-4 mb-6">
+        {/* Detalhamento Completo dos Campos - OCULTO */}
+        <div className="hidden bg-white border rounded-lg p-4 mb-6">
           <h4 className="font-semibold text-gray-900 mb-3">🗂️ Campos Incluídos na Planilha (Total: {colunas.length})</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="space-y-2">
@@ -558,8 +558,8 @@ export default function PlanilhaViewer() {
         )}
       </div>
 
-      {/* Estrutura Completa das Colunas */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* Estrutura Completa das Colunas - OCULTO */}
+      <div className="hidden bg-white rounded-lg shadow p-6">
         <h4 className="text-lg font-semibold mb-4">📊 Estrutura Completa das Colunas</h4>
         <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
