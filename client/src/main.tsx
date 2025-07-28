@@ -4,12 +4,24 @@ import { queryClient } from './lib/queryClient';
 import App from './App.tsx';
 import './index.css';
 
-// MOSTRAR TODOS OS LOGS - REMOVER SUPRESSÃO
+// CAPTURAR E FILTRAR UNHANDLED REJECTIONS
 window.addEventListener('unhandledrejection', (event) => {
+  const errorMessage = event.reason?.message || event.reason?.toString() || '';
+  const stack = event.reason?.stack || '';
+  
+  // Suprimir APENAS erros do Vite HMR (ping durante reconexão)
+  if (errorMessage.includes('Failed to fetch') && 
+      stack.includes('ping') && 
+      stack.includes('@vite/client')) {
+    // Suprimir erros do Vite HMR durante reconexão
+    event.preventDefault();
+    return;
+  }
+  
+  // Mostrar todos os outros erros
   console.error('❌ UNHANDLED REJECTION:', event.reason);
   console.error('❌ PROMISE:', event.promise);
   console.error('❌ STACK:', event.reason?.stack);
-  // NÃO SUPRIMIR - deixar o erro aparecer para diagnóstico
 });
 
 createRoot(document.getElementById('root')!).render(
