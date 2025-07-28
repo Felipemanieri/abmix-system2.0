@@ -46,13 +46,13 @@ import {
   DollarSign,
   MessageCircle,
   MessageSquare,
-  X,
-  Sync
+  X
 } from 'lucide-react';
 
 // Importações dos componentes criados
 import GoogleSheetsManager from './GoogleSheetsManager';
 import IntegrationManual from './IntegrationManual';
+import SpreadsheetEditor from './SpreadsheetEditor';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
 import AutomationManager from './AutomationManager';
 import GoogleDriveSetup from './GoogleDriveSetup';
@@ -210,7 +210,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
 
     } catch (error) {
       console.error('ERRO CRÍTICO ao atualizar configurações:', error);
-      showNotification('Erro ao salvar configuração', 'error');
+      showInternalNotification('Erro ao salvar configuração', 'error');
     }
   };
 
@@ -222,7 +222,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
     { id: 'logs-sistema', name: 'Logs Sistema', icon: Terminal },
     { id: 'automacao', name: 'Automação', icon: Zap },
     { id: 'integracoes', name: 'Manual de Integrações', icon: Book },
-    { id: 'config-planilhas', name: 'Config Planilhas', icon: Database },
+    { id: 'config-planilhas', name: 'Edição de Planilhas', icon: Edit },
     { id: 'google-drive', name: 'Google Drive', icon: FolderOpen },
     { id: 'backup-restore', name: 'Backup & Restore', icon: Archive },
     { id: 'sistema', name: 'Sistema', icon: Settings }
@@ -520,7 +520,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
         return <IntegrationManual />;
 
       case 'config-planilhas':
-        return <GoogleSheetsManager />;
+        return <SpreadsheetEditor />;
 
       case 'google-drive':
         return <GoogleDriveSetup />;
