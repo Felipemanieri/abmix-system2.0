@@ -279,11 +279,11 @@ export default function PlanilhaViewer() {
   };
 
   // REGRA ILIMITADA: Detecta automaticamente 1-99+ titulares e dependentes
-  const getMaxCounts = () => {
+  const getMaxCounts = (currentData: any[]) => {
     let maxTitulares = 1; // Mínimo 1 (sem limite máximo)
     let maxDependentes = 0; // Mínimo 0 (pode não ter dependentes)
     
-    proposals.forEach((proposal: any) => {
+    currentData.forEach((proposal: any) => {
       const titulares = proposal.titulares || [];
       const dependentes = proposal.dependentes || [];
       
@@ -304,7 +304,7 @@ export default function PlanilhaViewer() {
     return { maxTitulares, maxDependentes };
   };
 
-  const { maxTitulares, maxDependentes } = getMaxCounts();
+  const { maxTitulares, maxDependentes } = getMaxCounts(currentProposals);
 
   // Função para extrair TODOS os campos dinâmicos automaticamente
   const extrairTodosCamposDinamicos = (obj: any, prefix: string = ''): any => {
@@ -339,8 +339,8 @@ export default function PlanilhaViewer() {
     return campos;
   };
 
-  const formatarDados = () => {
-    return proposals.map((proposal: any) => {
+  const formatarDados = (dataToFormat: any[]) => {
+    return dataToFormat.map((proposal: any) => {
       const contractData = proposal.contractData || {};
       const titulares = proposal.titulares || [];
       const dependentes = proposal.dependentes || [];
@@ -536,23 +536,23 @@ export default function PlanilhaViewer() {
     });
   };
 
-  const dadosFormatados = formatarDados();
+  const dadosFormatados = formatarDados(proposals);
   const colunas = dadosFormatados.length > 0 ? Object.keys(dadosFormatados[0]) : [];
 
   const exportarCSV = () => {
-    if (dadosFormatados.length === 0) return;
+    if (currentDadosFormatados.length === 0) return;
 
     const csvContent = [
-      colunas.join(','),
-      ...dadosFormatados.map(linha => 
-        colunas.map(coluna => `"${linha[coluna] || '[vazio]'}"`).join(',')
+      currentColunas.join(','),
+      ...currentDadosFormatados.map(linha => 
+        currentColunas.map(coluna => `"${linha[coluna] || '[vazio]'}"`).join(',')
       )
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `planilha_sistema_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `${currentPlanilha.nome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
@@ -595,10 +595,18 @@ export default function PlanilhaViewer() {
     }
   };
 
+  // Dados específicos da planilha selecionada
   const currentPlanilha = getPlanilhaData(selectedPlanilha);
   const currentProposals = currentPlanilha.dados;
-  const currentDadosFormatados = currentPlanilha.hasData ? dadosFormatados : [];
-  const currentColunas = currentPlanilha.hasData ? colunas : [];
+  
+  // Dados formatados baseados na planilha atual
+  const currentDadosFormatados = currentPlanilha.hasData ? formatarDados(currentProposals) : [];
+  const currentColunas = currentDadosFormatados.length > 0 ? Object.keys(currentDadosFormatados[0]) : [];
+  
+  // Contadores específicos da planilha atual
+  const currentMaxCounts = getMaxCounts(currentProposals);
+  const currentMaxTitulares = currentMaxCounts.maxTitulares;
+  const currentMaxDependentes = currentMaxCounts.maxDependentes;
 
   return (
     <div className="space-y-6">
@@ -626,9 +634,9 @@ export default function PlanilhaViewer() {
           <div className="flex items-center">
             <FileText className="w-6 h-6 text-green-600 mr-3" />
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Visualizador de Planilha em Tempo Real</h3>
+              <h3 className="text-xl font-bold text-gray-900">Visualizador de Planilha em Tempo Real - {currentPlanilha.nome}</h3>
               <p className="text-gray-600">Formato de dados antes da integração com Google Sheets</p>
-              <p className="text-xs text-gray-500 italic">Fonte: {sheetName}</p>
+              <p className="text-xs text-gray-500 italic">Fonte: {currentPlanilha.departamento}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -642,7 +650,7 @@ export default function PlanilhaViewer() {
             </button>
             <button
               onClick={exportarCSV}
-              disabled={dadosFormatados.length === 0}
+              disabled={currentDadosFormatados.length === 0}
               className="flex items-center px-3 py-1.5 bg-green-50 text-green-600 border border-green-200 rounded text-xs hover:bg-green-100 transition-colors disabled:opacity-50"
             >
               <Download className="w-3 h-3 mr-1.5" />
@@ -658,7 +666,7 @@ export default function PlanilhaViewer() {
               <Eye className="w-5 h-5 text-blue-600 mr-2" />
               <div>
                 <p className="text-sm text-blue-700">Total de Propostas</p>
-                <p className="text-2xl font-bold text-blue-900">{proposals.length}</p>
+                <p className="text-2xl font-bold text-blue-900">{currentProposals.length}</p>
               </div>
             </div>
           </div>
@@ -668,7 +676,7 @@ export default function PlanilhaViewer() {
               <Users className="w-5 h-5 text-green-600 mr-2" />
               <div>
                 <p className="text-sm text-green-700">Colunas Geradas</p>
-                <p className="text-2xl font-bold text-green-900">{colunas.length}</p>
+                <p className="text-2xl font-bold text-green-900">{currentColunas.length}</p>
               </div>
             </div>
           </div>
@@ -695,7 +703,7 @@ export default function PlanilhaViewer() {
                 <Users className="w-4 h-4 text-blue-600" />
                 <span className="font-medium text-blue-900">Máximo Titulares</span>
               </div>
-              <p className="text-2xl font-bold text-blue-600">{maxTitulares}</p>
+              <p className="text-2xl font-bold text-blue-600">{currentMaxTitulares}</p>
               <p className="text-xs text-gray-600">campos criados dinamicamente</p>
             </div>
 
@@ -704,7 +712,7 @@ export default function PlanilhaViewer() {
                 <Users className="w-4 h-4 text-purple-600" />
                 <span className="font-medium text-purple-900">Máximo Dependentes</span>
               </div>
-              <p className="text-2xl font-bold text-purple-600">{maxDependentes}</p>
+              <p className="text-2xl font-bold text-purple-600">{currentMaxDependentes}</p>
               <p className="text-xs text-gray-600">campos criados dinamicamente</p>
             </div>
 
@@ -713,7 +721,7 @@ export default function PlanilhaViewer() {
                 <FileText className="w-4 h-4 text-green-600" />
                 <span className="font-medium text-green-900">Total Colunas</span>
               </div>
-              <p className="text-2xl font-bold text-green-600">{colunas.length}</p>
+              <p className="text-2xl font-bold text-green-600">{currentColunas.length}</p>
               <p className="text-xs text-gray-600">campos por linha</p>
             </div>
 
@@ -757,7 +765,7 @@ export default function PlanilhaViewer() {
                 <div>  Nome Mãe, Sexo, Estado Civil</div>
                 <div>  Peso, Altura, Emails, Telefones</div>
                 <div>  CEP, Endereço, Dados Reembolso</div>
-                <div className="mt-2">• <strong>Dependentes ({maxDependentes} × 17 campos):</strong></div>
+                <div className="mt-2">• <strong>Dependentes ({currentMaxDependentes} × 17 campos):</strong></div>
                 <div>  Todos os campos dos titulares +</div>
                 <div>  Parentesco (específico para dependentes)</div>
               </div>
@@ -794,7 +802,7 @@ export default function PlanilhaViewer() {
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <span className="flex items-center gap-1">
-              ↔️ Role horizontalmente para ver todos os {colunas.length} campos
+              ↔️ Role horizontalmente para ver todos os {currentColunas.length} campos
             </span>
             <span className="flex items-center gap-1">
               {isAutoUpdate ? (
@@ -804,7 +812,7 @@ export default function PlanilhaViewer() {
               )}
             </span>
             <span className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded">
-              📊 {proposals.length} propostas carregadas
+              📊 {currentProposals.length} propostas carregadas
             </span>
           </div>
         </div>
@@ -814,7 +822,7 @@ export default function PlanilhaViewer() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
             <p className="mt-2 text-gray-600">Carregando dados...</p>
           </div>
-        ) : dadosFormatados.length === 0 ? (
+        ) : currentDadosFormatados.length === 0 ? (
           <div className="p-8 text-center">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-600">Nenhuma proposta encontrada</p>
@@ -824,7 +832,7 @@ export default function PlanilhaViewer() {
             <table className="min-w-max w-full border-collapse">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
-                  {colunas.map((coluna, index) => (
+                  {currentColunas.map((coluna, index) => (
                     <th 
                       key={coluna} 
                       className="px-3 py-2 text-left text-xs font-bold text-gray-800 border-r border-gray-300 min-w-[100px] max-w-[150px] whitespace-nowrap"
@@ -838,12 +846,12 @@ export default function PlanilhaViewer() {
                 </tr>
               </thead>
               <tbody>
-                {dadosFormatados.map((linha, rowIndex) => (
+                {currentDadosFormatados.map((linha, rowIndex) => (
                   <tr 
                     key={rowIndex} 
                     className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors duration-150`}
                   >
-                    {colunas.map((coluna) => (
+                    {currentColunas.map((coluna) => (
                       <td 
                         key={coluna} 
                         className="px-3 py-2 text-xs text-gray-900 border-r border-gray-200 min-w-[100px] max-w-[150px] whitespace-nowrap overflow-hidden"
