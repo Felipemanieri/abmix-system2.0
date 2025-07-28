@@ -52,7 +52,7 @@ import {
 
 // Importações dos componentes criados
 import GoogleSheetsManager from './GoogleSheetsManager';
-import IntegrationGuide from './IntegrationGuide';
+import IntegrationManual from './IntegrationManual';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
 import AutomationManager from './AutomationManager';
 import GoogleDriveSetup from './GoogleDriveSetup';
@@ -221,7 +221,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
     { id: 'visualizar-planilha', name: 'Visualizar Planilha', icon: FileText },
     { id: 'logs-sistema', name: 'Logs Sistema', icon: Terminal },
     { id: 'automacao', name: 'Automação', icon: Zap },
-    { id: 'integracoes', name: 'Integrações', icon: Link },
+    { id: 'integracoes', name: 'Manual de Integrações', icon: Book },
     { id: 'config-planilhas', name: 'Config Planilhas', icon: Database },
     { id: 'google-drive', name: 'Google Drive', icon: FolderOpen },
     { id: 'backup-restore', name: 'Backup & Restore', icon: Archive },
@@ -517,7 +517,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
         return <AutomationManager />;
 
       case 'integracoes':
-        return <IntegrationGuide />;
+        return <IntegrationManual />;
 
       case 'config-planilhas':
         return <GoogleSheetsManager />;
