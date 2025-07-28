@@ -431,7 +431,8 @@ export default function PlanilhaViewer() {
       };
 
       // === TITULARES DINÂMICOS (CAMPOS BASEADOS NOS DADOS REAIS) ===
-      for (let i = 1; i <= currentMaxCounts.maxTitulares; i++) {
+      const maxTitularesLocal = Math.max(1, titulares.length);
+      for (let i = 1; i <= maxTitularesLocal; i++) {
         const titular = titulares[i - 1] || {}; // Array começa em 0, mas numeração em 1
         Object.assign(linhaUnica, {
           [`TITULAR${i}_NOME_COMPLETO`]: titular.nomeCompleto || '',
@@ -454,7 +455,8 @@ export default function PlanilhaViewer() {
       }
 
       // === DEPENDENTES DINÂMICOS (CAMPOS BASEADOS NOS DADOS REAIS) ===
-      for (let i = 1; i <= currentMaxCounts.maxDependentes; i++) {
+      const maxDependentesLocal = dependentes.length;
+      for (let i = 1; i <= maxDependentesLocal; i++) {
         const dependente = dependentes[i - 1] || {}; // Array começa em 0, mas numeração em 1
         Object.assign(linhaUnica, {
           [`DEPENDENTE${i}_NOME_COMPLETO`]: dependente.nomeCompleto || '',
