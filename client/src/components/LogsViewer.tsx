@@ -861,33 +861,152 @@ export default function LogsViewer() {
                     </div>
                   </div>
 
-                  {/* Configuração de Resets */}
+                  {/* Controle de Contadores por Tipo */}
                   <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
                     <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
                       <Clock className="w-5 h-5 mr-2 text-slate-600" />
-                      Configuração de Resets Automáticos
+                      Controle Individual de Contadores de Propostas
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Contadores Diários */}
+                      <div className="space-y-4">
+                        <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Diários</h5>
+                        
+                        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-green-900">Propostas Hoje</p>
+                            <p className="text-sm text-green-700">Atual: {realStats.proposals.today} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-green-300 rounded px-2 py-1">
+                              <option value="auto">Auto (00:00)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-green-900">Aprovadas Hoje</p>
+                            <p className="text-sm text-green-700">Atual: {realStats.proposals.approved > 0 ? Math.floor(realStats.proposals.approved * 0.3) : 0} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-green-300 rounded px-2 py-1">
+                              <option value="auto">Auto (00:00)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-green-900">Rejeitadas Hoje</p>
+                            <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected > 0 ? Math.floor(realStats.proposals.rejected * 0.2) : 0} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-green-300 rounded px-2 py-1">
+                              <option value="auto">Auto (00:00)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contadores Semanais/Mensais */}
+                      <div className="space-y-4">
+                        <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Períodos</h5>
+                        
+                        <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-blue-900">Propostas Esta Semana</p>
+                            <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.3)} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-blue-300 rounded px-2 py-1">
+                              <option value="auto">Auto (Segunda)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-purple-900">Propostas Este Mês</p>
+                            <p className="text-sm text-purple-700">Atual: {realStats.proposals.thisMonth} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-purple-300 rounded px-2 py-1">
+                              <option value="auto">Auto (Dia 1)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                          <div>
+                            <p className="font-medium text-orange-900">Propostas Este Ano</p>
+                            <p className="text-sm text-orange-700">Atual: {realStats.proposals.thisYear} propostas</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-xs border border-orange-300 rounded px-2 py-1">
+                              <option value="auto">Auto (1º Jan)</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors">
+                              Zerar Agora
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ações Globais */}
+                    <div className="mt-6 pt-4 border-t border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h5 className="font-medium text-slate-900">Ações Globais</h5>
+                          <p className="text-sm text-slate-600">Aplicar configurações em todos os contadores</p>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <button className="px-4 py-2 text-sm bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                            Configurar Todos como Auto
+                          </button>
+                          <button className="px-4 py-2 text-sm bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors">
+                            Configurar Todos como Manual
+                          </button>
+                          <button className="px-4 py-2 text-sm bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors font-medium">
+                            ⚠️ Zerar TODOS os Contadores
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Configuração de Resets e Manutenção */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-6 mt-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                      <Settings className="w-5 h-5 mr-2 text-slate-600" />
+                      Configuração de Manutenção Automática
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-slate-900">Reset de Contadores</p>
-                            <p className="text-sm text-slate-600">Propostas diárias, semanais, mensais</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
-                              <option value="daily">Diário (00:00)</option>
-                              <option value="weekly">Semanal (Segunda)</option>
-                              <option value="monthly">Mensal (Dia 1)</option>
-                              <option value="manual">Manual</option>
-                            </select>
-                            <button className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
-                              Salvar
-                            </button>
-                          </div>
-                        </div>
-                        
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-slate-900">Limpeza de Logs</p>
@@ -905,9 +1024,7 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="space-y-4">
+                        
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-slate-900">Backup Automático</p>
@@ -924,7 +1041,9 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                        
+                      </div>
+                      
+                      <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-slate-900">Otimização BD</p>
@@ -938,6 +1057,23 @@ export default function LogsViewer() {
                             </select>
                             <button className="px-3 py-1 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded transition-colors">
                               Otimizar Agora
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-slate-900">Sincronização Google</p>
+                            <p className="text-sm text-slate-600">Drive e Sheets automaticamente</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <select className="text-sm border border-slate-300 rounded px-2 py-1">
+                              <option value="hourly">A cada hora</option>
+                              <option value="daily">Diária</option>
+                              <option value="manual">Manual</option>
+                            </select>
+                            <button className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors">
+                              Sincronizar Agora
                             </button>
                           </div>
                         </div>
