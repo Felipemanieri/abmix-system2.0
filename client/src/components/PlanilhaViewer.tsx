@@ -516,7 +516,7 @@ export default function PlanilhaViewer() {
             <p className="text-gray-600">Nenhuma proposta encontrada</p>
           </div>
         ) : (
-          <div className="overflow-x-auto overflow-y-auto max-h-96 border border-gray-300 rounded-lg">
+          <div className="overflow-x-auto overflow-y-auto max-h-60 border border-gray-300 rounded-lg">
             <table className="min-w-max w-full border-collapse">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
