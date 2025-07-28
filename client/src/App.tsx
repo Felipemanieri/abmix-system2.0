@@ -28,18 +28,10 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-// Componente para estatísticas do rodapé com dados reais
+// Componente para estatísticas do rodapé zeradas
 function FooterStats() {
-  const { data: proposals } = useQuery({
-    queryKey: ['/api/proposals'],
-    enabled: true,
-    refetchInterval: 30000 // Atualiza a cada 30 segundos
-  });
-
-  const today = new Date().toISOString().split('T')[0];
-  const proposalsToday = (proposals && Array.isArray(proposals)) ? proposals.filter((p: any) => 
-    p.createdAt && p.createdAt.startsWith(today)
-  ).length : 0;
+  // Valores zerados sem dados de demonstração
+  const proposalsToday = 0;
 
   return (
     <div className="flex flex-col items-end space-y-1">

@@ -9,26 +9,8 @@ const SystemFooter: React.FC = () => {
       setCurrentTime(new Date());
     }, 30000);
     
-    // Buscar dados reais de propostas
-    const fetchProposalsToday = async () => {
-      try {
-        const response = await fetch('/api/proposals');
-        if (response.ok) {
-          const proposals = await response.json();
-          const today = new Date().toISOString().split('T')[0];
-          const todayProposals = proposals.filter((p: any) => {
-            const pDate = new Date(p.createdAt).toISOString().split('T')[0];
-            return pDate === today;
-          });
-          setProposalsToday(todayProposals.length);
-        }
-      } catch (error) {
-        console.log('Erro ao buscar propostas:', error);
-        setProposalsToday(0);
-      }
-    };
-    
-    fetchProposalsToday();
+    // Definir contador como zero (sem dados de demonstração)
+    setProposalsToday(0);
     return () => clearInterval(timer);
   }, []);
 
