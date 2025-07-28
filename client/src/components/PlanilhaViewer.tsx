@@ -38,7 +38,7 @@ export default function PlanilhaViewer() {
   ];
 
   // Funções para controlar a planilha
-  const realSheetUrl = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+  const realSheetUrl = 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit?usp=drive_link';
   
   const handleOpenSheet = () => {
     window.open(realSheetUrl, '_blank');
