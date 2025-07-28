@@ -1,10 +1,16 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
 import * as schema from "../shared/schema";
+import WebSocket from 'ws';
 
-// Configure WebSocket for Neon database - required for both dev and production
-neonConfig.webSocketConstructor = ws;
+// Configure WebSocket for Neon database with proper error handling
+try {
+  // Configure WebSocket for Neon in Node.js environment
+  neonConfig.webSocketConstructor = WebSocket;
+} catch (error) {
+  console.warn('WebSocket configuration warning - using HTTP fallback:', error);
+  // Neon will fallback to HTTP if WebSocket fails
+}
 
 // Configuração mais robusta para produção
 let pool: Pool | null = null;

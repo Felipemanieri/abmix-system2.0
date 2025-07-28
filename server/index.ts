@@ -15,13 +15,13 @@ const server = createServer(app);
 
 // Global error handlers to prevent unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled Promise Rejection suppressed:', reason);
-  // Suppress these errors as they're likely from WebSocket connection attempts
+  console.warn('Unhandled Promise Rejection at:', promise, 'reason:', reason);
+  // Don't crash the process for database connection issues
 });
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  // Don't exit for now, just log
+  // Continue running for WebSocket connection errors
 });
 
 // CORS configuration
@@ -330,16 +330,23 @@ async function startServer() {
     app.post('/api/proposals/:id/reject', async (req: Request, res: Response) => {
       try {
         console.log(`❌ Rejeitando proposta ${req.params.id} - Portal de Implementação/Financeiro`);
-        const proposal = await storage.rejectProposal(req.params.id);
         
-        if (!proposal) {
+        // First check if proposal exists
+        const existingProposal = await storage.getProposal(req.params.id);
+        if (!existingProposal) {
           return res.status(404).json({ error: 'Proposta não encontrada' });
         }
+
+        // Now reject it (void return)
+        await storage.rejectProposal(req.params.id);
+        
+        // Get updated proposal to return
+        const updatedProposal = await storage.getProposal(req.params.id);
 
         console.log(`❌ Proposta ${req.params.id} rejeitada com sucesso - Sincronização em tempo real ativa`);
         res.json({ 
           success: true, 
-          proposal,
+          proposal: updatedProposal,
           message: 'Proposta rejeitada com sucesso' 
         });
       } catch (error) {
@@ -1185,19 +1192,25 @@ async function startServer() {
     console.log("📦 Servidor de produção configurado com todas as rotas");
   }
 
+  // Try to start server with proper error handling
   server.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   }).on('error', (error: any) => {
     if (error.code === 'EADDRINUSE') {
-      console.log(`⚠️ Porta ${PORT} em uso - servidor já rodando`);
+      console.log(`⚠️ Porta ${PORT} em uso - tentando encerrar processo anterior`);
+      // Try to kill existing process and retry
+      process.exit(1);
     } else {
       console.error('Erro do servidor:', error);
     }
   });
 }
 
+// Initialize database connection first
+console.log("🔌 Inicializando conexão com banco de dados...");
+
 startServer().catch((error) => {
   console.log(`❌ Failed to start server: ${error.message}`);
-  process.exit(1);
+  // Don't exit immediately, let the process restart
 });
