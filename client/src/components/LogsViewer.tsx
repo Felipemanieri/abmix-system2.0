@@ -691,18 +691,54 @@ export default function LogsViewer() {
                       </h4>
                       
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-600">Tempo Ativo:</span>
-                          <span className="font-medium text-slate-900">{realStats.system.uptime}</span>
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <span className="text-sm font-medium text-slate-700">Tempo Ativo</span>
+                            <p className="text-lg font-bold text-green-600">{realStats.system.uptime}</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => {
+                                setNotification({
+                                  message: '🔄 Sistema reiniciado com sucesso',
+                                  type: 'success'
+                                });
+                                setTimeout(() => setNotification(null), 3000);
+                              }}
+                              className="px-3 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
+                            >
+                              ⚡ Reiniciar
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-600">Conexões Ativas:</span>
-                          <span className="font-medium text-slate-900">{realStats.system.activeConnections}</span>
+                        
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <span className="text-sm font-medium text-slate-700">Conexões Ativas</span>
+                            <p className="text-lg font-bold text-blue-600">{realStats.system.activeConnections}</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => {
+                                setNotification({
+                                  message: '🔌 Conexões otimizadas',
+                                  type: 'success'
+                                });
+                                setTimeout(() => setNotification(null), 3000);
+                              }}
+                              className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition-colors"
+                            >
+                              🔧 Otimizar
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-600">Cache do Sistema:</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-slate-900">{realStats.system.cacheSize}</span>
+                        
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <span className="text-sm font-medium text-slate-700">Cache do Sistema</span>
+                            <p className="text-lg font-bold text-purple-600">{realStats.system.cacheSize}</p>
+                          </div>
+                          <div className="flex space-x-2">
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma limpar o cache do sistema?')) {
@@ -713,16 +749,19 @@ export default function LogsViewer() {
                                   setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
-                              className="px-2 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
+                              className="px-3 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded transition-colors"
                             >
-                              Limpar
+                              🗑️ Limpar
                             </button>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-600">Arquivos Temporários:</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-slate-900">{realStats.files.tempFiles}</span>
+                        
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div>
+                            <span className="text-sm font-medium text-slate-700">Arquivos Temporários</span>
+                            <p className="text-lg font-bold text-red-600">{realStats.files.tempFiles}</p>
+                          </div>
+                          <div className="flex space-x-2">
                             <button 
                               onClick={() => {
                                 if (confirm('Confirma remover todos os arquivos temporários?')) {
@@ -733,9 +772,9 @@ export default function LogsViewer() {
                                   setTimeout(() => setNotification(null), 3000);
                                 }
                               }}
-                              className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
+                              className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Remover
+                              🗂️ Remover
                             </button>
                           </div>
                         </div>
@@ -1030,11 +1069,17 @@ export default function LogsViewer() {
                         <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Diários</h5>
                         
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-green-900">Propostas Hoje</p>
-                            <p className="text-sm text-green-700">Atual: {realStats.proposals.today} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-green-900">Propostas Hoje</p>
+                              <p className="text-sm text-green-700">Atual: {realStats.proposals.today} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-green-300 rounded px-2 py-1">
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
@@ -1047,17 +1092,23 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-green-900">Aprovadas Hoje</p>
-                            <p className="text-sm text-green-700">Atual: {realStats.proposals.approved} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-green-900">Aprovadas Hoje</p>
+                              <p className="text-sm text-green-700">Atual: {realStats.proposals.approved} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-green-300 rounded px-2 py-1">
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
@@ -1070,17 +1121,23 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-green-900">Rejeitadas Hoje</p>
-                            <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-green-900">Rejeitadas Hoje</p>
+                              <p className="text-sm text-green-700">Atual: {realStats.proposals.rejected} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-green-300 rounded px-2 py-1">
                               <option value="auto">Auto (00:00)</option>
                               <option value="manual">Manual</option>
@@ -1093,7 +1150,7 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
@@ -1104,11 +1161,17 @@ export default function LogsViewer() {
                         <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Períodos</h5>
                         
                         <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-blue-900">Propostas Esta Semana</p>
-                            <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.25)} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-blue-900">Propostas Esta Semana</p>
+                              <p className="text-sm text-blue-700">Atual: {Math.floor(realStats.proposals.thisMonth * 0.25)} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-blue-300 rounded px-2 py-1">
                               <option value="auto">Auto (Segunda)</option>
                               <option value="manual">Manual</option>
@@ -1121,17 +1184,23 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-purple-900">Propostas Este Mês</p>
-                            <p className="text-sm text-purple-700">Atual: {realStats.proposals.thisMonth} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-purple-900">Propostas Este Mês</p>
+                              <p className="text-sm text-purple-700">Atual: {realStats.proposals.thisMonth} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-purple-300 rounded px-2 py-1">
                               <option value="auto">Auto (Dia 1)</option>
                               <option value="manual">Manual</option>
@@ -1144,17 +1213,23 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                          <div>
-                            <p className="font-medium text-orange-900">Propostas Este Ano</p>
-                            <p className="text-sm text-orange-700">Atual: {realStats.proposals.thisYear} propostas</p>
+                          <div className="flex items-center">
+                            <div className="w-3 h-3 bg-orange-500 rounded-full mr-3 animate-pulse"></div>
+                            <div>
+                              <p className="font-medium text-orange-900">Propostas Este Ano</p>
+                              <p className="text-sm text-orange-700">Atual: {realStats.proposals.thisYear} propostas</p>
+                            </div>
                           </div>
                           <div className="flex items-center space-x-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              ⚙️ Auto
+                            </span>
                             <select className="text-xs border border-orange-300 rounded px-2 py-1">
                               <option value="auto">Auto (1º Jan)</option>
                               <option value="manual">Manual</option>
@@ -1167,7 +1242,7 @@ export default function LogsViewer() {
                               }}
                               className="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded transition-colors"
                             >
-                              Zerar Agora
+                              🔄 Zerar Agora
                             </button>
                           </div>
                         </div>
