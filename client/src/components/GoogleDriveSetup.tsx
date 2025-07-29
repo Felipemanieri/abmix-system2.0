@@ -3,6 +3,7 @@ import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw } from 'lucide-re
 
 export default function GoogleDriveSetup() {
   const [showAddDriveModal, setShowAddDriveModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [driveData, setDriveData] = useState({
     capacidade: '0 GB',
     totalCapacidade: '15 GB',
@@ -30,6 +31,7 @@ export default function GoogleDriveSetup() {
 
   const handleCancel = () => {
     setShowAddDriveModal(false);
+    setIsEditMode(false);
     setFormData({
       nome: '',
       url: '',
@@ -42,6 +44,25 @@ export default function GoogleDriveSetup() {
   const handleAddDrive = () => {
     // Aqui implementar a lógica para adicionar o drive
     console.log('Dados do novo drive:', formData);
+    handleCancel();
+  };
+
+  const handleEditDrive = () => {
+    // Carregar dados atuais do drive para edição
+    setFormData({
+      nome: 'Drive Principal',
+      url: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
+      proprietario: 'Admin',
+      linkCompartilhamento: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link',
+      observacao: 'Drive principal do sistema Abmix'
+    });
+    setIsEditMode(true);
+    setShowAddDriveModal(true);
+  };
+
+  const handleSaveDrive = () => {
+    // Aqui implementar a lógica para salvar as alterações do drive
+    console.log('Dados editados do drive:', formData);
     handleCancel();
   };
 
@@ -208,7 +229,7 @@ export default function GoogleDriveSetup() {
               
               {/* Botão Editar */}
               <button
-                onClick={() => console.log('Editar Drive')}
+                onClick={handleEditDrive}
                 className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
                 title="Editar Drive"
               >
@@ -280,9 +301,13 @@ export default function GoogleDriveSetup() {
               {/* Header do Modal */}
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
-                  <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  {isEditMode ? (
+                    <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  ) : (
+                    <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  )}
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Adicionar Novo Drive
+                    {isEditMode ? 'Editar Drive' : 'Adicionar Novo Drive'}
                   </h3>
                 </div>
                 <button
@@ -375,10 +400,10 @@ export default function GoogleDriveSetup() {
                   Cancelar
                 </button>
                 <button
-                  onClick={handleAddDrive}
+                  onClick={isEditMode ? handleSaveDrive : handleAddDrive}
                   className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
                 >
-                  Adicionar Drive
+                  {isEditMode ? 'Salvar' : 'Adicionar Drive'}
                 </button>
               </div>
             </div>
