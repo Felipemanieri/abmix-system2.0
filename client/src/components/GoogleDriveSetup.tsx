@@ -1,428 +1,437 @@
 import { useState, useEffect } from 'react';
-import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw, Pencil } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  FolderOpen, 
+  RefreshCw, 
+  CheckCircle, 
+  Pencil, 
+  PlusCircle 
+} from 'lucide-react';
+
+interface DriveTab {
+  id: string;
+  nome: string;
+  tipo: 'drive' | 'backup';
+  url?: string;
+  ativo: boolean;
+  dados?: {
+    status: 'connected' | 'loading' | 'error';
+    arquivos: number;
+    pastas: number;
+    capacidade: string;
+    totalCapacidade: string;
+    ultimaModificacao: string;
+    ultimaSync: string;
+  };
+}
+
+interface DriveData {
+  status: 'connected' | 'loading' | 'error';
+  arquivos: number;
+  pastas: number;
+  capacidade: string;
+  totalCapacidade: string;
+  ultimaModificacao: string;
+  ultimaSync: string;
+}
+
+interface BackupData {
+  status: 'connected' | 'loading' | 'error';
+  arquivos: number;
+  pastas: number;
+  capacidade: string;
+  totalCapacidade: string;
+  ultimaModificacao: string;
+  ultimaSync: string;
+}
 
 export default function GoogleDriveSetup() {
-  // Estado para controle das abas
-  const [activeTab, setActiveTab] = useState('principal');
-  const [tabs, setTabs] = useState([
-    { id: 'principal', nome: 'Drive Principal', tipo: 'drive' },
-    { id: 'backup', nome: 'Pasta de Backup do Sistema', tipo: 'backup' }
-  ]);
-  
-  const [showAddDriveModal, setShowAddDriveModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [driveData, setDriveData] = useState({
-    capacidade: '0 GB',
-    totalCapacidade: '15 GB',
-    arquivos: 0,
-    pastas: 0,
-    ultimaModificacao: 'Carregando...',
-    ultimaSync: 'Carregando...',
-    status: 'loading'
-  });
-  const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
-  
-  // Estado para a pasta de Backup do sistema
-  const [backupData, setBackupData] = useState({
-    capacidade: '0 GB',
-    totalCapacidade: '15 GB',
-    arquivos: 0,
-    pastas: 0,
-    ultimaModificacao: 'Carregando...',
-    ultimaSync: 'Carregando...',
-    status: 'loading'
-  });
-  const [isLoadingBackupData, setIsLoadingBackupData] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    nome: '',
-    url: '',
-    proprietario: '',
-    linkCompartilhamento: '',
-    observacao: ''
-  });
-
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleCancel = () => {
-    setShowAddDriveModal(false);
-    setIsEditMode(false);
-    setFormData({
-      nome: '',
-      url: '',
-      proprietario: '',
-      linkCompartilhamento: '',
-      observacao: ''
-    });
-  };
-
-  const handleAddDrive = () => {
-    // Criar nova aba para o drive adicionado
-    const newTabId = `drive_${Date.now()}`;
-    const newTab = {
-      id: newTabId,
-      nome: formData.nome || 'Novo Drive',
-      tipo: 'drive',
-      url: formData.url,
-      proprietario: formData.proprietario,
-      observacao: formData.observacao
-    };
-    
-    setTabs(prev => [...prev, newTab]);
-    setActiveTab(newTabId);
-    
-    console.log('Novo drive adicionado:', formData);
-    handleCancel();
-  };
-
-  const handleEditDrive = () => {
-    // Carregar dados atuais do drive para edição
-    setFormData({
-      nome: 'Drive Principal',
-      url: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
-      proprietario: 'Admin',
-      linkCompartilhamento: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link',
-      observacao: 'Drive principal do sistema Abmix'
-    });
-    setIsEditMode(true);
-    setShowAddDriveModal(true);
-  };
-
-  const handleSaveDrive = () => {
-    // Aqui implementar a lógica para salvar as alterações do drive
-    console.log('Dados editados do drive:', formData);
-    handleCancel();
-  };
-
-  const handleRemoveDrive = () => {
-    if (confirm('Tem certeza que deseja remover este drive? Esta ação não pode ser desfeita.')) {
-      // Aqui implementar a lógica para remover o drive
-      console.log('Drive removido');
-      // Pode adicionar lógica para atualizar o estado e remover da interface
+  const [activeTab, setActiveTab] = useState<string>('backup');
+  const [tabs, setTabs] = useState<DriveTab[]>([
+    {
+      id: 'backup',
+      nome: 'Pasta de Backup do Sistema',
+      tipo: 'backup',
+      url: 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+      ativo: true,
+      dados: {
+        status: 'loading',
+        arquivos: 0,
+        pastas: 0,
+        capacidade: '0 GB',
+        totalCapacidade: '15 GB',
+        ultimaModificacao: '-',
+        ultimaSync: '-'
+      }
     }
-  };
+  ]);
 
-  // Função para buscar dados reais do Google Drive
+  // Estados para os dados dos drives
+  const [driveData, setDriveData] = useState<DriveData>({
+    status: 'loading',
+    arquivos: 0,
+    pastas: 0,
+    capacidade: '0 GB',
+    totalCapacidade: '15 GB',
+    ultimaModificacao: '-',
+    ultimaSync: '-'
+  });
+
+  const [backupData, setBackupData] = useState<BackupData>({
+    status: 'loading',
+    arquivos: 0,
+    pastas: 0,
+    capacidade: '0 GB',
+    totalCapacidade: '15 GB',
+    ultimaModificacao: '-',
+    ultimaSync: '-'
+  });
+
+  const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
+  const [isLoadingBackupData, setIsLoadingBackupData] = useState(false);
+
+  // Função para buscar dados do Google Drive principal
   const fetchDriveData = async () => {
     setIsLoadingDriveData(true);
     try {
-      // Buscar dados reais do Google Drive
       const response = await fetch('/api/google/drive-info');
-      const data = await response.json();
-      
-      if (data.success) {
+      if (response.ok) {
+        const data = await response.json();
         setDriveData({
+          status: 'connected',
+          arquivos: data.fileCount || 0,
+          pastas: data.folderCount || 0,
           capacidade: data.usedStorage || '0 GB',
           totalCapacidade: data.totalStorage || '15 GB',
-          arquivos: data.filesCount || 0,
-          pastas: data.foldersCount || 0,
-          ultimaModificacao: data.lastModified || 'Agora',
-          ultimaSync: new Date().toLocaleString('pt-BR'),
-          status: 'connected'
+          ultimaModificacao: data.lastModified || 'Nunca',
+          ultimaSync: new Date().toLocaleString('pt-BR')
         });
       } else {
-        setDriveData(prev => ({
-          ...prev,
-          status: 'error',
-          ultimaModificacao: 'Erro ao carregar',
-          ultimaSync: 'Erro ao sincronizar'
-        }));
+        setDriveData(prev => ({ ...prev, status: 'error' }));
       }
     } catch (error) {
-      console.error('Erro ao buscar dados do Drive:', error);
-      setDriveData(prev => ({
-        ...prev,
-        status: 'error',
-        ultimaModificacao: 'Erro ao carregar',
-        ultimaSync: 'Erro ao sincronizar'
-      }));
+      console.error('Erro ao buscar dados do drive:', error);
+      setDriveData(prev => ({ ...prev, status: 'error' }));
     } finally {
       setIsLoadingDriveData(false);
     }
   };
 
-  // Função para buscar dados da pasta de Backup do sistema
+  // Função para buscar dados da pasta de backup
   const fetchBackupData = async () => {
     setIsLoadingBackupData(true);
     try {
       const response = await fetch('/api/google/backup-drive-info');
-      const data = await response.json();
-      
-      if (data.success) {
-        setBackupData({
+      if (response.ok) {
+        const data = await response.json();
+        const newBackupData = {
+          status: 'connected' as const,
+          arquivos: data.fileCount || 0,
+          pastas: data.folderCount || 0,
           capacidade: data.usedStorage || '0 GB',
           totalCapacidade: data.totalStorage || '15 GB',
-          arquivos: data.filesCount || 0,
-          pastas: data.foldersCount || 0,
           ultimaModificacao: data.lastModified || 'Nunca',
-          ultimaSync: new Date().toLocaleString('pt-BR'),
-          status: 'connected'
-        });
+          ultimaSync: new Date().toLocaleString('pt-BR')
+        };
+        
+        setBackupData(newBackupData);
+        
+        // Atualizar dados na aba de backup
+        setTabs(prevTabs => 
+          prevTabs.map(tab => 
+            tab.id === 'backup' 
+              ? { ...tab, dados: newBackupData }
+              : tab
+          )
+        );
       } else {
-        setBackupData(prev => ({
-          ...prev,
-          status: 'error',
-          ultimaModificacao: 'Erro ao carregar',
-          ultimaSync: 'Erro ao sincronizar'
-        }));
+        setBackupData(prev => ({ ...prev, status: 'error' }));
       }
     } catch (error) {
-      console.error('Erro ao buscar dados da pasta Backup:', error);
-      setBackupData(prev => ({
-        ...prev,
-        status: 'error',
-        ultimaModificacao: 'Erro ao carregar',
-        ultimaSync: 'Erro ao sincronizar'
-      }));
+      console.error('Erro ao buscar dados do backup:', error);
+      setBackupData(prev => ({ ...prev, status: 'error' }));
     } finally {
       setIsLoadingBackupData(false);
     }
   };
 
-  // Carregar dados do Drive ao montar o componente
+  // Buscar dados na inicialização
   useEffect(() => {
     fetchDriveData();
     fetchBackupData();
-    
-    // Atualizar dados a cada 30 segundos
+  }, []);
+
+  // Sincronização automática a cada 30 segundos
+  useEffect(() => {
     const interval = setInterval(() => {
       fetchDriveData();
       fetchBackupData();
     }, 30000);
+
     return () => clearInterval(interval);
   }, []);
 
-  // Função para renderizar o conteúdo da aba ativa
-  const renderTabContent = () => {
-    const activeTabData = tabs.find(tab => tab.id === activeTab);
-    if (!activeTabData) return null;
-
-    if (activeTabData.tipo === 'backup') {
-      return renderBackupTab();
-    } else {
-      return renderDriveTab(activeTabData);
-    }
+  const handleEditDrive = () => {
+    console.log('Editar configurações do drive');
   };
 
-  // Renderizar aba de backup
-  const renderBackupTab = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.pastas}</div>
-          <div className="text-sm text-orange-500 dark:text-orange-400">Pastas</div>
-        </div>
-        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.arquivos.toLocaleString()}</div>
-          <div className="text-sm text-orange-500 dark:text-orange-400">Backups</div>
-        </div>
-        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.capacidade}</div>
-          <div className="text-sm text-orange-500 dark:text-orange-400">Espaço Usado</div>
-        </div>
-      </div>
+  const handleAddNewDrive = () => {
+    const newDriveId = `drive-${tabs.length}`;
+    const newTab: DriveTab = {
+      id: newDriveId,
+      nome: `Drive ${tabs.length}`,
+      tipo: 'drive',
+      ativo: true,
+      dados: {
+        status: 'loading',
+        arquivos: 0,
+        pastas: 0,
+        capacidade: '0 GB',
+        totalCapacidade: '15 GB',
+        ultimaModificacao: '-',
+        ultimaSync: '-'
+      }
+    };
+    
+    setTabs([...tabs, newTab]);
+    setActiveTab(newDriveId);
+  };
 
-      <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700 overflow-hidden">
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-sm ${
-                  backupData.status === 'connected' ? 'bg-green-500' :
-                  backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></div>
-                <span className="font-medium text-gray-900 dark:text-white">Pasta de Backup do Sistema</span>
-                <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded text-xs font-medium">Backup Segurança</span>
-                {isLoadingBackupData && (
-                  <RefreshCw className="w-3 h-3 animate-spin text-orange-500" />
-                )}
+  const renderTabContent = () => {
+    const currentTab = tabs.find(tab => tab.id === activeTab);
+    if (!currentTab) return null;
+
+    if (currentTab.tipo === 'backup') {
+      return (
+        <div className="space-y-6">
+          {/* Seção de Informações da Pasta de Backup */}
+          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-700">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h5 className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+                  Informações da Pasta de Backup
+                </h5>
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  Sincronização automática com Google Drive
+                </p>
               </div>
-              
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <div>
-                  <span className="font-medium">URL:</span>
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...</span>
+              <button
+                onClick={fetchBackupData}
+                disabled={isLoadingBackupData}
+                className="px-3 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+                title="Atualizar dados da pasta de backup"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoadingBackupData ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="bg-orange-100 dark:bg-orange-800/30 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                  {backupData.pastas}
                 </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">👤 Proprietário:</span> Sistema Abmix</span>
-                  <span>
-                    <span className="font-medium">📁 Capacidade:</span> {backupData.capacidade} / {backupData.totalCapacidade}
-                  </span>
+                <div className="text-xs text-orange-600 dark:text-orange-400">Pastas</div>
+              </div>
+              <div className="bg-orange-100 dark:bg-orange-800/30 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                  {backupData.arquivos.toLocaleString()}
                 </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">📄 Arquivos:</span> {backupData.arquivos.toLocaleString()}</span>
-                  <span><span className="font-medium">📂 Pastas:</span> {backupData.pastas.toLocaleString()}</span>
-                  <span><span className="font-medium">🔄 Backup:</span> Automático</span>
+                <div className="text-xs text-orange-600 dark:text-orange-400">Arquivos</div>
+              </div>
+              <div className="bg-orange-100 dark:bg-orange-800/30 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                  {backupData.capacidade}
                 </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">⏰ Última modificação:</span> {backupData.ultimaModificacao}</span>
-                  <span><span className="font-medium">🔄 Última sync:</span> {backupData.ultimaSync}</span>
-                </div>
+                <div className="text-xs text-orange-600 dark:text-orange-400">Espaço Usado</div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-700 dark:text-orange-300">Status da Conexão</span>
+                <div className="flex items-center">
+                  <CheckCircle className={`w-4 h-4 mr-1 ${
+                    backupData.status === 'connected' ? 'text-green-500' : 
+                    backupData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
+                  }`} />
+                  <span className={`text-sm ${
+                    backupData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
+                    backupData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {backupData.status === 'connected' ? 'Conectado' : 
+                     backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-700 dark:text-orange-300">Última Sincronização</span>
+                <span className="text-sm text-orange-800 dark:text-orange-200">{backupData.ultimaSync}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-700 dark:text-orange-300">Pasta de Backup</span>
+                <span className="text-sm text-orange-800 dark:text-orange-200">Sistema Abmix</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Ações da Pasta de Backup */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Abrir pasta de backup"
+                className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                title="Abrir pasta de backup no Google Drive"
               >
-                <FolderOpen className="w-3 h-3" />
-                Abrir
+                <FolderOpen className="w-4 h-4" />
+                Abrir no Google Drive
               </button>
-              
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
-                backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
-                backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
-                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-              }`}>
-                {backupData.status === 'connected' ? 'Sincronizado' : 
-                 backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
-              </div>
+            </div>
+            
+            <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+              backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
+              backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+              'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+            }`}>
+              {backupData.status === 'connected' ? 'Sincronizado' : 
+               backupData.status === 'loading' ? 'Sincronizando...' : 'Erro de Conexão'}
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+      );
+    }
 
-  // Renderizar aba de drive normal
-  const renderDriveTab = (tabData: any) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{driveData.pastas}</div>
-          <div className="text-sm text-blue-500 dark:text-blue-400">Pastas</div>
-        </div>
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{driveData.arquivos.toLocaleString()}</div>
-          <div className="text-sm text-green-500 dark:text-green-400">Documentos</div>
-        </div>
-        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{driveData.capacidade}</div>
-          <div className="text-sm text-purple-500 dark:text-purple-400">Espaço Usado</div>
-        </div>
-      </div>
+    // Conteúdo para abas de drive normais
+    return (
+      <div className="space-y-6">
+        {/* Seção de Informações do Drive */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h5 className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                Informações do Drive
+              </h5>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Fonte: Sistema Abmix
+              </p>
+            </div>
+            <button
+              onClick={fetchDriveData}
+              disabled={isLoadingDriveData}
+              className="px-3 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+              title="Atualizar dados do drive"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingDriveData ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700 overflow-hidden">
-        <div className="p-4 border-b bg-blue-100 dark:bg-blue-800/40">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Drive conectado</h4>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-sm ${
-                  driveData.status === 'connected' ? 'bg-green-500' :
-                  driveData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></div>
-                <span className="font-medium text-gray-900 dark:text-white">{tabData.nome}</span>
-                <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium">Principal</span>
-                {isLoadingDriveData && (
-                  <RefreshCw className="w-3 h-3 animate-spin text-blue-500" />
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                {driveData.pastas}
               </div>
-              
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <div>
-                  <span className="font-medium">URL:</span>
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">
-                    {tabData.url || 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb...'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">👤 Proprietário:</span> {tabData.proprietario || 'Admin'}</span>
-                  <span>
-                    <span className="font-medium">📁 Capacidade:</span> {driveData.capacidade} / {driveData.totalCapacidade}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">📄 Arquivos:</span> {driveData.arquivos.toLocaleString()}</span>
-                  <span><span className="font-medium">📂 Pastas:</span> {driveData.pastas.toLocaleString()}</span>
-                  <span><span className="font-medium">🔄 Sync:</span> Auto (30s)</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">⏰ Última modificação:</span> {driveData.ultimaModificacao}</span>
-                  <span><span className="font-medium">🔄 Última sync:</span> {driveData.ultimaSync}</span>
-                </div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">Pastas</div>
+            </div>
+            <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                {driveData.arquivos.toLocaleString()}
+              </div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">Documentos</div>
+            </div>
+            <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                {driveData.capacidade}
+              </div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">Espaço Usado</div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700 dark:text-blue-300">Status da Conexão</span>
+              <div className="flex items-center">
+                <CheckCircle className={`w-4 h-4 mr-1 ${
+                  driveData.status === 'connected' ? 'text-green-500' : 
+                  driveData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
+                }`} />
+                <span className={`text-sm ${
+                  driveData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
+                  driveData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {driveData.status === 'connected' ? 'Conectado' : 
+                   driveData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+                </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => window.open(tabData.url || 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Abrir no Google Drive"
-              >
-                <FolderOpen className="w-3 h-3" />
-                Abrir
-              </button>
-              
-              <button
-                onClick={handleEditDrive}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Editar configurações"
-              >
-                <Pencil className="w-3 h-3" />
-                Editar
-              </button>
-              
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
-                driveData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
-                driveData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
-                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-              }`}>
-                {driveData.status === 'connected' ? 'Conectado' : 
-                 driveData.status === 'loading' ? 'Carregando...' : 'Erro'}
-              </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700 dark:text-blue-300">Última Sincronização</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">{driveData.ultimaSync}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700 dark:text-blue-300">Pasta Principal</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">Sistema Abmix</span>
             </div>
           </div>
         </div>
+
+        {/* Ações do Drive */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
+              className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              title="Abrir no Google Drive"
+            >
+              <FolderOpen className="w-4 h-4" />
+              Abrir no Google Drive
+            </button>
+            
+            <button
+              onClick={handleEditDrive}
+              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
+              title="Editar configurações"
+            >
+              <Pencil className="w-4 h-4" />
+              Editar
+            </button>
+          </div>
+          
+          <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+            driveData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
+            driveData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+            'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+          }`}>
+            {driveData.status === 'connected' ? 'Conectado' : 
+             driveData.status === 'loading' ? 'Sincronizando...' : 'Erro de Conexão'}
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        {/* Header com título e botões */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center">
-            <FolderOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Configuração Google Drive
-            </h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const activeTabData = tabs.find(tab => tab.id === activeTab);
-                if (activeTabData?.tipo === 'backup') {
-                  fetchBackupData();
-                } else {
-                  fetchDriveData();
-                }
-              }}
-              disabled={isLoadingDriveData || isLoadingBackupData}
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
-              title="Atualizar dados da aba ativa"
-            >
-              <RefreshCw className={`w-4 h-4 ${(isLoadingDriveData || isLoadingBackupData) ? 'animate-spin' : ''}`} />
-            </button>
-            <button
-              onClick={() => setShowAddDriveModal(true)}
-              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar Novo Drive
-            </button>
-          </div>
+      {/* Header com botão de adicionar drive */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Configuração do Google Drive
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Gerencie suas conexões com o Google Drive
+          </p>
         </div>
+        <button
+          onClick={handleAddNewDrive}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          title="Adicionar novo drive"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Adicionar Novo Drive
+        </button>
+      </div>
 
+      {/* Container principal com abas */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* Sistema de abas */}
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
@@ -454,359 +463,6 @@ export default function GoogleDriveSetup() {
           {renderTabContent()}
         </div>
       </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{driveData.pastas}</div>
-            <div className="text-sm text-blue-500 dark:text-blue-400">Pastas</div>
-          </div>
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{driveData.arquivos.toLocaleString()}</div>
-            <div className="text-sm text-green-500 dark:text-green-400">Documentos</div>
-          </div>
-          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{driveData.capacidade}</div>
-            <div className="text-sm text-purple-500 dark:text-purple-400">Espaço Usado</div>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-300">Status da Conexão</span>
-            <div className="flex items-center">
-              <CheckCircle className={`w-4 h-4 mr-1 ${
-                driveData.status === 'connected' ? 'text-green-500' : 
-                driveData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
-              }`} />
-              <span className={`text-sm ${
-                driveData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
-                driveData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
-              }`}>
-                {driveData.status === 'connected' ? 'Conectado' : 
-                 driveData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-300">Última Sincronização</span>
-            <span className="text-sm text-gray-900 dark:text-white">{driveData.ultimaSync}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-300">Pasta Principal</span>
-            <span className="text-sm text-gray-900 dark:text-white">Sistema Abmix</span>
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Seção Drive Conectado - Baseada na aba Visualizar Planilha */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
-          <h4 className="text-base font-semibold text-gray-900 dark:text-white">Drive conectado</h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Fonte: Sistema Abmix</p>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-sm ${
-                  driveData.status === 'connected' ? 'bg-green-500' :
-                  driveData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></div>
-                <span className="font-medium text-gray-900 dark:text-white">Drive Principal</span>
-                <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium">Sistema</span>
-                {isLoadingDriveData && (
-                  <RefreshCw className="w-3 h-3 animate-spin text-blue-500" />
-                )}
-              </div>
-              
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <div>
-                  <span className="font-medium">URL:</span>
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb...</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">👤 Proprietário:</span> Admin</span>
-                  <span>
-                    <span className="font-medium">📁 Capacidade:</span> {driveData.capacidade} / {driveData.totalCapacidade}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">📄 Arquivos:</span> {driveData.arquivos.toLocaleString()}</span>
-                  <span><span className="font-medium">📂 Pastas:</span> {driveData.pastas.toLocaleString()}</span>
-                  <span><span className="font-medium">🔄 Backup:</span> 5 minutos</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">⏰ Última modificação:</span> {driveData.ultimaModificacao}</span>
-                  <span><span className="font-medium">🔄 Última sync:</span> {driveData.ultimaSync}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* Botão Abrir */}
-              <button
-                onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Abrir Drive"
-              >
-                <FolderOpen className="w-3 h-3" />
-                Abrir
-              </button>
-              
-              {/* Botão Remover */}
-              <button
-                onClick={handleRemoveDrive}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs flex items-center gap-1"
-                title="Remover Drive"
-              >
-                <X className="w-3 h-3" />
-                Remover
-              </button>
-              
-              {/* Botão Editar */}
-              <button
-                onClick={handleEditDrive}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Editar Drive"
-              >
-                <Pencil className="w-3 h-3" />
-                Editar
-              </button>
-              
-              {/* Botão Backup Manual */}
-              <button
-                onClick={() => console.log('Backup Manual')}
-                className="px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-xs flex items-center gap-1"
-                title="Backup Manual"
-              >
-                <RefreshCw className="w-3 h-3" />
-                Backup Manual
-              </button>
-              
-              {/* Dropdown de Tempo */}
-              <select
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                defaultValue="5 minutos"
-              >
-                <option value="1 segundo">1 segundo</option>
-                <option value="5 segundos">5 segundos</option>
-                <option value="10 segundos">10 segundos</option>
-                <option value="30 segundos">30 segundos</option>
-                <option value="1 minuto">1 minuto</option>
-                <option value="5 minutos">5 minutos</option>
-                <option value="10 minutos">10 minutos</option>
-                <option value="15 minutos">15 minutos</option>
-                <option value="1 hora">1 hora</option>
-                <option value="5 horas">5 horas</option>
-                <option value="10 horas">10 horas</option>
-                <option value="24 horas">24 horas</option>
-                <option value="Manual">Manual</option>
-              </select>
-            </div>
-          </div>
-          
-
-        </div>
-      </div>
-
-      {/* Seção Pasta de Backup do Sistema */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-4 border-b bg-orange-50 dark:bg-orange-900/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-base font-semibold text-gray-900 dark:text-white">Pasta de Backup do Sistema</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Backups automáticos sincronizados com Google Drive</p>
-            </div>
-            <button
-              onClick={fetchBackupData}
-              disabled={isLoadingBackupData}
-              className="px-3 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
-              title="Atualizar dados da pasta de backup"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoadingBackupData ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-sm ${
-                  backupData.status === 'connected' ? 'bg-green-500' :
-                  backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}></div>
-                <span className="font-medium text-gray-900 dark:text-white">Backup Drive</span>
-                <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded text-xs font-medium">Backup</span>
-                {isLoadingBackupData && (
-                  <RefreshCw className="w-3 h-3 animate-spin text-orange-500" />
-                )}
-              </div>
-              
-              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                <div>
-                  <span className="font-medium">URL:</span>
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">👤 Proprietário:</span> Sistema Abmix</span>
-                  <span>
-                    <span className="font-medium">📁 Capacidade:</span> {backupData.capacidade} / {backupData.totalCapacidade}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">📄 Arquivos:</span> {backupData.arquivos.toLocaleString()}</span>
-                  <span><span className="font-medium">📂 Pastas:</span> {backupData.pastas.toLocaleString()}</span>
-                  <span><span className="font-medium">🔄 Backup:</span> Automático</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span><span className="font-medium">⏰ Última modificação:</span> {backupData.ultimaModificacao}</span>
-                  <span><span className="font-medium">🔄 Última sync:</span> {backupData.ultimaSync}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              {/* Botão Abrir */}
-              <button
-                onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
-                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                title="Abrir pasta de backup"
-              >
-                <FolderOpen className="w-3 h-3" />
-                Abrir
-              </button>
-              
-              {/* Status de sincronização */}
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
-                backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
-                backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
-                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-              }`}>
-                {backupData.status === 'connected' ? 'Sincronizado' : 
-                 backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal Adicionar Novo Drive */}
-      {showAddDriveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              {/* Header do Modal */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  {isEditMode ? (
-                    <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                  ) : (
-                    <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                  )}
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {isEditMode ? 'Editar Drive' : 'Adicionar Novo Drive'}
-                  </h3>
-                </div>
-                <button
-                  onClick={handleCancel}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Formulário */}
-              <div className="space-y-4">
-                {/* Nome do Drive */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nome do Drive *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Drive Principal"
-                    value={formData.nome}
-                    onChange={(e) => handleInputChange('nome', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                </div>
-
-                {/* URL do Google Drive */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    URL do Google Drive *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="https://drive.google.com/drive/folders/..."
-                    value={formData.url}
-                    onChange={(e) => handleInputChange('url', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                </div>
-
-                {/* Proprietário */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Proprietário *
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Felipe Manieri"
-                    value={formData.proprietario}
-                    onChange={(e) => handleInputChange('proprietario', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                </div>
-
-                {/* Link de Compartilhamento (Opcional) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Link de Compartilhamento (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Link de compartilhamento do drive"
-                    value={formData.linkCompartilhamento}
-                    onChange={(e) => handleInputChange('linkCompartilhamento', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                </div>
-
-                {/* Observação (Opcional) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Observação (Opcional)
-                  </label>
-                  <textarea
-                    placeholder="Ex: Drive para documentos principais"
-                    value={formData.observacao}
-                    onChange={(e) => handleInputChange('observacao', e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 resize-none"
-                  />
-                </div>
-              </div>
-
-              {/* Botões do Modal */}
-              <div className="flex space-x-3 mt-6">
-                <button
-                  onClick={handleCancel}
-                  className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={isEditMode ? handleSaveDrive : handleAddDrive}
-                  className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
-                >
-                  {isEditMode ? 'Salvar' : 'Adicionar Drive'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
