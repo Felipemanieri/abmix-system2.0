@@ -2386,7 +2386,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   setDataFim('');
                   setShowChart(false);
                 }}
-                className="px-4 py-2 bg-gray-600 text-white hover:bg-gray-500 text-sm border border-gray-300 rounded-md"
+                className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm border border-gray-200 rounded-md"
               >
                 Limpar Filtros
               </button>
@@ -2834,7 +2834,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     realTimeSync.forceRefresh();
                     showNotification('Sincronização com Google Sheets iniciada', 'success');
                   }}
-                  className="text-sm bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-white hover:bg-blue-100 dark:hover:bg-blue-800 px-3 py-1 rounded-md flex items-center gap-1"
+                  className="text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-white hover:bg-blue-200 dark:hover:bg-blue-800 px-3 py-1 rounded-md flex items-center gap-1"
                 >
                   <RefreshCw size={14} />
                   Sincronizar
@@ -2843,7 +2843,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   onClick={() => setReportFilters({
                     dataInicio: '', dataFim: '', vendedor: '', status: '', tipo: 'completo'
                   })}
-                  className="text-sm bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded-md flex items-center gap-1"
+                  className="text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded-md flex items-center gap-1"
                 >
                   <X size={12} />
                   Limpar
@@ -2937,7 +2937,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           dataFim: hoje.toISOString().split('T')[0]
                         }));
                       }}
-                      className="flex-1 px-2 py-2 text-xs font-medium bg-blue-600 text-white border border-blue-600 rounded hover:bg-blue-700 transition-colors"
+                      className="flex-1 px-2 py-2 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded hover:bg-blue-200 transition-colors"
                     >
                       7 dias
                     </button>
@@ -2951,7 +2951,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           dataFim: hoje.toISOString().split('T')[0]
                         }));
                       }}
-                      className="flex-1 px-2 py-2 text-xs font-medium bg-green-600 text-white border border-green-600 rounded hover:bg-green-700 transition-colors"
+                      className="flex-1 px-2 py-2 text-xs font-medium text-green-700 bg-green-100 border border-green-200 rounded hover:bg-green-200 transition-colors"
                     >
                       15 dias
                     </button>
@@ -2965,7 +2965,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           dataFim: hoje.toISOString().split('T')[0]
                         }));
                       }}
-                      className="flex-1 px-2 py-2 text-xs font-medium bg-purple-600 text-white border border-purple-600 rounded hover:bg-purple-700 transition-colors"
+                      className="flex-1 px-2 py-2 text-xs font-medium text-purple-700 bg-purple-100 border border-purple-200 rounded hover:bg-purple-200 transition-colors"
                     >
                       30 dias
                     </button>
@@ -2991,7 +2991,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         showNotification('Erro ao gerar relatório', 'error');
                       }
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm dark:shadow-gray-900/30"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors shadow-sm dark:shadow-gray-900/30"
                   >
                     👁️ Visualizar Relatório
                   </button>
@@ -3005,7 +3005,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       window.open(sheetsUrl, '_blank');
                       showNotification('Abrindo Google Sheets com dados filtrados', 'success');
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium bg-green-600 text-white border border-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-green-700 bg-green-100 border border-green-200 rounded-lg hover:bg-green-200 transition-colors"
                   >
                     📋 Abrir Google Sheets
                   </button>
@@ -3027,7 +3027,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       document.body.removeChild(link);
                       showNotification('Arquivo Excel baixado com sucesso!', 'success');
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium bg-blue-600 text-white border border-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors"
                   >
                     💾 Salvar em Excel
                   </button>
@@ -3039,7 +3039,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       window.open(driveUrl, '_blank');
                       showNotification('Abrindo Google Drive - Pasta Propostas', 'success');
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium bg-purple-600 text-white border border-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-purple-700 bg-purple-100 border border-purple-200 rounded-lg hover:bg-purple-200 transition-colors"
                   >
                     📁 Abrir Google Drive
                   </button>
@@ -3324,7 +3324,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 setFilterStatus('');
                 setFilterDate('');
               }}
-              className="text-gray-600 dark:text-gray-300 text-xs hover:text-gray-800 dark:hover:text-white flex items-center gap-1"
+              className="text-gray-700 bg-gray-100 dark:text-gray-300 text-xs hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white flex items-center gap-1 px-2 py-1 rounded"
             >
               <X size={12} />
               Limpar
