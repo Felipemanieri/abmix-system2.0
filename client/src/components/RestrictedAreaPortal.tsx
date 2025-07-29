@@ -60,6 +60,7 @@ import GoogleDriveSetup from './GoogleDriveSetup';
 import UserManagementDashboard from './UserManagementDashboard';
 import LogsViewer from './LogsViewer';
 import BackupManager from './BackupManager';
+import ApiManagementPanel from './ApiManagementPanel';
 import TestCreator from './TestCreator';
 import PlanilhaViewer from './PlanilhaViewer';
 import InternalMessage from './InternalMessage';
@@ -226,6 +227,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
     { id: 'config-planilhas', name: 'Edição de Planilhas', icon: Edit },
     { id: 'google-drive', name: 'Google Drive', icon: FolderOpen },
     { id: 'backup-restore', name: 'Backup & Restore', icon: Archive },
+    { id: 'api', name: 'API', icon: Globe },
     { id: 'sistema', name: 'Sistema', icon: Settings }
   ];
 
@@ -528,6 +530,9 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
 
       case 'backup-restore':
         return <BackupManager />;
+
+      case 'api':
+        return <ApiManagementPanel />;
 
       case 'gestao-usuarios-unificada':
         return <UserManagementDashboard />;
