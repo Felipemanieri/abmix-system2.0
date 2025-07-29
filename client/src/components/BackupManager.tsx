@@ -12,7 +12,8 @@ import {
   CheckCircle,
   Archive,
   FileText,
-  Users
+  Users,
+  Trash2
 } from 'lucide-react';
 
 export default function BackupManager() {
@@ -101,6 +102,23 @@ export default function BackupManager() {
       alert('Erro ao restaurar backup');
     } finally {
       setIsRestoring(false);
+    }
+  };
+
+  const deleteBackup = async (backupId: number) => {
+    const backup = backupHistory.find(b => b.id === backupId);
+    if (!backup) return;
+    
+    if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o backup de ${backup.date.toLocaleDateString('pt-BR')} (${backup.type})?\n\nEsta ação NÃO PODE ser desfeita!`)) {
+      return;
+    }
+
+    try {
+      // Remover backup da lista
+      setBackupHistory(prev => prev.filter(b => b.id !== backupId));
+      alert('Backup excluído com sucesso!');
+    } catch (error) {
+      alert('Erro ao excluir backup');
     }
   };
 
@@ -311,6 +329,13 @@ export default function BackupManager() {
                         title="Restaurar backup"
                       >
                         {isRestoring ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      </button>
+                      <button
+                        onClick={() => deleteBackup(backup.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        title="Excluir backup permanentemente"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>

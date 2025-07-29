@@ -83,7 +83,7 @@ export default function BackupManager() {
     }
   ];
 
-  const [backups] = useState<BackupEntry[]>(mockBackups);
+  const [backups, setBackups] = useState<BackupEntry[]>(mockBackups);
 
   const handleManualBackup = async (type: 'complete' | 'incremental') => {
     setIsBackingUp(true);
@@ -106,8 +106,12 @@ export default function BackupManager() {
   };
 
   const handleDeleteBackup = (backupId: number) => {
-    if (window.confirm('Tem certeza que deseja excluir este backup?')) {
-      alert(`Backup ${backupId} removido com sucesso!`);
+    const backup = backups.find(b => b.id === backupId);
+    if (!backup) return;
+
+    if (window.confirm(`Tem certeza que deseja EXCLUIR permanentemente o backup "${backup.filename}"?\n\nEsta ação NÃO PODE ser desfeita!`)) {
+      setBackups(prev => prev.filter(b => b.id !== backupId));
+      alert('✅ Backup excluído com sucesso!');
     }
   };
 
