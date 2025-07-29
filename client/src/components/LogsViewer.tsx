@@ -58,14 +58,14 @@ export default function LogsViewer() {
   // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
   // const { isConnected: isWebSocketConnected } = useAdminWebSocket(1); // Admin user ID
   const isWebSocketConnected = false;
-  
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [moduleFilter, setModuleFilter] = useState<string>('all');
   const [autoScroll, setAutoScroll] = useState(false);
-  const [isLive, setIsLive] = useState(true);
+  const [isLive, setIsLive] = useState(isWebSocketConnected);
   const [activeTab, setActiveTab] = useState<'logs' | 'control'>('logs');
   const [syncInterval, setSyncInterval] = useState<number>(() => {
     const saved = localStorage.getItem('globalSyncInterval');
@@ -93,7 +93,7 @@ export default function LogsViewer() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         setNotification({
           message: `✅ ${counterType} zerado com sucesso`,
@@ -113,7 +113,7 @@ export default function LogsViewer() {
         type: 'error'
       });
     }
-    
+
     // Limpar notificação após 3 segundos
     setTimeout(() => setNotification(null), 3000);
   };
@@ -188,12 +188,12 @@ export default function LogsViewer() {
       const realLog = captureConsoleLog(`Promise rejeitada: ${event.reason}`, 'error', 'Sistema');
       setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
     };
-    
+
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     console.log = (...args) => {
       originalConsoleLog.apply(console, args);
-      
+
       const message = args.join(' ');
       // Capturar apenas logs importantes, excluindo loops
       if (!message.includes('📡 Usando captura local') && 
@@ -329,7 +329,7 @@ export default function LogsViewer() {
           </div>
         </div>
       )}
-      
+
       {/* Header com Abas */}
       <div className="bg-white rounded-lg shadow">
         {/* Abas */}
@@ -644,14 +644,14 @@ export default function LogsViewer() {
 
                   {/* Seções Principais */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
+
                     {/* Serviços e Conectividade */}
                     <div className="bg-white border border-slate-200 rounded-lg p-6">
                       <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
                         <Monitor className="w-5 h-5 mr-2 text-slate-600" />
                         Serviços e Conectividade
                       </h4>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div className="flex items-center">
@@ -712,7 +712,7 @@ export default function LogsViewer() {
                         <Activity className="w-5 h-5 mr-2 text-slate-600" />
                         Performance do Sistema
                       </h4>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
@@ -734,7 +734,7 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Conexões Ativas</span>
@@ -755,7 +755,7 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Cache do Sistema</span>
@@ -778,7 +778,7 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <span className="text-sm font-medium text-slate-700">Arquivos Temporários</span>
@@ -810,7 +810,7 @@ export default function LogsViewer() {
                         <BarChart3 className="w-5 h-5 mr-2 text-slate-600" />
                         Estatísticas de Dados
                       </h4>
-                      
+
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Propostas (Total):</span>
@@ -845,7 +845,7 @@ export default function LogsViewer() {
                         <Users className="w-5 h-5 mr-2 text-slate-600" />
                         Usuários e Atividade
                       </h4>
-                      
+
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-slate-600">Sistema (Total):</span>
@@ -881,7 +881,7 @@ export default function LogsViewer() {
                       <Database className="w-5 h-5 mr-2 text-slate-600" />
                       Cache do Sistema e Arquivos Temporários
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <button 
                         onClick={() => {
@@ -896,7 +896,7 @@ export default function LogsViewer() {
                         <span className="text-sm font-medium text-orange-900">Limpar Cache</span>
                         <span className="text-xs text-orange-600 text-center">Limpar cache de sessões e dados temporários</span>
                       </button>
-                      
+
                       <button 
                         onClick={() => {
                           if (confirm('Confirma remover todos os arquivos temporários?')) {
@@ -910,7 +910,7 @@ export default function LogsViewer() {
                         <span className="text-sm font-medium text-red-900">Arquivos Temporários</span>
                         <span className="text-xs text-red-600 text-center">Remover uploads antigos e arquivos não utilizados</span>
                       </button>
-                      
+
                       <button 
                         onClick={() => {
                           console.log('🔄 Executando limpeza completa...');
@@ -931,7 +931,7 @@ export default function LogsViewer() {
                       <Settings className="w-4 h-4 mr-2 text-slate-600" />
                       Controles de Sistema
                     </h4>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
                       {/* Promise Error Fix - RESTAURADO */}
                       <button 
@@ -1029,7 +1029,7 @@ export default function LogsViewer() {
                       <FileText className="w-5 h-5 mr-2 text-slate-600" />
                       Gerenciamento de Logs
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <button 
                         onClick={() => {
@@ -1044,7 +1044,7 @@ export default function LogsViewer() {
                         <span className="text-sm font-medium text-red-900">Zerar Logs</span>
                         <span className="text-xs text-red-600 text-center">Apagar todo histórico de atividades e logs</span>
                       </button>
-                      
+
                       <button 
                         onClick={() => {
                           console.log('📥 Exportando logs para CSV...');
@@ -1065,7 +1065,7 @@ export default function LogsViewer() {
                         <span className="text-sm font-medium text-blue-900">Exportar Logs</span>
                         <span className="text-xs text-blue-600 text-center">Download dos logs (.csv) para auditoria</span>
                       </button>
-                      
+
                       <button 
                         onClick={() => {
                           console.log('📊 Ativando monitoramento em tempo real...');
@@ -1086,7 +1086,7 @@ export default function LogsViewer() {
                       <Activity className="w-5 h-5 mr-2 text-slate-600" />
                       Atividades Recentes em Tempo Real
                     </h4>
-                    
+
                     <div className="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-green-500">
@@ -1096,7 +1096,7 @@ export default function LogsViewer() {
                           </div>
                           <span className="text-xs text-slate-500">{new Date().toLocaleTimeString('pt-BR')}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-blue-500">
                           <div className="flex items-center">
                             <Database className="w-4 h-4 text-blue-600 mr-2" />
@@ -1104,7 +1104,7 @@ export default function LogsViewer() {
                           </div>
                           <span className="text-xs text-slate-500">{new Date(Date.now() - 30000).toLocaleTimeString('pt-BR')}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-purple-500">
                           <div className="flex items-center">
                             <FileText className="w-4 h-4 text-purple-600 mr-2" />
@@ -1112,7 +1112,7 @@ export default function LogsViewer() {
                           </div>
                           <span className="text-xs text-slate-500">{new Date(Date.now() - 60000).toLocaleTimeString('pt-BR')}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-orange-500">
                           <div className="flex items-center">
                             <RefreshCw className="w-4 h-4 text-orange-600 mr-2" />
@@ -1120,7 +1120,7 @@ export default function LogsViewer() {
                           </div>
                           <span className="text-xs text-slate-500">{new Date(Date.now() - 120000).toLocaleTimeString('pt-BR')}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-2 bg-white rounded border-l-4 border-slate-500">
                           <div className="flex items-center">
                             <Monitor className="w-4 h-4 text-slate-600 mr-2" />
@@ -1138,7 +1138,7 @@ export default function LogsViewer() {
                       <BarChart3 className="w-5 h-5 mr-2 text-slate-600" />
                       Painel de Estatísticas do Rodapé (Tempo Real)
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Calendar className="w-6 h-6 text-green-600 mx-auto mb-2" />
@@ -1146,28 +1146,28 @@ export default function LogsViewer() {
                         <p className="text-2xl font-bold text-green-700">0</p>
                         <p className="text-xs text-slate-500 mt-1">Reinicia às 00:00</p>
                       </div>
-                      
+
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Propostas Totais</p>
                         <p className="text-2xl font-bold text-blue-700">0</p>
                         <p className="text-xs text-slate-500 mt-1">Desde o início</p>
                       </div>
-                      
+
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <RefreshCw className="w-6 h-6 text-purple-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Última Sincronização</p>
                         <p className="text-sm font-bold text-purple-700">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         <p className="text-xs text-slate-500 mt-1">{new Date().toLocaleDateString('pt-BR')}</p>
                       </div>
-                      
+
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Database className="w-6 h-6 text-orange-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Status do Backup</p>
                         <p className="text-sm font-bold text-orange-700">Ativo</p>
                         <p className="text-xs text-slate-500 mt-1">Google Drive</p>
                       </div>
-                      
+
                       <div className="bg-white border border-slate-200 rounded-lg p-4 text-center">
                         <Users className="w-6 h-6 text-slate-600 mx-auto mb-2" />
                         <p className="text-sm text-slate-600">Usuários Online</p>
@@ -1183,12 +1183,12 @@ export default function LogsViewer() {
                       <Clock className="w-5 h-5 mr-2 text-slate-600" />
                       Controle Individual de Contadores de Propostas
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Contadores Diários */}
                       <div className="space-y-4">
                         <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Diários</h5>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
@@ -1213,7 +1213,7 @@ export default function LogsViewer() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'propostas_hoje' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Propostas Hoje" zerado com sucesso',
@@ -1260,7 +1260,7 @@ export default function LogsViewer() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'aprovadas_hoje' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Aprovadas Hoje" zerado com sucesso',
@@ -1307,7 +1307,7 @@ export default function LogsViewer() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'rejeitadas_hoje' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Rejeitadas Hoje" zerado com sucesso',
@@ -1334,7 +1334,7 @@ export default function LogsViewer() {
                       {/* Contadores Semanais/Mensais */}
                       <div className="space-y-4">
                         <h5 className="font-medium text-slate-900 border-b pb-2">Contadores Períodos</h5>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
                           <div className="flex items-center">
                             <div className="w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
@@ -1355,11 +1355,11 @@ export default function LogsViewer() {
                               onClick={async () => {
                                 try {
                                   const response = await fetch('/api/reset-counter', {
-                                    method: 'POST',
+                                    method: ''POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'propostas_semana' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Propostas Esta Semana" zerado com sucesso',
@@ -1406,7 +1406,7 @@ export default function LogsViewer() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'propostas_mes' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Propostas Este Mês" zerado com sucesso',
@@ -1453,7 +1453,7 @@ export default function LogsViewer() {
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ counter: 'propostas_ano' })
                                   });
-                                  
+
                                   if (response.ok) {
                                     setNotification({
                                       message: '✅ Contador "Propostas Este Ano" zerado com sucesso',
@@ -1551,7 +1551,7 @@ export default function LogsViewer() {
                       <Settings className="w-5 h-5 mr-2 text-slate-600" />
                       Configuração de Manutenção Automática
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
@@ -1571,7 +1571,7 @@ export default function LogsViewer() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-slate-900">Backup Automático</p>
@@ -1589,7 +1589,7 @@ export default function LogsViewer() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
@@ -1634,7 +1634,7 @@ export default function LogsViewer() {
                       <AlertTriangle className="w-5 h-5 mr-2 text-slate-600" />
                       Notificações e Alertas do Sistema
                     </h4>
-                    
+
                     <div className="space-y-3">
                       {/* Alerta de Conexão */}
                       <div className={`p-4 rounded-lg border-l-4 ${realStats.sync.databaseConnected ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
@@ -1724,20 +1724,20 @@ export default function LogsViewer() {
                       <Settings className="w-5 h-5 mr-2 text-slate-600" />
                       Ações de Manutenção
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <button className="flex flex-col items-center p-4 border border-slate-200 hover:border-slate-300 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                         <Database className="w-8 h-8 text-slate-600 mb-2" />
                         <span className="text-sm font-medium text-slate-900">Otimizar Banco</span>
                         <span className="text-xs text-slate-600 text-center">Reorganizar índices e limpar dados órfãos</span>
                       </button>
-                      
+
                       <button className="flex flex-col items-center p-4 border border-slate-200 hover:border-slate-300 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                         <RefreshCw className="w-8 h-8 text-slate-600 mb-2" />
                         <span className="text-sm font-medium text-slate-900">Reiniciar Serviços</span>
                         <span className="text-xs text-slate-600 text-center">Reiniciar todos os serviços do sistema</span>
                       </button>
-                      
+
                       <button className="flex flex-col items-center p-4 border border-red-200 hover:border-red-300 rounded-lg bg-red-50 hover:bg-red-100 transition-colors">
                         <Trash2 className="w-8 h-8 text-red-600 mb-2" />
                         <span className="text-sm font-medium text-red-900">Limpeza Geral</span>
@@ -1752,7 +1752,7 @@ export default function LogsViewer() {
                       <Info className="w-5 h-5 mr-2 text-slate-600" />
                       Informações do Sistema
                     </h4>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                       <div>
                         <h5 className="font-medium text-slate-900 mb-2">Conectividade</h5>
