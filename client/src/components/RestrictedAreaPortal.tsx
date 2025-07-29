@@ -90,7 +90,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
           <p className="text-gray-600 mb-4">Usuário não encontrado</p>
           <button 
             onClick={onLogout}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-emerald-400 text-black px-4 py-2 rounded hover:bg-emerald-500"
           >
             Fazer Login Novamente
           </button>
@@ -261,7 +261,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showClientPortal 
-                      ? 'bg-blue-600' 
+                      ? 'bg-lime-500' 
                       : 'bg-red-300 dark:bg-red-500'
                   }`}
                 >
@@ -373,7 +373,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showSupervisorPortal 
-                      ? 'bg-indigo-600' 
+                      ? 'bg-sky-400' 
                       : 'bg-cyan-300 dark:bg-cyan-500'
                   }`}
                 >
@@ -394,7 +394,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {/* Restaurar Padrão */}
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded p-2">
+                  <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-600 rounded p-2">
                     <button
                       onClick={() => {
                         const defaultVisibility = {
@@ -419,7 +419,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   </div>
 
                   {/* Restaurar de Fábrica */}
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded p-2">
+                  <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 rounded p-2">
                     <button
                       onClick={() => {
                         const factoryDefaults = {
@@ -445,7 +445,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   </div>
 
                   {/* Backup do Site */}
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded p-2">
+                  <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-600 rounded p-2">
                     <button
                       onClick={() => {
                         try {
@@ -473,7 +473,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   </div>
 
                   {/* Desfazer Última Ação */}
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded p-2">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-600 rounded p-2">
                     <button
                       onClick={() => {
                         try {
