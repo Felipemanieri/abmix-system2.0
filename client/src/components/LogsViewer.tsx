@@ -183,32 +183,23 @@ export default function LogsViewer() {
     const originalConsoleError = console.error;
     const originalConsoleWarn = console.warn;
 
+    // Tratar unhandledrejection
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const realLog = captureConsoleLog(`Promise rejeitada: ${event.reason}`, 'error', 'Sistema');
+      setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
+    };
+    
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
     console.log = (...args) => {
       originalConsoleLog.apply(console, args);
       
-      // Capturar TODOS os logs importantes do sistema em tempo real
       const message = args.join(' ');
-      if (
-        message.includes('🔍') || 
-        message.includes('📊') || 
-        message.includes('✅') || 
-        message.includes('⚠️') ||
-        message.includes('❌') ||
-        message.includes('🚀') ||
-        message.includes('🔌') ||
-        message.includes('🔗') ||
-        message.includes('📎') ||
-        message.includes('LOGIN') ||
-        message.includes('API') ||
-        message.includes('STORAGE') ||
-        message.includes('GoogleSheetsSimple') ||
-        message.includes('Buscando') ||
-        message.includes('Falha na autenticação') ||
-        message.includes('Servidor') ||
-        message.includes('Environment') ||
-        message.includes('running on port') ||
-        message.includes('WebSocket')
-      ) {
+      // Capturar apenas logs importantes, excluindo loops
+      if (!message.includes('📡 Usando captura local') && 
+          !message.includes('[vite]') &&
+          (message.includes('🔍') || message.includes('✅') || message.includes('❌') || 
+           message.includes('LOGIN') || message.includes('API') || message.includes('STORAGE'))) {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
         setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
       }
@@ -233,6 +224,7 @@ export default function LogsViewer() {
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, [isLive]);
 
