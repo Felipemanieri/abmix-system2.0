@@ -2991,9 +2991,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         showNotification('Erro ao gerar relatório', 'error');
                       }
                     }}
-                    className="inline-flex items-center justify-center gap-1 px-2 py-1 text-xs font-normal text-blue-600 bg-blue-50 border border-blue-100 rounded hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    Relatório Excel
+                    Gerar Relatório
                   </button>
                   
                   <button
