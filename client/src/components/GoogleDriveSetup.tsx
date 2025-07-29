@@ -374,10 +374,12 @@ export default function GoogleDriveSetup() {
                 <div className="text-xs text-orange-600 dark:text-orange-400">Arquivos</div>
               </div>
               <div className="bg-orange-100 dark:bg-orange-800/30 rounded-lg p-3 text-center">
-                <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
-                  {backupData.capacidade}
+                <div className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                  {backupData.capacidade} de {backupData.totalCapacidade}
                 </div>
-                <div className="text-xs text-orange-600 dark:text-orange-400">Espaço Usado</div>
+                <div className="text-xs text-orange-600 dark:text-orange-400">
+                  utilizados
+                </div>
               </div>
             </div>
 
@@ -399,12 +401,22 @@ export default function GoogleDriveSetup() {
                 </div>
               </div>
               <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-700 dark:text-orange-300">URL Conectada</span>
+                <span className="text-xs text-orange-800 dark:text-orange-200 truncate max-w-48" title="https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu">
+                  1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
                 <span className="text-sm text-orange-700 dark:text-orange-300">Última Sincronização</span>
                 <span className="text-sm text-orange-800 dark:text-orange-200">{backupData.ultimaSync}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-orange-700 dark:text-orange-300">Pasta de Backup</span>
-                <span className="text-sm text-orange-800 dark:text-orange-200">Sistema Abmix</span>
+                <span className="text-sm text-orange-700 dark:text-orange-300">Última modificação</span>
+                <span className="text-sm text-orange-800 dark:text-orange-200">{backupData.ultimaModificacao}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-orange-700 dark:text-orange-300">Sincronização Automática</span>
+                <span className="text-sm text-orange-800 dark:text-orange-200">{syncInterval}</span>
               </div>
             </div>
           </div>
