@@ -69,7 +69,11 @@ export default function GoogleDriveSetup() {
     url: '',
     observacao: ''
   });
-  const [syncInterval, setSyncInterval] = useState<string>('5 minutos');
+  const [syncInterval, setSyncInterval] = useState<string>(() => {
+    // Recuperar valor salvo do localStorage
+    const saved = localStorage.getItem('google_drive_sync_interval');
+    return saved || '5 minutos';
+  });
   const [isManualSync, setIsManualSync] = useState(false);
   const [showSyncOptions, setShowSyncOptions] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
@@ -259,6 +263,10 @@ export default function GoogleDriveSetup() {
   const handleSyncIntervalChange = (interval: string) => {
     setSyncInterval(interval);
     setShowSyncOptions(false);
+    
+    // Salvar no localStorage para persistir
+    localStorage.setItem('google_drive_sync_interval', interval);
+    
     if (interval === 'Manual') {
       setIsManualSync(true);
       console.log('⏱️ Sincronização definida para manual');
@@ -477,10 +485,10 @@ export default function GoogleDriveSetup() {
             </div>
             <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
               <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                {currentTabData.capacidade}
+                {currentTabData.capacidade} de {currentTabData.totalCapacidade}
               </div>
               <div className="text-xs text-blue-600 dark:text-blue-400">
-                de {currentTabData.totalCapacidade} utilizados
+                utilizados
               </div>
             </div>
           </div>
