@@ -283,6 +283,15 @@ export default function GoogleDriveSetup() {
     }
   };
 
+  const handleManualSync = async () => {
+    try {
+      console.log('Sincronização manual do drive principal iniciada');
+      await fetchDriveData();
+    } catch (error) {
+      console.error('Erro na sincronização do drive principal:', error);
+    }
+  };
+
   const handleAddNewDrive = () => {
     setShowAddDriveModal(true);
   };
