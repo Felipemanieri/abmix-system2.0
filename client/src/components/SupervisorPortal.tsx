@@ -3758,36 +3758,37 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-7xl h-[90vh] overflow-y-auto">
             {/* Header do Modal */}
-            <div className="bg-blue-50 dark:bg-blue-900 border-b border-blue-200 dark:border-blue-700 p-2 rounded-t-lg">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-medium text-blue-700 dark:text-blue-200">Relatório Excel - Tempo Real</h2>
-                <div className="text-xs text-blue-600 dark:text-blue-300">
-                  {new Date().toLocaleString('pt-BR')}
+            <div className="bg-blue-50 dark:bg-blue-900 border-b border-blue-200 dark:border-blue-700 p-2 rounded-t-lg flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xs font-medium text-blue-700 dark:text-blue-200">Relatório Excel - Tempo Real</h2>
+                  <div className="text-xs text-blue-600 dark:text-blue-300">
+                    {new Date().toLocaleString('pt-BR')}
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-2 mt-1 text-xs text-blue-600 dark:text-blue-300">
+                  <div>
+                    <span className="font-medium">Propostas:</span> {reportData.length}
+                  </div>
+                  <div>
+                    <span className="font-medium">Faturamento:</span> R$ {reportData.reduce((sum, item) => sum + parseFloat(item.valor.replace(/[^\d,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                  </div>
+                  <div>
+                    <span className="font-medium">Ticket Médio:</span> R$ {reportData.length > 0 ? (reportData.reduce((sum, item) => sum + parseFloat(item.valor.replace(/[^\d,]/g, '').replace(',', '.')), 0) / reportData.length).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00'}
+                  </div>
+                  <div>
+                    <span className="font-medium">Colunas:</span> 20
+                  </div>
+                  <div>
+                    <span className="font-medium">Formato:</span> EXCEL
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-5 gap-2 mt-1 text-xs text-blue-600 dark:text-blue-300">
-                <div>
-                  <span className="font-medium">Propostas:</span> {reportData.length}
-                </div>
-                <div>
-                  <span className="font-medium">Faturamento:</span> R$ {reportData.reduce((sum, item) => sum + parseFloat(item.valor.replace(/[^\d,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                </div>
-                <div>
-                  <span className="font-medium">Ticket Médio:</span> R$ {reportData.length > 0 ? (reportData.reduce((sum, item) => sum + parseFloat(item.valor.replace(/[^\d,]/g, '').replace(',', '.')), 0) / reportData.length).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '0,00'}
-                </div>
-                <div>
-                  <span className="font-medium">Colunas:</span> 20
-                </div>
-                <div>
-                  <span className="font-medium">Formato:</span> EXCEL
-                </div>
-              </div>
-            </div>
               <button
                 onClick={() => setShowReportModal(false)}
-                className="text-white hover:text-gray-200"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-100 ml-2"
               >
-                <X size={24} />
+                <X size={16} />
               </button>
             </div>
 
