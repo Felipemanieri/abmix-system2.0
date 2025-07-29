@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Database, 
   Download, 
@@ -16,77 +16,92 @@ import {
   Trash2
 } from 'lucide-react';
 
+interface RealBackup {
+  folder: string;
+  size: number;
+  date: string;
+  timestamp: number;
+}
+
 export default function BackupManager() {
   const [isBackingUp, setIsBackingUp] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [backupHistory, setBackupHistory] = useState([
-    {
-      id: 1,
-      date: new Date('2025-01-16'),
-      type: 'Completo',
-      size: '15.2 MB',
-      status: 'sucesso',
-      tables: ['propostas', 'usuarios', 'vendedores', 'system_users'],
-      records: 1247
-    },
-    {
-      id: 2,
-      date: new Date('2025-01-15'),
-      type: 'Incremental',
-      size: '2.8 MB',
-      status: 'sucesso',
-      tables: ['propostas', 'usuarios'],
-      records: 89
-    },
-    {
-      id: 3,
-      date: new Date('2025-01-14'),
-      type: 'Completo',
-      size: '14.9 MB',
-      status: 'sucesso',
-      tables: ['propostas', 'usuarios', 'vendedores', 'system_users'],
-      records: 1198
+  const [backupHistory, setBackupHistory] = useState<RealBackup[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Sincronização real com sistema de backup
+  const loadRealBackups = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/backup/list');
+      const data = await response.json();
+      
+      if (data.success) {
+        setBackupHistory(data.backups);
+        console.log(`📊 Carregados ${data.backups.length} backups reais do sistema`);
+      } else {
+        console.error('❌ Erro ao carregar backups:', data.error);
+      }
+    } catch (error) {
+      console.error('❌ Erro na comunicação com API de backup:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
+
+  // Carregar backups na inicialização
+  useEffect(() => {
+    loadRealBackups();
+  }, []);
+
+  // Atualizar lista a cada 30 segundos (configurável)
+  useEffect(() => {
+    const interval = setInterval(loadRealBackups, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const executeBackup = async (type: 'complete' | 'incremental') => {
     setIsBackingUp(true);
     try {
-      // Simular backup (em produção, chamaria API real)
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Criar backup real via API
+      const response = await fetch('/api/backup/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type }),
+      });
+
+      const data = await response.json();
       
-      const newBackup = {
-        id: Date.now(),
-        date: new Date(),
-        type: type === 'complete' ? 'Completo' : 'Incremental',
-        size: type === 'complete' ? '15.8 MB' : '3.2 MB',
-        status: 'sucesso',
-        tables: type === 'complete' 
-          ? ['propostas', 'usuarios', 'vendedores', 'system_users']
-          : ['propostas', 'usuarios'],
-        records: type === 'complete' ? 1298 : 127
-      };
-      
-      setBackupHistory(prev => [newBackup, ...prev.slice(0, 9)]);
-      
-      // Notificação integrada ao sistema
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-bounce';
-      notification.innerHTML = `
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-        </svg>
-        ✅ Backup ${type === 'complete' ? 'completo' : 'incremental'} executado com sucesso!
-      `;
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.transition = 'opacity 0.5s ease-out';
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 500);
-      }, 3500);
+      if (data.success) {
+        // Recarregar lista de backups após criação
+        await loadRealBackups();
+        
+        // Notificação integrada ao sistema
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-bounce';
+        notification.innerHTML = `
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+          </svg>
+          ✅ Backup ${type === 'complete' ? 'completo' : 'incremental'} criado: ${data.backupName}
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.style.transition = 'opacity 0.5s ease-out';
+          notification.style.opacity = '0';
+          setTimeout(() => notification.remove(), 500);
+        }, 3500);
+        
+      } else {
+        throw new Error(data.error || 'Erro desconhecido');
+      }
       
     } catch (error) {
+      console.error('❌ Erro ao criar backup:', error);
+      
       // Notificação de erro integrada ao sistema
       const errorNotification = document.createElement('div');
       errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
@@ -94,7 +109,7 @@ export default function BackupManager() {
         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
         </svg>
-        Erro ao executar backup
+        Erro ao executar backup: ${error.message}
       `;
       document.body.appendChild(errorNotification);
       
@@ -216,8 +231,8 @@ export default function BackupManager() {
     }
   };
 
-  const deleteBackup = async (backupId: number) => {
-    const backup = backupHistory.find(b => b.id === backupId);
+  const deleteBackup = async (backupFolder: string) => {
+    const backup = backupHistory.find(b => b.folder === backupFolder);
     if (!backup) return;
     
     // Criar modal de confirmação integrado
@@ -232,8 +247,8 @@ export default function BackupManager() {
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Exclusão</h3>
         </div>
         <p class="text-gray-600 dark:text-gray-300 mb-6">
-          Tem certeza que deseja <strong>EXCLUIR permanentemente</strong> o backup de 
-          <strong>${backup.date.toLocaleDateString('pt-BR')} (${backup.type})</strong>?
+          Tem certeza que deseja <strong>EXCLUIR permanentemente</strong> o backup 
+          <strong>"${backup.folder}" (${backup.date})</strong>?
           <br><br>
           <span class="text-red-600 dark:text-red-400 font-medium">Esta ação NÃO PODE ser desfeita!</span>
         </p>
@@ -277,26 +292,39 @@ export default function BackupManager() {
     if (!userConfirmed) return;
 
     try {
-      // Remover backup da lista
-      setBackupHistory(prev => prev.filter(b => b.id !== backupId));
+      // Excluir backup real via API
+      const response = await fetch(`/api/backup/${backup.folder}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
       
-      // Notificação integrada ao sistema
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
-      notification.innerHTML = `
-        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-        </svg>
-        Backup excluído com sucesso!
-      `;
-      document.body.appendChild(notification);
-      
-      // Remover notificação após 3 segundos
-      setTimeout(() => {
-        notification.remove();
-      }, 3000);
+      if (data.success) {
+        // Recarregar lista de backups após exclusão
+        await loadRealBackups();
+        
+        // Notificação integrada ao sistema
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+        notification.innerHTML = `
+          <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          ✅ Backup "${backup.folder}" excluído permanentemente!
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+        
+      } else {
+        throw new Error(data.error || 'Erro desconhecido');
+      }
       
     } catch (error) {
+      console.error('❌ Erro ao excluir backup:', error);
+      
       // Notificação de erro integrada ao sistema
       const errorNotification = document.createElement('div');
       errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
@@ -304,7 +332,7 @@ export default function BackupManager() {
         <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
         </svg>
-        Erro ao excluir backup
+        Erro ao excluir backup: ${error.message}
       `;
       document.body.appendChild(errorNotification);
       

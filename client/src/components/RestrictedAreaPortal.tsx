@@ -59,7 +59,7 @@ import AutomationManager from './AutomationManager';
 import GoogleDriveSetup from './GoogleDriveSetup';
 import UserManagementDashboard from './UserManagementDashboard';
 import LogsViewer from './LogsViewer';
-import BackupManager from './BackupManager';
+import BackupManagerReal from './BackupManagerReal';
 import TestCreator from './TestCreator';
 import PlanilhaViewer from './PlanilhaViewer';
 import InternalMessage from './InternalMessage';
@@ -527,7 +527,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
         return <GoogleDriveSetup />;
 
       case 'backup-restore':
-        return <BackupManager />;
+        return <BackupManagerReal />;
 
       case 'gestao-usuarios-unificada':
         return <UserManagementDashboard />;
