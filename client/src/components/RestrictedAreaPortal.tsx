@@ -262,7 +262,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showClientPortal 
                       ? 'bg-blue-600' 
-                      : 'bg-gray-200 dark:bg-gray-600'
+                      : 'bg-red-300 dark:bg-red-500'
                   }`}
                 >
                   <span
@@ -290,7 +290,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showVendorPortal 
                       ? 'bg-green-600' 
-                      : 'bg-gray-200 dark:bg-gray-600'
+                      : 'bg-orange-300 dark:bg-orange-500'
                   }`}
                 >
                   <span
@@ -318,7 +318,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showFinancialPortal 
                       ? 'bg-purple-600' 
-                      : 'bg-gray-200 dark:bg-gray-600'
+                      : 'bg-yellow-300 dark:bg-yellow-500'
                   }`}
                 >
                   <span
@@ -346,7 +346,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showImplementationPortal 
                       ? 'bg-teal-600' 
-                      : 'bg-gray-200 dark:bg-gray-600'
+                      : 'bg-pink-300 dark:bg-pink-500'
                   }`}
                 >
                   <span
@@ -373,8 +373,8 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   }}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showSupervisorPortal 
-                      ? 'bg-gray-600' 
-                      : 'bg-gray-200 dark:bg-gray-600'
+                      ? 'bg-indigo-600' 
+                      : 'bg-cyan-300 dark:bg-cyan-500'
                   }`}
                 >
                   <span
@@ -708,7 +708,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                             showInternalNotification('❌ Erro de conexão', 'error');
                           }
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
                       >
                         💾 Salvar Armazenamento
                       </button>
@@ -790,9 +790,9 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
                   <button
                     onClick={() => showInternalNotification('Configurações restauradas para padrão', 'info')}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 border border-orange-500 rounded-md transition-colors"
                   >
-                    Restaurar Padrão
+                    🔄 Restaurar Padrão
                   </button>
                   <button
                     onClick={async () => {
@@ -821,7 +821,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                         showInternalNotification('❌ Erro de conexão', 'error');
                       }
                     }}
-                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center"
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Todas as Configurações
