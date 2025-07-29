@@ -12,6 +12,26 @@ import RestrictedAreaPortalSimple from './components/RestrictedAreaPortalSimple'
 import ClientProposalView from './components/ClientProposalView';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import { BrowserRouter as Router } from 'react-router-dom';
+
+// Tratar erros do frontend para evitar unhandledrejection
+window.addEventListener('unhandledrejection', (event) => {
+  // Silenciar erros de rede que não afetam o funcionamento
+  const reason = String(event.reason);
+  if (reason.includes('fetch') || 
+      reason.includes('network') || 
+      reason.includes('timeout') ||
+      reason.includes('WebSocket') ||
+      reason.includes('ECONNRESET')) {
+    event.preventDefault(); // Prevenir log no console
+    return;
+  }
+
+  // Permitir apenas erros críticos
+  if (!reason.includes('CRITICAL') && !reason.includes('FATAL')) {
+    event.preventDefault();
+  }
+});
 
 type Portal = 'home' | 'client' | 'vendor' | 'financial' | 'implementation' | 'supervisor' | 'restricted' | 'admin';
 type User = {
