@@ -91,7 +91,24 @@ export default function BackupManager() {
     // Simular processo de backup
     await new Promise(resolve => setTimeout(resolve, 3000));
     
-    alert(`✅ Backup ${type === 'complete' ? 'completo' : 'incremental'} criado com sucesso!`);
+    // Notificação integrada ao sistema
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-pulse';
+    notification.innerHTML = `
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+      </svg>
+      ✅ Backup ${type === 'complete' ? 'completo' : 'incremental'} criado com sucesso!
+    `;
+    document.body.appendChild(notification);
+    
+    // Remover notificação após 4 segundos
+    setTimeout(() => {
+      notification.style.transition = 'opacity 0.5s ease-out';
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 500);
+    }, 3500);
+    
     setIsBackingUp(false);
   };
 
@@ -111,7 +128,24 @@ export default function BackupManager() {
 
     if (window.confirm(`Tem certeza que deseja EXCLUIR permanentemente o backup "${backup.filename}"?\n\nEsta ação NÃO PODE ser desfeita!`)) {
       setBackups(prev => prev.filter(b => b.id !== backupId));
-      alert('✅ Backup excluído com sucesso!');
+      
+      // Notificação integrada ao sistema
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-bounce';
+      notification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        ✅ Backup "${backup.filename}" excluído com sucesso!
+      `;
+      document.body.appendChild(notification);
+      
+      // Remover notificação após 4 segundos com fade out
+      setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s ease-out';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 3500);
     }
   };
 

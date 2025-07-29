@@ -68,9 +68,39 @@ export default function BackupManager() {
       };
       
       setBackupHistory(prev => [newBackup, ...prev.slice(0, 9)]);
-      alert(`Backup ${type === 'complete' ? 'completo' : 'incremental'} executado com sucesso!`);
+      
+      // Notificação integrada ao sistema
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-bounce';
+      notification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+        </svg>
+        ✅ Backup ${type === 'complete' ? 'completo' : 'incremental'} executado com sucesso!
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s ease-out';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 3500);
+      
     } catch (error) {
-      alert('Erro ao executar backup');
+      // Notificação de erro integrada ao sistema
+      const errorNotification = document.createElement('div');
+      errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+      errorNotification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        Erro ao executar backup
+      `;
+      document.body.appendChild(errorNotification);
+      
+      setTimeout(() => {
+        errorNotification.remove();
+      }, 3000);
     } finally {
       setIsBackingUp(false);
     }
@@ -97,9 +127,39 @@ export default function BackupManager() {
     try {
       // Simular restore (em produção, chamaria API real)
       await new Promise(resolve => setTimeout(resolve, 5000));
-      alert('Backup restaurado com sucesso!');
+      
+      // Notificação integrada ao sistema
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-purple-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-pulse';
+      notification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        ✅ Backup restaurado com sucesso!
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s ease-out';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 3500);
+      
     } catch (error) {
-      alert('Erro ao restaurar backup');
+      // Notificação de erro integrada ao sistema
+      const errorNotification = document.createElement('div');
+      errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+      errorNotification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        Erro ao restaurar backup
+      `;
+      document.body.appendChild(errorNotification);
+      
+      setTimeout(() => {
+        errorNotification.remove();
+      }, 3000);
     } finally {
       setIsRestoring(false);
     }
@@ -116,9 +176,38 @@ export default function BackupManager() {
     try {
       // Remover backup da lista
       setBackupHistory(prev => prev.filter(b => b.id !== backupId));
-      alert('Backup excluído com sucesso!');
+      
+      // Notificação integrada ao sistema
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+      notification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        Backup excluído com sucesso!
+      `;
+      document.body.appendChild(notification);
+      
+      // Remover notificação após 3 segundos
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+      
     } catch (error) {
-      alert('Erro ao excluir backup');
+      // Notificação de erro integrada ao sistema
+      const errorNotification = document.createElement('div');
+      errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+      errorNotification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        Erro ao excluir backup
+      `;
+      document.body.appendChild(errorNotification);
+      
+      setTimeout(() => {
+        errorNotification.remove();
+      }, 3000);
     }
   };
 
