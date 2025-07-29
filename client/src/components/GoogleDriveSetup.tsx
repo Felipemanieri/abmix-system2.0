@@ -452,7 +452,7 @@ export default function GoogleDriveSetup() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
+              onClick={() => window.open(driveUrl, '_blank')}
               className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               title="Abrir no Google Drive"
             >
@@ -471,12 +471,12 @@ export default function GoogleDriveSetup() {
           </div>
           
           <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
-            driveData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
-            driveData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+            currentTabData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
+            currentTabData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
             'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
           }`}>
-            {driveData.status === 'connected' ? 'Conectado' : 
-             driveData.status === 'loading' ? 'Sincronizando...' : 'Erro de Conexão'}
+            {currentTabData.status === 'connected' ? 'Conectado' : 
+             currentTabData.status === 'loading' ? 'Sincronizando...' : 'Erro de Conexão'}
           </div>
         </div>
       </div>
