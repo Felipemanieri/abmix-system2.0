@@ -176,15 +176,7 @@ export default function LogsViewer() {
     );
     setLogs(prevLogs => [...prevLogs, initLog].slice(-1000));
 
-    // Adicionar alguns logs iniciais do sistema
-    const systemLogs = [
-      captureConsoleLog('🚀 Sistema Abmix iniciado com sucesso', 'success', 'Sistema'),
-      captureConsoleLog('🔌 Conexão com banco de dados estabelecida', 'info', 'Database'),
-      captureConsoleLog('✅ Google Sheets integração ativa', 'success', 'Google'),
-      captureConsoleLog('🔄 Portal visibility carregado', 'info', 'Portais'),
-      captureConsoleLog('🌐 Servidor rodando na porta 5000', 'info', 'Servidor')
-    ];
-    setLogs(prevLogs => [...prevLogs, ...systemLogs].slice(-1000));
+    // Sistema básico de logs funcionando
 
     // Interceptar console.log, console.error, etc.
     const originalConsoleLog = console.log;
@@ -206,25 +198,17 @@ export default function LogsViewer() {
         message.includes('🔌') ||
         message.includes('🔗') ||
         message.includes('📎') ||
-        message.includes('🌐') ||
-        message.includes('🔄') ||
         message.includes('LOGIN') ||
         message.includes('API') ||
         message.includes('STORAGE') ||
-        message.includes('GET /api') ||
-        message.includes('POST /api') ||
-        message.includes('PUT /api') ||
         message.includes('GoogleSheetsSimple') ||
         message.includes('Buscando') ||
         message.includes('Falha na autenticação') ||
         message.includes('Servidor') ||
         message.includes('Environment') ||
         message.includes('running on port') ||
-        message.includes('WebSocket') ||
-        message.includes('HMR') ||
-        message.includes('workflow') ||
-        message.includes('portal-visibility')
-      ) && !message.includes('📡 Usando captura local') {
+        message.includes('WebSocket')
+      ) {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
         setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
       }
