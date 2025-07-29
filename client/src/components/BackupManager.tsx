@@ -514,8 +514,8 @@ export default function BackupManager() {
                 <tr key={backup.id} className="hover:bg-gray-50">
                   <td className="p-4">
                     <div>
-                      <div className="font-medium">{backup.date.toLocaleDateString('pt-BR')}</div>
-                      <div className="text-sm text-gray-500">{backup.date.toLocaleTimeString('pt-BR')}</div>
+                      <div className="font-medium">{backup.date}</div>
+                      <div className="text-sm text-gray-500">Backup do sistema</div>
                     </div>
                   </td>
                   <td className="p-4">
