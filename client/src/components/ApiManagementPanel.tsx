@@ -73,6 +73,54 @@ export default function ApiManagementPanel() {
       isActive: false
     },
     {
+      id: 'gmail-api',
+      name: 'Gmail API',
+      type: 'EMAIL GOOGLE',
+      url: 'https://gmail.googleapis.com/gmail/v1/',
+      status: 'error',
+      lastTest: '29/07/2025, 10:55:56',
+      result: 'error',
+      clientId: '754195061143-fe16am2k6rvenmnn4gfe4Q9kI3p7D00.apps.googleusercontent.com',
+      clientSecret: 'GOCSPK-fyhHMpJTmxkyptOILLyWrAZXBld',
+      isActive: false
+    },
+    {
+      id: 'google-oauth2',
+      name: 'Google OAuth2 API',
+      type: 'AUTENTICAÇÃO GOOGLE',
+      url: 'https://oauth2.googleapis.com/token',
+      status: 'error',
+      lastTest: '29/07/2025, 10:55:56',
+      result: 'error',
+      clientId: '754195061143-fe16am2k6rvenmnn4gfe4Q9kI3p7D00.apps.googleusercontent.com',
+      clientSecret: 'GOCSPK-fyhHMpJTmxkyptOILLyWrAZXBld',
+      isActive: false
+    },
+    {
+      id: 'google-calendar',
+      name: 'Google Calendar API',
+      type: 'CALENDÁRIO GOOGLE',
+      url: 'https://www.googleapis.com/calendar/v3/',
+      status: 'disconnected',
+      lastTest: 'Nunca testado',
+      result: 'error',
+      clientId: '754195061143-fe16am2k6rvenmnn4gfe4Q9kI3p7D00.apps.googleusercontent.com',
+      clientSecret: 'GOCSPK-fyhHMpJTmxkyptOILLyWrAZXBld',
+      isActive: false
+    },
+    {
+      id: 'google-service-account',
+      name: 'Google Service Account',
+      type: 'CONTA DE SERVIÇO',
+      url: 'https://www.googleapis.com/auth/service_accounts',
+      status: 'error',
+      lastTest: '29/07/2025, 10:55:56',
+      result: 'error',
+      clientId: 'service-account@abmix-system.iam.gserviceaccount.com',
+      clientSecret: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANB...',
+      isActive: false
+    },
+    {
       id: 'sendgrid',
       name: 'SendGrid Email API',
       type: 'EMAIL',
