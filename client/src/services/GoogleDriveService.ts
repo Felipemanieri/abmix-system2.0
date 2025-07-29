@@ -12,21 +12,21 @@ export interface ClientData {
 
 class GoogleDriveService {
   private static instance: GoogleDriveService;
-  
+
   // Credenciais de produção
   private readonly CLIENT_ID = '754195061143-fe16am2k6rvemnnm4gfe40j9ki3p70b0.apps.googleusercontent.com';
   private readonly MAIN_FOLDER_ID = '1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb';
   private readonly MAIN_FOLDER_URL = 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link';
-  
+
   private constructor() {}
-  
+
   static getInstance(): GoogleDriveService {
     if (!GoogleDriveService.instance) {
       GoogleDriveService.instance = new GoogleDriveService();
     }
     return GoogleDriveService.instance;
   }
-  
+
   // Criar pasta automaticamente para novo cliente
   async createClientFolder(clientId: string, clientName: string): Promise<string> {
     try {
@@ -35,9 +35,9 @@ class GoogleDriveService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyName: clientName })
       });
-      
+
       if (!response.ok) throw new Error('Erro ao criar pasta');
-      
+
       const data = await response.json();
       console.log('✅ Pasta criada no Google Drive:', clientName);
       return data.folder.id;
@@ -46,7 +46,7 @@ class GoogleDriveService {
       throw error;
     }
   }
-  
+
   // Obter ID da pasta principal
   getMainFolderId(): string {
     return this.MAIN_FOLDER_ID;
@@ -60,9 +60,9 @@ class GoogleDriveService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folderId, newName })
       });
-      
+
       if (!response.ok) throw new Error('Erro ao renomear pasta');
-      
+
       const data = await response.json();
       console.log('✅ Pasta renomeada:', newName);
       return data.folder;
@@ -71,14 +71,14 @@ class GoogleDriveService {
       throw error;
     }
   }
-  
+
   // Listar pastas existentes
   async listFolders(): Promise<any[]> {
     try {
       const response = await fetch('/api/google/drive/folders');
-      
+
       if (!response.ok) throw new Error('Erro ao listar pastas');
-      
+
       const data = await response.json();
       return data.folders;
     } catch (error) {
@@ -86,7 +86,23 @@ class GoogleDriveService {
       return [];
     }
   }
-  
+
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await fetch('/api/google/drive/test').catch(() => null);
+      if (!response) {
+        return { success: false, message: 'Serviço indisponível' };
+      }
+      const data = await response.json().catch(() => ({ success: false }));
+      return data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: 'Conexão indisponível'
+      };
+    }
+  }
+
   // Obter informações da pasta principal
   getMainFolder() {
     return {
@@ -95,18 +111,18 @@ class GoogleDriveService {
       name: 'Pasta Principal ABMix'
     };
   }
-  
+
   // Métodos mantidos para compatibilidade
   async saveClientData(clientData: ClientData): Promise<boolean> {
     console.log('✅ Dados salvos:', clientData);
     return true;
   }
-  
+
   async uploadDocument(file: File, clientId: string): Promise<string> {
     console.log('✅ Documento enviado:', file.name);
     return `drive-${clientId}/${file.name}`;
   }
-  
+
   async getClientDocuments(clientId: string): Promise<any[]> {
     console.log('✅ Documentos obtidos:', clientId);
     return [];

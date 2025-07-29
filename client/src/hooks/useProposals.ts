@@ -43,7 +43,7 @@ export interface ProposalData {
 
 export function useProposals() {
   const queryClient = useQueryClient();
-  
+
   const { data: proposals = [], isLoading, error } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: async () => {
@@ -129,7 +129,7 @@ export function useProposals() {
       // Invalidar e forçar refetch imediato de todas as consultas relacionadas
       queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
       queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
-      
+
       // Sincronização completa após mudança
       console.log(`🔄 Forcing immediate update of all proposals`);
       console.log(`✅ All proposal queries invalidated and refetched`);
@@ -163,7 +163,7 @@ export function useProposals() {
       // Invalidar e forçar refetch imediato de todas as consultas relacionadas
       queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
       queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
-      
+
       // Sincronização completa após rejeição
       console.log(`🔄 Forcing immediate update after rejection`);
       console.log(`✅ All proposal queries invalidated and refetched after rejection`);
@@ -185,7 +185,7 @@ export function useProposals() {
 
 export function useVendorProposals(vendorId: number) {
   const queryClient = useQueryClient();
-  
+
   const { data: proposals = [], isLoading, error } = useQuery({
     queryKey: ['/api/proposals/vendor', vendorId],
     queryFn: async () => {
@@ -244,12 +244,12 @@ export function useRealTimeProposals(vendorId?: number) {
     const interval = setInterval(() => {
       // Invalidar consultas gerais
       queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
-      
+
       // Se for um vendedor específico, invalidar também suas propostas
       if (vendorId) {
         queryClient.invalidateQueries({ queryKey: ['/api/proposals/vendor', vendorId] });
       }
-      
+
       setLastUpdate(Date.now());
     }, 60000); // Atualizar a cada 1 minuto
 
@@ -285,16 +285,16 @@ export function useUpdateProposal() {
     onSuccess: (data) => {
       console.log(`✅ GLOBAL STATUS UPDATE SUCCESS:`, data);
       // SINCRONIZAÇÃO FORÇADA EM TODOS OS PORTAIS
-      
+
       // 1. Invalidar consultas gerais (para todos os portais)
       queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
-      
+
       // 2. Invalidar consultas por vendedor (para portal vendedor)
       queryClient.invalidateQueries({ queryKey: ['/api/proposals/vendor'] });
-      
+
       // 3. Refetch imediato para garantir sincronização
       queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
-      
+
       // Refetch único para garantir sincronização
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
@@ -318,12 +318,12 @@ export function useDeleteProposal() {
         const response = await fetch(`/api/proposals/${proposalId}`, {
           method: 'DELETE',
         });
-        
+
         if (!response.ok) {
           console.warn(`Erro ao excluir proposta ${proposalId}:`, response.status);
           return null;
         }
-        
+
         return response.json();
       } catch (error) {
         console.warn(`Delete failed for proposal ${proposalId}:`, error.message);
@@ -332,16 +332,16 @@ export function useDeleteProposal() {
     },
     onSuccess: (data, proposalId) => {
       console.log(`✅ PROPOSAL DELETED SUCCESSFULLY: ${proposalId}`, data);
-      
+
       // SINCRONIZAÇÃO FORÇADA IMEDIATA EM TODOS OS PORTAIS
       // 1. Invalidar todas as consultas de propostas
       queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
       queryClient.invalidateQueries({ queryKey: ['/api/proposals/vendor'] });
-      
+
       // 2. Refetch imediato para garantir remoção visual
       queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
       queryClient.refetchQueries({ queryKey: ['/api/proposals/vendor'] });
-      
+
       // Refetch único após delay para garantir sincronização
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['/api/proposals'] });

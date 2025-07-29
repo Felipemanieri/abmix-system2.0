@@ -46,9 +46,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       // Determinar protocolo e URL
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
+
       console.log('🔗 Conectando ao WebSocket:', wsUrl);
-      
+
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -56,7 +56,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         console.log('✅ WebSocket conectado');
         setIsConnected(true);
         setConnectionAttempts(0);
-        
+
         // Autenticar usuário se fornecido
         if (userId && userType) {
           ws.send(JSON.stringify({
@@ -81,10 +81,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
           console.log('📨 Mensagem WebSocket recebida:', message);
-          
+
           // Processar mensagens do sistema
           handleSystemMessage(message);
-          
+
           // Callback personalizado
           onMessage?.(message);
         } catch (error) {
@@ -96,9 +96,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         console.log('🔌 WebSocket desconectado:', event.reason);
         setIsConnected(false);
         wsRef.current = null;
-        
+
         onDisconnect?.();
-        
+
         // Reconectar automaticamente se não foi fechamento intencional
         if (event.code !== 1000) {
           scheduleReconnect();
@@ -130,7 +130,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000); // Max 30 segundos
     console.log(`🔄 Reagendando conexão em ${delay}ms (tentativa ${connectionAttempts + 1}/5)`);
-    
+
     reconnectTimeoutRef.current = setTimeout(() => {
       setConnectionAttempts(prev => prev + 1);
       connect();

@@ -15,26 +15,7 @@ import ThemeToggle from './components/ThemeToggle';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 // Handler único para unhandled promise rejections
-const handleGlobalUnhandledRejection = (event: PromiseRejectionEvent) => {
-  const reason = String(event.reason);
-  
-  // Prevenir apenas erros de rede comuns que não são críticos
-  if (reason.includes('Failed to fetch') || 
-      reason.includes('NetworkError') || 
-      reason.includes('timeout') ||
-      reason.includes('ECONNRESET') ||
-      reason.includes('Connection refused')) {
-    event.preventDefault(); // Silenciar apenas erros de conectividade
-    return;
-  }
-  
-  // Logs limpos para debugging sem quebrar a aplicação
-  console.warn('Promise rejeitada:', reason);
-  event.preventDefault(); // Prevenir logs duplicados
-};
-
-// Aplicar handler uma única vez
-window.addEventListener('unhandledrejection', handleGlobalUnhandledRejection);
+// Sistema global de tratamento de erros já configurado em main.tsx
 
 type Portal = 'home' | 'client' | 'vendor' | 'financial' | 'implementation' | 'supervisor' | 'restricted' | 'admin';
 type User = {
