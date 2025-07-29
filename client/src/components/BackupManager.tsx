@@ -119,9 +119,60 @@ export default function BackupManager() {
   };
 
   const restoreBackup = async (backupId: number) => {
-    if (!confirm('Tem certeza que deseja restaurar este backup? Esta ação irá sobrescrever os dados atuais.')) {
-      return;
-    }
+    // Criar modal de confirmação integrado  
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="flex items-center mb-4">
+          <svg class="w-6 h-6 text-yellow-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Restauração</h3>
+        </div>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Tem certeza que deseja <strong>restaurar este backup</strong>?
+          <br><br>
+          <span class="text-yellow-600 dark:text-yellow-400 font-medium">Esta ação irá sobrescrever todos os dados atuais!</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button id="cancelRestore" class="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Cancelar
+          </button>
+          <button id="confirmRestore" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            Restaurar Backup
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Aguardar resposta do usuário
+    const userConfirmed = await new Promise<boolean>((resolve) => {
+      const confirmBtn = modal.querySelector('#confirmRestore') as HTMLButtonElement;
+      const cancelBtn = modal.querySelector('#cancelRestore') as HTMLButtonElement;
+      
+      confirmBtn.onclick = () => {
+        modal.remove();
+        resolve(true);
+      };
+      
+      cancelBtn.onclick = () => {
+        modal.remove();
+        resolve(false);
+      };
+      
+      // Fechar ao clicar fora
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          resolve(false);
+        }
+      };
+    });
+    
+    if (!userConfirmed) return;
 
     setIsRestoring(true);
     try {
@@ -169,9 +220,61 @@ export default function BackupManager() {
     const backup = backupHistory.find(b => b.id === backupId);
     if (!backup) return;
     
-    if (!confirm(`Tem certeza que deseja EXCLUIR permanentemente o backup de ${backup.date.toLocaleDateString('pt-BR')} (${backup.type})?\n\nEsta ação NÃO PODE ser desfeita!`)) {
-      return;
-    }
+    // Criar modal de confirmação integrado
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="flex items-center mb-4">
+          <svg class="w-6 h-6 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Exclusão</h3>
+        </div>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Tem certeza que deseja <strong>EXCLUIR permanentemente</strong> o backup de 
+          <strong>${backup.date.toLocaleDateString('pt-BR')} (${backup.type})</strong>?
+          <br><br>
+          <span class="text-red-600 dark:text-red-400 font-medium">Esta ação NÃO PODE ser desfeita!</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button id="cancelDelete" class="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Cancelar
+          </button>
+          <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Excluir Backup
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Aguardar resposta do usuário
+    const userConfirmed = await new Promise<boolean>((resolve) => {
+      const confirmBtn = modal.querySelector('#confirmDelete') as HTMLButtonElement;
+      const cancelBtn = modal.querySelector('#cancelDelete') as HTMLButtonElement;
+      
+      confirmBtn.onclick = () => {
+        modal.remove();
+        resolve(true);
+      };
+      
+      cancelBtn.onclick = () => {
+        modal.remove();
+        resolve(false);
+      };
+      
+      // Fechar ao clicar fora
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          resolve(false);
+        }
+      };
+    });
+    
+    if (!userConfirmed) return;
 
     try {
       // Remover backup da lista

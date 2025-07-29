@@ -113,20 +113,157 @@ export default function BackupManager() {
   };
 
   const handleDownloadBackup = (backup: BackupEntry) => {
-    alert(`Iniciando download: ${backup.filename}`);
+    // Notificação integrada ao sistema
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-pulse';
+    notification.innerHTML = `
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+      </svg>
+      Iniciando download: ${backup.filename}
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.transition = 'opacity 0.5s ease-out';
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 500);
+    }, 3500);
   };
 
-  const handleRestoreBackup = (backup: BackupEntry) => {
-    if (window.confirm(`Tem certeza que deseja restaurar o backup "${backup.filename}"? Esta ação não pode ser desfeita.`)) {
-      alert(`Iniciando restauração do backup: ${backup.filename}`);
+  const handleRestoreBackup = async (backup: BackupEntry) => {
+    // Criar modal de confirmação integrado  
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="flex items-center mb-4">
+          <svg class="w-6 h-6 text-yellow-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Restauração</h3>
+        </div>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Tem certeza que deseja <strong>restaurar o backup "${backup.filename}"</strong>?
+          <br><br>
+          <span class="text-yellow-600 dark:text-yellow-400 font-medium">Esta ação não pode ser desfeita!</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button id="cancelRestore" class="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Cancelar
+          </button>
+          <button id="confirmRestore" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            Restaurar Backup
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Aguardar resposta do usuário
+    const userConfirmed = await new Promise<boolean>((resolve) => {
+      const confirmBtn = modal.querySelector('#confirmRestore') as HTMLButtonElement;
+      const cancelBtn = modal.querySelector('#cancelRestore') as HTMLButtonElement;
+      
+      confirmBtn.onclick = () => {
+        modal.remove();
+        resolve(true);
+      };
+      
+      cancelBtn.onclick = () => {
+        modal.remove();
+        resolve(false);
+      };
+      
+      // Fechar ao clicar fora
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          resolve(false);
+        }
+      };
+    });
+    
+    if (userConfirmed) {
+      // Notificação integrada ao sistema
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-purple-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center animate-pulse';
+      notification.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+        </svg>
+        Iniciando restauração do backup: ${backup.filename}
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s ease-out';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+      }, 3500);
     }
   };
 
-  const handleDeleteBackup = (backupId: number) => {
+  const handleDeleteBackup = async (backupId: number) => {
     const backup = backups.find(b => b.id === backupId);
     if (!backup) return;
 
-    if (window.confirm(`Tem certeza que deseja EXCLUIR permanentemente o backup "${backup.filename}"?\n\nEsta ação NÃO PODE ser desfeita!`)) {
+    // Criar modal de confirmação integrado
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="flex items-center mb-4">
+          <svg class="w-6 h-6 text-red-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Confirmar Exclusão</h3>
+        </div>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Tem certeza que deseja <strong>EXCLUIR permanentemente</strong> o backup 
+          <strong>"${backup.filename}"</strong>?
+          <br><br>
+          <span class="text-red-600 dark:text-red-400 font-medium">Esta ação NÃO PODE ser desfeita!</span>
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button id="cancelDelete" class="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            Cancelar
+          </button>
+          <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            Excluir Backup
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Aguardar resposta do usuário
+    const userConfirmed = await new Promise<boolean>((resolve) => {
+      const confirmBtn = modal.querySelector('#confirmDelete') as HTMLButtonElement;
+      const cancelBtn = modal.querySelector('#cancelDelete') as HTMLButtonElement;
+      
+      confirmBtn.onclick = () => {
+        modal.remove();
+        resolve(true);
+      };
+      
+      cancelBtn.onclick = () => {
+        modal.remove();
+        resolve(false);
+      };
+      
+      // Fechar ao clicar fora
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          resolve(false);
+        }
+      };
+    });
+    
+    if (userConfirmed) {
       setBackups(prev => prev.filter(b => b.id !== backupId));
       
       // Notificação integrada ao sistema
