@@ -409,7 +409,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                       }}
                       className="w-full flex flex-col items-center text-center p-1"
                     >
-                      <RotateCcw className="w-4 h-4 text-blue-600 dark:text-blue-400 mb-1" />
+                      <RotateCcw className="w-4 h-4 text-blue-400 dark:text-blue-300 mb-1" />
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Restaurar Padrão</span>
                     </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1 leading-tight">
@@ -435,7 +435,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                       }}
                       className="w-full flex flex-col items-center text-center p-1"
                     >
-                      <RefreshCw className="w-4 h-4 text-red-600 dark:text-red-400 mb-1" />
+                      <RefreshCw className="w-4 h-4 text-red-400 dark:text-red-300 mb-1" />
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Restaurar de Fábrica</span>
                     </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1 leading-tight">
@@ -463,7 +463,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                       }}
                       className="w-full flex flex-col items-center text-center p-1"
                     >
-                      <Save className="w-4 h-4 text-green-600 dark:text-green-400 mb-1" />
+                      <Save className="w-4 h-4 text-green-400 dark:text-green-300 mb-1" />
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Backup do Site</span>
                     </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1 leading-tight">
@@ -493,7 +493,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                       }}
                       className="w-full flex flex-col items-center text-center p-1"
                     >
-                      <Upload className="w-4 h-4 text-orange-600 dark:text-orange-400 mb-1" />
+                      <Upload className="w-4 h-4 text-yellow-500 dark:text-yellow-400 mb-1" />
                       <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Desfazer Última Ação</span>
                     </button>
                     <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1 leading-tight">
