@@ -522,55 +522,7 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
           
-          {/* Painel de Pastas Profissional */}
-          <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-            <div className="flex items-center justify-between mb-3">
-              <h6 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                <FolderOpen className="w-4 h-4 mr-2" />
-                Estrutura de Pastas
-              </h6>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {currentTabData.pastas} pastas encontradas
-              </span>
-            </div>
-            
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {isBackupTab ? (
-                currentTabData.status === 'connected' ? (
-                  currentTabData.arquivos === 0 && currentTabData.pastas === 0 ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                      📁 Pasta de backup vazia - Nenhum arquivo encontrado
-                    </div>
-                  ) : (
-                    <div className="text-center text-orange-600 dark:text-orange-400 text-sm py-4">
-                      ⚠️ Estrutura de pastas não disponível via API - Use "Abrir no Google Drive" para visualizar
-                    </div>
-                  )
-                ) : (
-                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                    {currentTabData.status === 'loading' ? '🔄 Carregando dados...' : '❌ Erro ao carregar dados'}
-                  </div>
-                )
-              ) : (
-                currentTabData.status === 'connected' ? (
-                  currentTabData.arquivos === 0 && currentTabData.pastas === 0 ? (
-                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                      📁 Drive vazio - Nenhum arquivo encontrado
-                    </div>
-                  ) : (
-                    <div className="text-center text-orange-600 dark:text-orange-400 text-sm py-4">
-                      ⚠️ Estrutura de pastas não disponível via API<br/>
-                      <span className="text-xs">Use "Abrir no Google Drive" para visualizar as {currentTabData.pastas} pastas</span>
-                    </div>
-                  )
-                ) : (
-                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                    {currentTabData.status === 'loading' ? '🔄 Carregando dados...' : '❌ Erro ao carregar dados'}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
+
         </div>
 
         {/* Controles de Sincronização */}
@@ -697,7 +649,7 @@ export default function GoogleDriveSetup() {
         </div>
         <button
           onClick={handleAddNewDrive}
-          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
           title="Adicionar novo drive"
         >
           <PlusCircle className="w-4 h-4" />
