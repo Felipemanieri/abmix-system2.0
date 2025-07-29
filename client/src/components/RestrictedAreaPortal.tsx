@@ -708,7 +708,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                             showInternalNotification('❌ Erro de conexão', 'error');
                           }
                         }}
-                        className="px-4 py-2 bg-purple-300 text-black rounded-md hover:bg-purple-400 transition-colors"
+                        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors border border-blue-200"
                       >
                         💾 Salvar Armazenamento
                       </button>
@@ -790,7 +790,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
                   <button
                     onClick={() => showInternalNotification('Configurações restauradas para padrão', 'info')}
-                    className="px-4 py-2 text-sm font-medium text-black bg-yellow-300 hover:bg-yellow-400 border border-yellow-300 rounded-md transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-200 rounded-md transition-colors"
                   >
                     🔄 Restaurar Padrão
                   </button>
@@ -821,7 +821,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                         showInternalNotification('❌ Erro de conexão', 'error');
                       }
                     }}
-                    className="px-4 py-2 text-sm font-medium text-black bg-green-300 hover:bg-green-400 rounded-md transition-colors flex items-center"
+                    className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors flex items-center border border-blue-200"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Salvar Todas as Configurações
