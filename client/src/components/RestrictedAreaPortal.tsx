@@ -641,34 +641,42 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   </div>
                 </div>
 
-                {/* Seção: Limites e Quotas */}
+                {/* Seção: Armazenamento Híbrido */}
                 <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <HardDrive className="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" />
-                    Limites e Quotas do Sistema
+                    Sistema de Armazenamento Híbrido
                   </h4>
+                  
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      <strong>Modo Híbrido:</strong> Arquivos pequenos (&lt;5MB) ficam locais + Drive. Arquivos grandes vão direto para Drive.
+                    </p>
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Máximo de Arquivos por Proposta
+                        Limite Arquivo Local (MB)
                       </label>
                       <input
                         type="number"
-                        defaultValue="10"
+                        defaultValue="5"
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                       />
+                      <p className="text-xs text-gray-500">Acima disso vai só para Drive</p>
                     </div>
                     
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Tamanho Máximo de Arquivo (MB)
+                        Limite Máximo Total (MB)
                       </label>
                       <input
                         type="number"
-                        defaultValue="50"
+                        defaultValue="100"
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                       />
+                      <p className="text-xs text-gray-500">Limite generoso para testes</p>
                     </div>
                     
                     <div className="space-y-3">

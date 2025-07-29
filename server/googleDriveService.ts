@@ -381,37 +381,7 @@ export class GoogleDriveService {
     }
   }
 
-  // LISTAR ARQUIVOS DE UMA PASTA
-  async listFolderFiles(folderId: string): Promise<DriveFile[]> {
-    console.log(`📋 Listando arquivos da pasta ${folderId}`);
-    
-    // LÓGICA REAL: Usar Google Drive API
-    // const files = await this.googleDriveAPI.listFiles({ parents: [folderId] });
-    
-    // SIMULAÇÃO - SUBSTITUIR POR INTEGRAÇÃO REAL
-    const files: DriveFile[] = [];
-    
-    return files;
-  }
 
-  // VALIDAR SE PASTA EXISTE
-  async folderExists(folderId: string): Promise<boolean> {
-    console.log(`🔍 Verificando se pasta ${folderId} existe`);
-    
-    try {
-      await this.drive.files.get({
-        fileId: folderId,
-        fields: 'id, name'
-      });
-      return true;
-    } catch (error) {
-      if ((error as any).code === 404) {
-        return false;
-      }
-      console.error('Erro ao verificar pasta:', error);
-      return false;
-    }
-  }
 
   // MÉTODO PARA EXCLUIR PASTA DO GOOGLE DRIVE
   async deleteFolder(folderId: string): Promise<boolean> {
