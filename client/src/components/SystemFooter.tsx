@@ -3,15 +3,81 @@ import React, { useState, useEffect } from 'react';
 const SystemFooter: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [proposalsToday, setProposalsToday] = useState(0);
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  
+  // Função para buscar propostas de hoje
+  const fetchProposalsToday = async () => {
+    try {
+      const response = await fetch('/api/proposals');
+      if (response.ok) {
+        const proposals = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Filtrar propostas criadas hoje
+        const todayProposals = proposals.filter((proposal: any) => {
+          const proposalDate = new Date(proposal.createdAt).toISOString().split('T')[0];
+          return proposalDate === today;
+        });
+        
+        setProposalsToday(todayProposals.length);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar propostas de hoje:', error);
+    }
+  };
   
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 30000);
     
-    // Definir contador como zero (sem dados de demonstração)
-    setProposalsToday(0);
-    return () => clearInterval(timer);
+    // Buscar propostas de hoje imediatamente
+    fetchProposalsToday();
+    
+    // Configurar WebSocket para atualizações em tempo real
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const websocket = new WebSocket(wsUrl);
+    
+    websocket.onopen = () => {
+      console.log('🔌 WebSocket conectado no SystemFooter para contador');
+      setWs(websocket);
+    };
+    
+    websocket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        console.log('📨 Mensagem WebSocket recebida no SystemFooter:', message);
+        
+        // Atualizar contador quando proposta é criada ou atualizada
+        if (message.type === 'proposal_created' || message.type === 'proposal_updated') {
+          console.log('🔄 Atualizando contador de propostas após evento:', message.type);
+          setTimeout(fetchProposalsToday, 500); // Pequeno delay para garantir que a proposta foi salva
+        }
+      } catch (error) {
+        console.error('Erro ao processar mensagem WebSocket:', error);
+      }
+    };
+    
+    websocket.onclose = () => {
+      console.log('❌ WebSocket desconectado no SystemFooter');
+      setWs(null);
+    };
+    
+    websocket.onerror = (error) => {
+      console.error('❌ Erro WebSocket no SystemFooter:', error);
+    };
+    
+    // Atualizar propostas a cada 2 minutos como backup
+    const proposalsTimer = setInterval(fetchProposalsToday, 120000);
+    
+    return () => {
+      clearInterval(timer);
+      clearInterval(proposalsTimer);
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.close();
+      }
+    };
   }, []);
 
   const formatTime = (date: Date) => {
