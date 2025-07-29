@@ -32,14 +32,83 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-// Componente para estatísticas do rodapé zeradas
+// Componente para estatísticas do rodapé com dados reais
 function FooterStats() {
-  // Valores zerados sem dados de demonstração
-  const proposalsToday = 0;
+  const [proposalsToday, setProposalsToday] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Função para buscar propostas de hoje
+  const fetchProposalsToday = async () => {
+    try {
+      const response = await fetch('/api/proposals');
+      if (response.ok) {
+        const proposals = await response.json();
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Filtrar propostas criadas hoje
+        const todayProposals = proposals.filter((proposal: any) => {
+          const createdAt = proposal.createdAt || proposal.created_at;
+          if (!createdAt) return false;
+          
+          const proposalDate = new Date(createdAt).toISOString().split('T')[0];
+          return proposalDate === today;
+        });
+        
+        console.log(`📊 FooterStats - Total propostas: ${proposals.length}`);
+        console.log(`📊 FooterStats - Propostas hoje (${today}): ${todayProposals.length}`);
+        
+        setProposalsToday(todayProposals.length);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar propostas de hoje:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Atualizar tempo a cada 30 segundos
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 30000);
+    
+    // Buscar propostas imediatamente
+    fetchProposalsToday();
+    
+    // Configurar WebSocket para atualizações em tempo real
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const websocket = new WebSocket(wsUrl);
+    
+    websocket.onopen = () => {
+      console.log('🔌 WebSocket conectado no FooterStats');
+    };
+    
+    websocket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'proposal_created' || message.type === 'proposal_updated') {
+          console.log('🔄 Atualizando contador FooterStats após evento:', message.type);
+          setTimeout(fetchProposalsToday, 500);
+        }
+      } catch (error) {
+        console.error('Erro ao processar mensagem WebSocket:', error);
+      }
+    };
+    
+    // Atualizar a cada 2 minutos como backup
+    const proposalsTimer = setInterval(fetchProposalsToday, 120000);
+    
+    return () => {
+      clearInterval(timer);
+      clearInterval(proposalsTimer);
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.close();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex flex-col items-end space-y-1">
-      <span>Última Sync: <span className="font-medium">{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></span>
+      <span>Última Sync: <span className="font-medium">{currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></span>
       <span>Propostas Hoje: <span className="font-medium text-blue-600">{proposalsToday}</span></span>
       <span>Backup: <span className="font-medium text-green-600">Ativo</span></span>
     </div>
