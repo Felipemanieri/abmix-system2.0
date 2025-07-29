@@ -451,8 +451,8 @@ export function setupRoutes(app: any) {
         },
         drive: {
           connected: true,
-          folderId: '1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
-          folderUrl: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb'
+          folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+          folderUrl: 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu'
         },
         sheets: {
           connected: true,
@@ -486,11 +486,12 @@ export function setupRoutes(app: any) {
         message: `Erro Google Sheets: ${err.message}`
       }));
 
-      // Testar Google Drive (simulado - service não implementado)
-      const driveResult = {
+      // Testar Google Drive
+      const { googleDriveService } = await import('./googleDriveService');
+      const driveResult = await googleDriveService.testConnection().catch((err: any) => ({
         success: false,
-        message: 'Google Drive service não implementado'
-      };
+        message: `Erro Google Drive: ${err.message}`
+      }));
 
       // Verificar credenciais
       const hasGoogleCredentials = !!(
@@ -509,8 +510,8 @@ export function setupRoutes(app: any) {
         drive: {
           connected: driveResult.success,
           message: driveResult.message,
-          folderId: '1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
-          folderUrl: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb'
+          folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+          folderUrl: 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu'
         },
         sheets: {
           connected: sheetResult.success,
@@ -1085,26 +1086,329 @@ export function setupRoutes(app: any) {
 
 
   // ROTA: Listar backups reais do sistema (PRIORITÁRIA)
-  app.get('/api/backup/list', (req: Request, res: Response) => {
-    console.log('📋 Requisição para listar backups recebida');
-    
-    // Dados reais baseados na pasta de backup existente
-    const backups = [
-      {
-        folder: 'backup-abmix-20250724',
-        size: 2,
-        date: '24/07/2025',
-        timestamp: new Date(2025, 6, 24).getTime()
+  app.get('/api/backup/list', async (req: Request, res: Response) => {
+    try {
+      console.log('📋 Requisição para listar backups recebida');
+      
+      const { promises: fs } = await import('fs');
+      const { googleDriveService } = await import('./googleDriveService');
+      
+      // Listar backups locais
+      const items = await fs.readdir('.').catch(() => []);
+      const localBackups = items.filter((item: string) => 
+        item.startsWith('backup-abmix-') && item.match(/backup-abmix-\d{8}/)
+      );
+      
+      // Listar backups do Google Drive
+      const driveResult = await googleDriveService.listBackups();
+      const driveBackups = driveResult.files || [];
+      
+      const backups = [];
+      
+      // Processar backups locais
+      for (const folder of localBackups) {
+        try {
+          const stats = await fs.stat(folder);
+          if (stats.isDirectory()) {
+            const dateMatch = folder.match(/backup-abmix-(\d{4})(\d{2})(\d{2})/);
+            backups.push({
+              folder,
+              size: Math.round((stats.size || 0) / 1024 / 1024 * 100) / 100 || 2.0,
+              date: dateMatch ? `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}` : 'Data inválida',
+              timestamp: dateMatch ? new Date(parseInt(dateMatch[1]), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[3])).getTime() : 0,
+              location: 'local',
+              driveId: null
+            });
+          }
+        } catch (error) {
+          console.log(`⚠️ Erro ao processar ${folder}:`, error);
+        }
       }
-    ];
-    
-    console.log(`✅ Retornando ${backups.length} backups processados`);
-    
-    res.json({
-      success: true,
-      backups,
-      total: backups.length
-    });
+      
+      // Processar backups do Google Drive
+      for (const file of driveBackups) {
+        const sizeBytes = parseInt(file.size || '0');
+        const sizeMB = Math.round((sizeBytes / 1024 / 1024) * 100) / 100;
+        const createdDate = new Date(file.createdTime);
+        
+        backups.push({
+          folder: file.name,
+          size: sizeMB,
+          date: createdDate.toLocaleDateString('pt-BR'),
+          timestamp: createdDate.getTime(),
+          location: 'drive',
+          driveId: file.id
+        });
+      }
+      
+      // Remover duplicatas e ordenar por timestamp
+      const uniqueBackups = backups.filter((backup, index, self) => 
+        index === self.findIndex(b => b.folder === backup.folder)
+      );
+      uniqueBackups.sort((a, b) => b.timestamp - a.timestamp);
+      
+      console.log(`✅ Encontrados ${uniqueBackups.length} backups (${localBackups.length} locais, ${driveBackups.length} no Drive)`);
+      
+      res.json({
+        success: true,
+        backups: uniqueBackups,
+        total: uniqueBackups.length,
+        sources: {
+          local: localBackups.length,
+          drive: driveBackups.length
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao listar backups:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao listar backups',
+        details: error?.message || 'Erro desconhecido'
+      });
+    }
+  });
+
+  // ROTA: Criar backup real do PostgreSQL
+  app.post('/api/backup/create', async (req: Request, res: Response) => {
+    try {
+      console.log('🔄 Iniciando criação de backup PostgreSQL real...');
+      
+      const { exec } = await import('child_process');
+      const { promises: fs } = await import('fs');
+      const path = await import('path');
+      const { googleDriveService } = await import('./googleDriveService');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+      const backupFolder = `backup-abmix-${dateStr}-${timeStr}`;
+      const backupFile = `${backupFolder}.sql`;
+      
+      // Criar pasta de backup
+      await fs.mkdir(backupFolder, { recursive: true });
+      
+      // Usar pg_dump versão 16 diretamente
+      const pgDumpPath = '/nix/store/yz718sizpgsnq2y8gfv8bba8l8r4494l-postgresql-16.3/bin/pg_dump';
+      console.log(`✅ Usando pg_dump versão 16: ${pgDumpPath}`);
+      
+      const databaseUrl = process.env.DATABASE_URL;
+      if (!databaseUrl) {
+        throw new Error('DATABASE_URL não configurada');
+      }
+      
+      const fullBackupPath = path.join(backupFolder, 'database.sql');
+      
+      try {
+        // Executar pg_dump
+        console.log(`📦 Executando pg_dump: ${pgDumpPath}...`);
+        const { stdout, stderr } = await execAsync(`"${pgDumpPath}" "${databaseUrl}" > "${fullBackupPath}"`, {
+          timeout: 120000 // 2 minutos timeout
+        });
+        
+        if (stderr && !stderr.includes('Notice:')) {
+          console.warn('⚠️ Avisos do pg_dump:', stderr);
+        }
+        
+        // Verificar se o arquivo foi criado
+        const stats = await fs.stat(fullBackupPath);
+        const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
+        
+        console.log(`✅ Backup local criado: ${fullBackupPath} (${sizeMB} MB)`);
+        
+        // Upload para Google Drive
+        console.log('☁️ Enviando backup para Google Drive...');
+        const uploadResult = await googleDriveService.uploadBackup(fullBackupPath, backupFile);
+        
+        res.json({
+          success: true,
+          message: 'Backup criado com sucesso',
+          folder: backupFolder,
+          file: backupFile,
+          size: `${sizeMB} MB`,
+          timestamp: now.getTime(),
+          location: 'local',
+          driveUpload: uploadResult.success,
+          driveFileId: uploadResult.fileId || null,
+          driveMessage: uploadResult.message
+        });
+        
+      } catch (dumpError: any) {
+        console.error('❌ Erro no pg_dump:', dumpError);
+        // Limpar pasta em caso de erro
+        await fs.rmdir(backupFolder, { recursive: true }).catch(() => {});
+        throw new Error(`Falha no pg_dump: ${dumpError.message}`);
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao criar backup:', error);
+      res.status(500).json({
+        success: false,
+        error: error?.message || 'Erro ao criar backup',
+        details: error?.stack || 'Erro desconhecido'
+      });
+    }
+  });
+
+  // ROTA: Restaurar backup
+  app.post('/api/backup/restore', async (req: Request, res: Response) => {
+    try {
+      const { backupName, source = 'local' } = req.body;
+      console.log(`🔄 Iniciando restauração do backup: ${backupName} (fonte: ${source})`);
+      
+      if (!backupName) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome do backup é obrigatório'
+        });
+      }
+      
+      const { exec } = await import('child_process');
+      const { promises: fs } = await import('fs');
+      const path = await import('path');
+      const { googleDriveService } = await import('./googleDriveService');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      let backupPath: string;
+      
+      if (source === 'drive') {
+        // Baixar do Google Drive
+        const driveResult = await googleDriveService.listBackups();
+        const driveFile = driveResult.files.find(f => f.name === backupName);
+        
+        if (!driveFile) {
+          throw new Error('Backup não encontrado no Google Drive');
+        }
+        
+        backupPath = `./temp-${backupName}`;
+        const downloadResult = await googleDriveService.downloadBackup(driveFile.id, backupPath);
+        
+        if (!downloadResult.success) {
+          throw new Error(downloadResult.message);
+        }
+      } else {
+        // Backup local
+        const localPath = backupName.endsWith('.sql') ? 
+          `./${backupName.replace('.sql', '')}/${backupName}` : 
+          `./${backupName}/database.sql`;
+        
+        const pathExists = await fs.access(localPath).then(() => true).catch(() => false);
+        if (!pathExists) {
+          throw new Error('Arquivo de backup local não encontrado');
+        }
+        
+        backupPath = localPath;
+      }
+      
+      // Verificar se psql está disponível
+      try {
+        await execAsync('which psql');
+      } catch (error) {
+        throw new Error('psql não encontrado. PostgreSQL client não instalado.');
+      }
+      
+      const databaseUrl = process.env.DATABASE_URL;
+      if (!databaseUrl) {
+        throw new Error('DATABASE_URL não configurada');
+      }
+      
+      // Executar restauração
+      console.log('📥 Executando restauração com psql...');
+      const { stdout, stderr } = await execAsync(`psql "${databaseUrl}" < "${backupPath}"`, {
+        timeout: 180000 // 3 minutos timeout
+      });
+      
+      if (stderr && !stderr.includes('Notice:')) {
+        console.warn('⚠️ Avisos do psql:', stderr);
+      }
+      
+      // Limpar arquivo temporário se foi baixado do Drive
+      if (source === 'drive') {
+        await fs.unlink(backupPath).catch(() => {});
+      }
+      
+      console.log(`✅ Backup restaurado com sucesso: ${backupName}`);
+      
+      res.json({
+        success: true,
+        message: `Backup restaurado com sucesso: ${backupName}`,
+        source,
+        restoredAt: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao restaurar backup:', error);
+      res.status(500).json({
+        success: false,
+        error: error?.message || 'Erro ao restaurar backup',
+        details: error?.stack || 'Erro desconhecido'
+      });
+    }
+  });
+
+  // ROTA: Deletar backup
+  app.delete('/api/backup/delete', async (req: Request, res: Response) => {
+    try {
+      const { backupName, source = 'local', driveId } = req.body;
+      console.log(`🗑️ Deletando backup: ${backupName} (fonte: ${source})`);
+      
+      if (!backupName) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome do backup é obrigatório'
+        });
+      }
+      
+      const { promises: fs } = await import('fs');
+      const { googleDriveService } = await import('./googleDriveService');
+      
+      let localDeleted = false;
+      let driveDeleted = false;
+      
+      // Deletar local se existir
+      const localFolder = backupName.replace('.sql', '');
+      try {
+        await fs.rmdir(localFolder, { recursive: true });
+        localDeleted = true;
+        console.log(`✅ Backup local deletado: ${localFolder}`);
+      } catch (error) {
+        console.log(`⚠️ Backup local não encontrado: ${localFolder}`);
+      }
+      
+      // Deletar do Google Drive se especificado
+      if (driveId) {
+        const deleteResult = await googleDriveService.deleteBackup(driveId);
+        if (deleteResult.success) {
+          driveDeleted = true;
+          console.log(`✅ Backup deletado do Google Drive: ${backupName}`);
+        } else {
+          console.warn(`⚠️ Erro ao deletar do Drive: ${deleteResult.message}`);
+        }
+      }
+      
+      if (!localDeleted && !driveDeleted) {
+        throw new Error('Backup não encontrado em nenhuma localização');
+      }
+      
+      res.json({
+        success: true,
+        message: `Backup deletado: ${backupName}`,
+        localDeleted,
+        driveDeleted,
+        deletedAt: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao deletar backup:', error);
+      res.status(500).json({
+        success: false,
+        error: error?.message || 'Erro ao deletar backup',
+        details: error?.stack || 'Erro desconhecido'
+      });
+    }
   });
 
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual, exclusão específica e limpeza de backups)');

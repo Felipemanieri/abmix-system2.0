@@ -4,6 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["postgresql_16"]
 
 [env]
 DATABASE_URL = "postgresql://postgres:password@localhost:5432/abmix_db"
