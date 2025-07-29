@@ -347,6 +347,9 @@ export default function GoogleDriveSetup() {
                   Informações da Pasta de Backup
                 </h5>
                 <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                  Proprietário: Felipe Manieri | Auto: {syncInterval}
+                </p>
+                <p className="text-xs text-orange-600 dark:text-orange-400">
                   Sincronização automática com Google Drive
                 </p>
               </div>
@@ -542,7 +545,7 @@ export default function GoogleDriveSetup() {
                 Conectado: {driveUrl}
               </p>
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                Proprietário: Felipe Manieri | Auto: 5 minutos
+                Proprietário: Felipe Manieri | Auto: {syncInterval}
               </p>
             </div>
             <button
