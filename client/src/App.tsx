@@ -14,24 +14,27 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-// Tratar erros do frontend para evitar unhandledrejection
-window.addEventListener('unhandledrejection', (event) => {
-  // Silenciar erros de rede que não afetam o funcionamento
+// Handler único para unhandled promise rejections
+const handleGlobalUnhandledRejection = (event: PromiseRejectionEvent) => {
   const reason = String(event.reason);
-  if (reason.includes('fetch') || 
-      reason.includes('network') || 
+  
+  // Prevenir apenas erros de rede comuns que não são críticos
+  if (reason.includes('Failed to fetch') || 
+      reason.includes('NetworkError') || 
       reason.includes('timeout') ||
-      reason.includes('WebSocket') ||
-      reason.includes('ECONNRESET')) {
-    event.preventDefault(); // Prevenir log no console
+      reason.includes('ECONNRESET') ||
+      reason.includes('Connection refused')) {
+    event.preventDefault(); // Silenciar apenas erros de conectividade
     return;
   }
+  
+  // Logs limpos para debugging sem quebrar a aplicação
+  console.warn('Promise rejeitada:', reason);
+  event.preventDefault(); // Prevenir logs duplicados
+};
 
-  // Permitir apenas erros críticos
-  if (!reason.includes('CRITICAL') && !reason.includes('FATAL')) {
-    event.preventDefault();
-  }
-});
+// Aplicar handler uma única vez
+window.addEventListener('unhandledrejection', handleGlobalUnhandledRejection);
 
 type Portal = 'home' | 'client' | 'vendor' | 'financial' | 'implementation' | 'supervisor' | 'restricted' | 'admin';
 type User = {
@@ -90,18 +93,7 @@ function App() {
 
   // Sistema de carregamento da visibilidade persistente dos portais
   useEffect(() => {
-    // Handler global para promises rejeitadas - SISTEMA ORIGINAL RESTAURADO
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Promise rejeitada não tratada:', event.reason);
-      // NÃO previne o evento - deixa aparecer no console original
-    };
-
-    const handleError = (event: ErrorEvent) => {
-      console.error('Erro não tratado:', event.error);
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
+    // Não adicionar handler duplicado - já existe no escopo global acima
 
     // PRIMEIRO: Carrega do localStorage (ESTADO PERMANENTE)
     const loadPortalVisibility = async () => {

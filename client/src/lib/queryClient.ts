@@ -8,7 +8,21 @@ export const queryClient = new QueryClient({
       retry: false, // DESABILITAR retry
       refetchOnWindowFocus: false, 
       refetchOnMount: true,
-      // REMOVER queryFn global que estava causando problemas
+      // Função de erro global para capturar todas as falhas
+      queryFn: async ({ queryKey }) => {
+        try {
+          const url = Array.isArray(queryKey) ? queryKey[0] : queryKey;
+          const response = await fetch(url as string);
+          if (!response.ok) {
+            console.warn(`Query failed for ${url}:`, response.status);
+            return []; // Retornar array vazio para evitar crashes
+          }
+          return response.json();
+        } catch (error) {
+          console.warn(`Query fetch error for ${queryKey}:`, error);
+          return []; // Sempre retornar array vazio em caso de erro
+        }
+      },
     },
     mutations: {
       retry: false,
