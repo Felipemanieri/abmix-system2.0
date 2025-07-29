@@ -250,7 +250,11 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex items-center">
                   <Users className="w-5 h-5 text-blue-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Portal do Cliente</span>
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    portalVisibility.showClientPortal 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-gray-100 text-red-400 dark:bg-gray-800 dark:text-red-300'
+                  }`}>
                     {portalVisibility.showClientPortal ? 'Visível' : 'Oculto'}
                   </span>
                 </div>
@@ -278,7 +282,11 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex items-center">
                   <FileText className="w-5 h-5 text-green-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Portal Vendedor</span>
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    portalVisibility.showVendorPortal 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-gray-100 text-red-400 dark:bg-gray-800 dark:text-red-300'
+                  }`}>
                     {portalVisibility.showVendorPortal ? 'Visível' : 'Oculto'}
                   </span>
                 </div>
@@ -306,7 +314,11 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex items-center">
                   <DollarSign className="w-5 h-5 text-purple-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Portal Financeiro</span>
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    portalVisibility.showFinancialPortal 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-gray-100 text-red-400 dark:bg-gray-800 dark:text-red-300'
+                  }`}>
                     {portalVisibility.showFinancialPortal ? 'Visível' : 'Oculto'}
                   </span>
                 </div>
@@ -334,7 +346,11 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex items-center">
                   <Zap className="w-5 h-5 text-teal-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Portal Implantação</span>
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    portalVisibility.showImplementationPortal 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-gray-100 text-red-400 dark:bg-gray-800 dark:text-red-300'
+                  }`}>
                     {portalVisibility.showImplementationPortal ? 'Visível' : 'Oculto'}
                   </span>
                 </div>
@@ -362,7 +378,11 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="flex items-center">
                   <Shield className="w-5 h-5 text-gray-600 mr-3" />
                   <span className="text-sm font-medium text-gray-900 dark:text-white">Portal Supervisor</span>
-                  <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                  <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    portalVisibility.showSupervisorPortal 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-gray-100 text-red-400 dark:bg-gray-800 dark:text-red-300'
+                  }`}>
                     {portalVisibility.showSupervisorPortal ? 'Visível' : 'Oculto'}
                   </span>
                 </div>
