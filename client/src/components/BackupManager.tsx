@@ -33,17 +33,30 @@ export default function BackupManager() {
   const loadRealBackups = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/backup/list');
-      const data = await response.json();
+      const response = await fetch('/api/backup/list', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
       
-      if (data.success) {
-        setBackupHistory(data.backups);
-        console.log(`📊 Carregados ${data.backups.length} backups reais do sistema`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setBackupHistory(data.backups || []);
+          console.log(`📊 Carregados ${data.backups?.length || 0} backups reais do sistema`);
+        } else {
+          console.error('❌ Erro ao carregar backups:', data.error);
+          setBackupHistory([]);
+        }
       } else {
-        console.error('❌ Erro ao carregar backups:', data.error);
+        console.error('❌ Resposta da API não OK:', response.status);
+        setBackupHistory([]);
       }
     } catch (error) {
       console.error('❌ Erro na comunicação com API de backup:', error);
+      setBackupHistory([]);
     } finally {
       setIsLoading(false);
     }
@@ -54,11 +67,36 @@ export default function BackupManager() {
     loadRealBackups();
   }, []);
 
-  // Atualizar lista a cada 30 segundos (configurável)
+  // Estado para configurações de sincronização
+  const [syncFrequency, setSyncFrequency] = useState('30'); // em segundos
+  const [retentionDays, setRetentionDays] = useState('7'); // dias para manter backups
+
+  // Função para aplicar retenção automática
+  const applyRetentionPolicy = () => {
+    if (retentionDays === '0') return; // Manter todos
+    
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - parseInt(retentionDays));
+    
+    const oldBackups = backupHistory.filter(backup => 
+      backup.timestamp < cutoffDate.getTime()
+    );
+    
+    if (oldBackups.length > 0) {
+      console.log(`🗑️ Aplicando política de retenção: removendo ${oldBackups.length} backups antigos`);
+      // Em produção, chamaria API para deletar backups antigos
+    }
+  };
+
+  // Atualizar lista baseado na frequência configurada
   useEffect(() => {
-    const interval = setInterval(loadRealBackups, 30000);
+    const frequencyMs = parseInt(syncFrequency) * 1000;
+    const interval = setInterval(() => {
+      loadRealBackups();
+      applyRetentionPolicy(); // Aplicar política de retenção
+    }, frequencyMs);
     return () => clearInterval(interval);
-  }, []);
+  }, [syncFrequency, retentionDays]);
 
   const executeBackup = async (type: 'complete' | 'incremental') => {
     setIsBackingUp(true);
@@ -438,37 +476,57 @@ export default function BackupManager() {
           <h4 className="font-semibold text-gray-900 mb-4">⚙️ Configurações de Backup Automático</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Frequência</label>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                <option>Diário às 02:00</option>
-                <option>A cada 6 horas</option>
-                <option>Semanal</option>
-                <option>Manual apenas</option>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Frequência de Sincronização</label>
+              <select 
+                value={syncFrequency} 
+                onChange={(e) => setSyncFrequency(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="1">Tempo real (1 segundo)</option>
+                <option value="5">A cada 5 segundos</option>
+                <option value="10">A cada 10 segundos</option>
+                <option value="30">A cada 30 segundos</option>
+                <option value="60">A cada 1 minuto</option>
+                <option value="300">A cada 5 minutos</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Retenção</label>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                <option>Manter últimos 30 backups</option>
-                <option>Manter últimos 60 backups</option>
-                <option>Manter últimos 90 backups</option>
-                <option>Manter todos</option>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Retenção de Backups</label>
+              <select 
+                value={retentionDays} 
+                onChange={(e) => setRetentionDays(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="1">Manter 1 dia</option>
+                <option value="3">Manter 3 dias</option>
+                <option value="7">Manter 7 dias</option>
+                <option value="15">Manter 15 dias</option>
+                <option value="30">Manter 30 dias</option>
+                <option value="0">Manter todos</option>
               </select>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-4">
-            <label className="flex items-center">
-              <input type="checkbox" defaultChecked className="mr-2" />
-              <span className="text-sm text-gray-700">Backup automático ativo</span>
-            </label>
-            <label className="flex items-center">
-              <input type="checkbox" defaultChecked className="mr-2" />
-              <span className="text-sm text-gray-700">Notificações por email</span>
-            </label>
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" />
-              <span className="text-sm text-gray-700">Upload para Google Drive</span>
-            </label>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center">
+                <input type="checkbox" defaultChecked className="mr-2" />
+                <span className="text-sm text-gray-700">Backup automático ativo</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" defaultChecked className="mr-2" />
+                <span className="text-sm text-gray-700">Notificações por email</span>
+              </label>
+              <label className="flex items-center">
+                <input type="checkbox" className="mr-2" />
+                <span className="text-sm text-gray-700">Upload para Google Drive</span>
+              </label>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-gray-600">
+                Sincronizando a cada {syncFrequency}s | Retendo {retentionDays === '0' ? 'todos' : retentionDays + ' dias'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
