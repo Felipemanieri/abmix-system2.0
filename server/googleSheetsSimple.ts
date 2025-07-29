@@ -46,17 +46,34 @@ export class GoogleSheetsSimple {
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
       console.log('🧪 Testando conexão Google Sheets...');
-      const auth = await this.getAuth().catch(err => {
-        throw new Error('Falha na autenticação: ' + err.message);
-      });
+      
+      // Verificar se as credenciais existem
+      const privateKey = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+      const clientEmail = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
 
-      const sheets = google.sheets({ version: 'v4', auth });
+      if (!privateKey || !clientEmail) {
+        console.error('❌ Credenciais Google não configuradas nos Secrets');
+        return {
+          success: false,
+          message: 'Credenciais Google não encontradas nos Secrets do Replit'
+        };
+      }
 
-      // Teste simples: buscar dados da primeira aba
-      const response = await sheets.spreadsheets.get({
-        spreadsheetId: this.spreadsheetId,
-      }).catch(err => {
-        throw new Error('Falha ao acessar planilha: ' + err.message);
+      if (!this.auth || !this.sheets) {
+        await this.initializeAuth();
+      }
+
+      if (!this.sheets) {
+        return {
+          success: false,
+          message: 'Falha na inicialização da autenticação Google'
+        };
+      }
+
+      // Teste simples: buscar informações da planilha principal
+      const spreadsheetId = '1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw';
+      const response = await this.sheets.spreadsheets.get({
+        spreadsheetId: spreadsheetId,
       });
 
       console.log(`✅ Conexão Google Sheets OK: ${response.data.properties?.title}`);
@@ -66,9 +83,10 @@ export class GoogleSheetsSimple {
       };
     } catch (error) {
       console.error('❌ Erro na conexão Google Sheets:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       return { 
         success: false, 
-        message: `Erro: ${(error as Error).message}` 
+        message: `Erro de conexão: ${errorMessage}` 
       };
     }
   }

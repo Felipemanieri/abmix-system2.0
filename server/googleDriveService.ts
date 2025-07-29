@@ -85,6 +85,27 @@ export class GoogleDriveService {
     try {
       console.log('🧪 Testando conexão com Google Drive...');
       
+      // Verificar se as credenciais OAuth2 existem
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+      if (!clientId || !clientSecret) {
+        console.error('❌ Credenciais OAuth2 não configuradas nos Secrets');
+        return {
+          success: false,
+          message: 'Credenciais OAuth2 do Google não encontradas nos Secrets'
+        };
+      }
+
+      if (!this.drive) {
+        console.error('❌ Cliente Google Drive não inicializado');
+        return {
+          success: false,
+          message: 'Cliente Google Drive não foi inicializado corretamente'
+        };
+      }
+
       // Tenta listar a pasta principal
       const response = await this.drive.files.get({
         fileId: this.mainFolderId,
@@ -105,9 +126,10 @@ export class GoogleDriveService {
       }
     } catch (error) {
       console.error('❌ Erro na conexão Google Drive:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       return {
         success: false,
-        message: `Erro de conexão: ${(error as Error).message}`
+        message: `Erro de conexão: ${errorMessage}`
       };
     }
   }

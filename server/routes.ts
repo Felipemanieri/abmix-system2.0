@@ -475,27 +475,55 @@ export function setupRoutes(app: any) {
 
   app.get('/api/google/test-connections', async (req: Request, res: Response) => {
     try {
-      console.log('🔍 Testando conexões Google (legacy)...');
+      console.log('🔍 Testando conexões Google REAIS...');
       
+      // Testar Google Sheets
+      const googleSheets = GoogleSheetsSimple.getInstance();
+      const sheetResult = await googleSheets.testConnection().catch(err => ({
+        success: false,
+        message: `Erro Google Sheets: ${err.message}`
+      }));
+
+      // Testar Google Drive
+      const driveResult = await googleDriveService.testConnection().catch(err => ({
+        success: false,
+        message: `Erro Google Drive: ${err.message}`
+      }));
+
+      // Verificar credenciais
+      const hasGoogleCredentials = !!(
+        process.env.GOOGLE_CLIENT_ID &&
+        process.env.GOOGLE_CLIENT_SECRET &&
+        process.env.GOOGLE_SHEETS_PRIVATE_KEY &&
+        process.env.GOOGLE_SHEETS_CLIENT_EMAIL
+      );
+
       res.json({
-        success: true,
+        success: sheetResult.success && driveResult.success,
         connections: {
-          drive: true,
-          sheets: true
+          drive: driveResult.success,
+          sheets: sheetResult.success
         },
         drive: {
-          connected: true,
+          connected: driveResult.success,
+          message: driveResult.message,
           folderId: '1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
           folderUrl: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb'
         },
         sheets: {
-          connected: true,
+          connected: sheetResult.success,
+          message: sheetResult.message,
           spreadsheetId: '1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw',
           spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1IC3ks1CdhY3ui_Gh6bs8uj7OnaDwu4R4KQZ27vRzFDw/edit'
         },
         credentials: {
-          clientId: 'Configurado',
-          clientSecret: 'Configurado'
+          configured: hasGoogleCredentials,
+          missing: hasGoogleCredentials ? [] : [
+            'GOOGLE_CLIENT_ID',
+            'GOOGLE_CLIENT_SECRET', 
+            'GOOGLE_SHEETS_PRIVATE_KEY',
+            'GOOGLE_SHEETS_CLIENT_EMAIL'
+          ]
         },
         timestamp: new Date().toISOString()
       });
