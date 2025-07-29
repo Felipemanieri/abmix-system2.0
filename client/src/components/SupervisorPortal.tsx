@@ -3792,32 +3792,56 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-3">
               {/* Informações do Relatório */}
-              <div className="grid grid-cols-2 gap-6 mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-gray-900 dark:text-white">
-                <div>
-                  <div className="mb-2"><strong>Tipo de relatório:</strong> {reportFilters.tipo}</div>
-                  <div className="mb-2"><strong>Total de Propostas:</strong> {reportData.length}</div>
-                  <div className="mb-2">
-                    <strong>Faturamento Total:</strong> 
-                    <span className="text-green-600 dark:text-green-400 font-bold ml-2">
+              <div className="grid grid-cols-4 gap-3 mb-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 p-3 rounded text-xs">
+                <div className="space-y-1">
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Tipo de relatório:</span> {reportFilters.tipo || 'completo'}
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Total de Propostas:</span> {reportData.length}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Faturamento Total:</span> 
+                    <span className="text-green-600 dark:text-green-400 font-semibold ml-1">
                       R$ {reportData.reduce((sum, item) => sum + (parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0), 0).toFixed(2).replace('.', ',')}
                     </span>
                   </div>
-                  <div className="mb-2">
-                    <strong>Bilhete Médio:</strong> 
-                    R$ {reportData.length > 0 ? (reportData.reduce((sum, item) => sum + (parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0), 0) / reportData.length).toFixed(2).replace('.', ',') : '0,00'}
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Bilhete Médio:</span> 
+                    <span className="ml-1">R$ {reportData.length > 0 ? (reportData.reduce((sum, item) => sum + (parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0), 0) / reportData.length).toFixed(2).replace('.', ',') : '0,00'}</span>
                   </div>
                 </div>
-                <div>
-                  <div className="mb-2"><strong>Vendedores Incluídos:</strong> {reportFilters.vendedor || 'Todos'}</div>
-                  <div className="mb-2"><strong>Data de Geração:</strong> {new Date().toLocaleString('pt-BR')}</div>
-                  <div className="mb-2"><strong>Status Incluído:</strong> {reportFilters.status || 'Todos'}</div>
-                  <div className="mb-2"><strong>Formato:</strong> SOBRESSAIR</div>
-                  <div className="mb-2"><strong>Período Início:</strong> {reportFilters.dataInicio || '2025-06-16'}</div>
-                  <div className="mb-2"><strong>Campos Incluídos:</strong> 20 colunas</div>
-                  <div className="mb-2"><strong>Período Fim:</strong> {reportFilters.dataFim || '2025-07-16'}</div>
-                  <div className="mb-2"><strong>Observações:</strong> {Object.keys(reportObservations).length} com dados</div>
+                <div className="space-y-1">
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Vendedores Incluídos:</span> {reportFilters.vendedor || 'Todos'}
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Data de Geração:</span> {new Date().toLocaleString('pt-BR')}
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Status Incluído:</span> {reportFilters.status || 'Todos'}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Formato:</span> SOBRESSAIR
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Período Início:</span> {reportFilters.dataInicio || '2025-06-16'}
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Campos Incluídos:</span> 20 colunas
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Período Fim:</span> {reportFilters.dataFim || '2025-07-16'}
+                  </div>
+                  <div className="text-gray-700 dark:text-gray-300">
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Observações:</span> {Object.keys(reportObservations).length} com dados
+                  </div>
                 </div>
               </div>
 
