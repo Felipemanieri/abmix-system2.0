@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw } from 'lucide-react';
+import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw, Pencil } from 'lucide-react';
 
 export default function GoogleDriveSetup() {
   const [showAddDriveModal, setShowAddDriveModal] = useState(false);
@@ -64,6 +64,14 @@ export default function GoogleDriveSetup() {
     // Aqui implementar a lógica para salvar as alterações do drive
     console.log('Dados editados do drive:', formData);
     handleCancel();
+  };
+
+  const handleRemoveDrive = () => {
+    if (confirm('Tem certeza que deseja remover este drive? Esta ação não pode ser desfeita.')) {
+      // Aqui implementar a lógica para remover o drive
+      console.log('Drive removido');
+      // Pode adicionar lógica para atualizar o estado e remover da interface
+    }
   };
 
   // Função para buscar dados reais do Google Drive
@@ -219,7 +227,7 @@ export default function GoogleDriveSetup() {
               
               {/* Botão Remover */}
               <button
-                onClick={() => console.log('Remover Drive')}
+                onClick={handleRemoveDrive}
                 className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs flex items-center gap-1"
                 title="Remover Drive"
               >
@@ -233,7 +241,7 @@ export default function GoogleDriveSetup() {
                 className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
                 title="Editar Drive"
               >
-                <Settings className="w-3 h-3" />
+                <Pencil className="w-3 h-3" />
                 Editar
               </button>
               
@@ -252,11 +260,19 @@ export default function GoogleDriveSetup() {
                 className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 defaultValue="5 minutos"
               >
+                <option value="1 segundo">1 segundo</option>
+                <option value="5 segundos">5 segundos</option>
+                <option value="10 segundos">10 segundos</option>
+                <option value="30 segundos">30 segundos</option>
                 <option value="1 minuto">1 minuto</option>
                 <option value="5 minutos">5 minutos</option>
                 <option value="10 minutos">10 minutos</option>
-                <option value="30 minutos">30 minutos</option>
+                <option value="15 minutos">15 minutos</option>
                 <option value="1 hora">1 hora</option>
+                <option value="5 horas">5 horas</option>
+                <option value="10 horas">10 horas</option>
+                <option value="24 horas">24 horas</option>
+                <option value="Manual">Manual</option>
               </select>
             </div>
           </div>
