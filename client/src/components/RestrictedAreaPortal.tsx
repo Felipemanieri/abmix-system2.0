@@ -540,6 +540,213 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
       case 'sistema':
         return (
           <div className="space-y-6">
+            {/* Configurações Centralizadas */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                  <Settings className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                  Configurações Centralizadas
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Gerencie configurações globais que afetam todo o sistema
+                </p>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Seção: Identidade Visual */}
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <Eye className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
+                    Identidade Visual
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Nome da Empresa
+                      </label>
+                      <input
+                        type="text"
+                        defaultValue="Abmix Sistema"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Cor Principal do Sistema
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="color"
+                          defaultValue="#4F46E5"
+                          className="w-12 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">#4F46E5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção: Configurações de Email */}
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <Bell className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
+                    Configurações de Email Automático
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email Remetente Padrão
+                      </label>
+                      <input
+                        type="email"
+                        defaultValue="sistema@abmix.digital"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Nome do Remetente
+                      </label>
+                      <input
+                        type="text"
+                        defaultValue="Sistema Abmix"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    <label className="flex items-center">
+                      <input type="checkbox" defaultChecked className="mr-2" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Enviar email quando nova proposta for criada
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" defaultChecked className="mr-2" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Notificar supervisores sobre propostas pendentes
+                      </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input type="checkbox" className="mr-2" />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        Enviar relatório diário por email
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Seção: Limites e Quotas */}
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <HardDrive className="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" />
+                    Limites e Quotas do Sistema
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Máximo de Arquivos por Proposta
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="10"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Tamanho Máximo de Arquivo (MB)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="50"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Timeout de Sessão (minutos)
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue="60"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção: Configurações Regionais */}
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <Globe className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                    Configurações Regionais
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Timezone
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <option value="America/Sao_Paulo">América/São Paulo (BRT)</option>
+                        <option value="America/New_York">América/Nova York (EST)</option>
+                        <option value="Europe/London">Europa/London (GMT)</option>
+                      </select>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Formato de Data
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <option value="DD/MM/YYYY">DD/MM/AAAA (Brasil)</option>
+                        <option value="MM/DD/YYYY">MM/DD/AAAA (EUA)</option>
+                        <option value="YYYY-MM-DD">AAAA-MM-DD (ISO)</option>
+                      </select>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Moeda Padrão
+                      </label>
+                      <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <option value="BRL">Real Brasileiro (R$)</option>
+                        <option value="USD">Dólar Americano ($)</option>
+                        <option value="EUR">Euro (€)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botões de Ação */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+                  <button
+                    onClick={() => showInternalNotification('Configurações restauradas para padrão', 'info')}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Restaurar Padrão
+                  </button>
+                  <button
+                    onClick={() => showInternalNotification('Configurações salvas com sucesso!', 'success')}
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Salvar Configurações
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Componentes existentes */}
             <TestCreator />
             <InternalMessage />
           </div>
