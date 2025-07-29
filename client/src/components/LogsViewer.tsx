@@ -176,27 +176,37 @@ export default function LogsViewer() {
     );
     setLogs(prevLogs => [...prevLogs, initLog].slice(-1000));
 
-    // Capturar logs diretamente do workflow console em tempo real
-    let lastLogCount = 0;
-    
-    const captureWorkflowLogs = () => {
-      // Procurar por novos logs no console global
-      const workflowLogs = (window as any).__workflowLogs || [];
-      if (workflowLogs.length > lastLogCount) {
-        const newLogs = workflowLogs.slice(lastLogCount).map((log: any) => ({
-          id: `workflow-${Date.now()}-${Math.random()}`,
-          timestamp: new Date(),
-          level: 'info',
-          module: 'Sistema',
-          message: log.message || String(log)
-        }));
-        setLogs(prevLogs => [...prevLogs, ...newLogs].slice(-1000));
-        lastLogCount = workflowLogs.length;
+    // Tentar buscar logs do servidor usando um endpoint alternativo
+    const fetchServerLogs = async () => {
+      try {
+        // Usar endpoint direto sem interferência do Vite
+        const response = await fetch(`http://localhost:5000/api/system/logs`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const serverLogs = await response.json();
+          if (serverLogs.logs && Array.isArray(serverLogs.logs)) {
+            const formattedLogs = serverLogs.logs.map((log: any) => ({
+              id: `server-${Date.now()}-${Math.random()}`,
+              timestamp: new Date(log.timestamp || Date.now()),
+              level: log.level || 'info',
+              module: log.module || 'Servidor',
+              message: log.message || log.text || String(log)
+            }));
+            setLogs(prevLogs => [...prevLogs, ...formattedLogs].slice(-1000));
+          }
+        }
+      } catch (error) {
+        // Se falhar, usar captura local
+        console.log('📡 Usando captura local de logs...');
       }
     };
 
-    // Executar a cada 1 segundo para captura em tempo real
-    const logInterval = setInterval(captureWorkflowLogs, 1000);
+    // Executar busca inicial e polling a cada 1 segundo
+    fetchServerLogs();
+    const logInterval = setInterval(fetchServerLogs, 1000);
 
     // Interceptar console.log, console.error, etc.
     const originalConsoleLog = console.log;
@@ -218,16 +228,24 @@ export default function LogsViewer() {
         message.includes('🔌') ||
         message.includes('🔗') ||
         message.includes('📎') ||
+        message.includes('🌐') ||
+        message.includes('🔄') ||
         message.includes('LOGIN') ||
         message.includes('API') ||
         message.includes('STORAGE') ||
+        message.includes('GET /api') ||
+        message.includes('POST /api') ||
+        message.includes('PUT /api') ||
         message.includes('GoogleSheetsSimple') ||
         message.includes('Buscando') ||
         message.includes('Falha na autenticação') ||
         message.includes('Servidor') ||
         message.includes('Environment') ||
         message.includes('running on port') ||
-        message.includes('WebSocket')
+        message.includes('WebSocket') ||
+        message.includes('HMR') ||
+        message.includes('workflow') ||
+        message.includes('portal-visibility')
       ) {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
         setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
