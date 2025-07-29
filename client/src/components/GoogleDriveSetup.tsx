@@ -16,15 +16,31 @@ export default function GoogleDriveSetup() {
   });
   const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
   
-  // Estado para a pasta de Backup do sistema
+  // Estado para o sistema Backup & Restore
   const [backupData, setBackupData] = useState({
-    capacidade: '0 GB',
-    totalCapacidade: '15 GB',
+    // Sistema de backup local (Replit)
+    localBackups: {
+      count: 0,
+      lastBackup: 'Nunca',
+      size: '0 MB',
+      status: 'loading' as 'loading' | 'active' | 'error'
+    },
+    // Sistema de backup no Drive (suporte)
+    driveBackups: {
+      folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+      count: 0,
+      lastSync: 'Nunca',
+      size: '0 MB',
+      status: 'loading' as 'loading' | 'synced' | 'error'
+    },
+    // Dados gerais
+    capacidade: '0 MB',
+    totalCapacidade: '500 MB',
     arquivos: 0,
     pastas: 0,
-    ultimaModificacao: 'Carregando...',
-    ultimaSync: 'Carregando...',
-    status: 'loading'
+    ultimaModificacao: 'Nunca',
+    ultimaSync: 'Nunca',
+    status: 'loading' as 'loading' | 'connected' | 'error'
   });
   const [isLoadingBackupData, setIsLoadingBackupData] = useState(false);
   
@@ -128,7 +144,7 @@ export default function GoogleDriveSetup() {
     }
   };
 
-  // Função para buscar dados da pasta de Backup do sistema
+  // Função para buscar dados do sistema Backup & Restore
   const fetchBackupData = async () => {
     setIsLoadingBackupData(true);
     try {
@@ -137,8 +153,21 @@ export default function GoogleDriveSetup() {
       
       if (data.success) {
         setBackupData({
-          capacidade: data.usedStorage || '0 GB',
-          totalCapacidade: data.totalStorage || '15 GB',
+          localBackups: data.localBackups || {
+            count: 0,
+            lastBackup: 'Nunca',
+            size: '0 MB',
+            status: 'error'
+          },
+          driveBackups: data.driveBackups || {
+            folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+            count: 0,
+            lastSync: 'Nunca',
+            size: '0 MB',
+            status: 'error'
+          },
+          capacidade: data.usedStorage || '0 MB',
+          totalCapacidade: data.totalStorage || '500 MB',
           arquivos: data.filesCount || 0,
           pastas: data.foldersCount || 0,
           ultimaModificacao: data.lastModified || 'Nunca',
@@ -154,7 +183,7 @@ export default function GoogleDriveSetup() {
         }));
       }
     } catch (error) {
-      console.error('Erro ao buscar dados da pasta Backup:', error);
+      console.error('Erro ao buscar dados do sistema Backup & Restore:', error);
       setBackupData(prev => ({
         ...prev,
         status: 'error',
@@ -212,7 +241,7 @@ export default function GoogleDriveSetup() {
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
               >
-                Backup Sistema
+                Backup & Restore
               </button>
             </div>
             
@@ -252,7 +281,7 @@ export default function GoogleDriveSetup() {
         
         {/* Conteúdo das abas */}
         {activeTab === 'drive' ? (
-          <>
+          <div>
             {/* Aba Drive Principal */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
@@ -295,12 +324,9 @@ export default function GoogleDriveSetup() {
             <span className="text-sm text-gray-900 dark:text-white">Sistema Abmix</span>
           </div>
         </div>
-      </div>
 
-
-
-      {/* Seção Drive Conectado - Baseada na aba Visualizar Planilha */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Seção Drive Conectado */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
           <h4 className="text-base font-semibold text-gray-900 dark:text-white">Drive conectado</h4>
           <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Fonte: Sistema Abmix</p>
@@ -405,32 +431,28 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
           
-
-            </div>
           </div>
-          
-        </div>
         ) : (
-          <>
-            {/* Aba Backup Sistema */}
+          <div>
+            {/* Aba Backup & Restore */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{backupData.localBackups.count}</div>
+                <div className="text-sm text-blue-500 dark:text-blue-400">Backups Replit</div>
+              </div>
               <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.pastas}</div>
-                <div className="text-sm text-orange-500 dark:text-orange-400">Pastas</div>
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.driveBackups.count}</div>
+                <div className="text-sm text-orange-500 dark:text-orange-400">Backups Drive</div>
               </div>
               <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{backupData.arquivos.toLocaleString()}</div>
-                <div className="text-sm text-green-500 dark:text-green-400">Backups</div>
-              </div>
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{backupData.capacidade}</div>
-                <div className="text-sm text-purple-500 dark:text-purple-400">Espaço Usado</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{backupData.capacidade}</div>
+                <div className="text-sm text-green-500 dark:text-green-400">Espaço Total</div>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Status do Backup</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Status do Sistema</span>
                 <div className="flex items-center">
                   <CheckCircle className={`w-4 h-4 mr-1 ${
                     backupData.status === 'connected' ? 'text-green-500' : 
@@ -440,18 +462,18 @@ export default function GoogleDriveSetup() {
                     backupData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
                     backupData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {backupData.status === 'connected' ? 'Conectado' : 
-                     backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+                    {backupData.status === 'connected' ? 'Operacional' : 
+                     backupData.status === 'loading' ? 'Carregando...' : 'Erro'}
                   </span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Última Sincronização</span>
-                <span className="text-sm text-gray-900 dark:text-white">{backupData.ultimaSync}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Último Backup Local</span>
+                <span className="text-sm text-gray-900 dark:text-white">{backupData.localBackups.lastBackup}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Pasta de Backup</span>
-                <span className="text-sm text-orange-600 dark:text-orange-400">Sistema Abmix</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Última Sync Drive</span>
+                <span className="text-sm text-gray-900 dark:text-white">{backupData.driveBackups.lastSync}</span>
               </div>
             </div>
 
@@ -487,13 +509,14 @@ export default function GoogleDriveSetup() {
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span><span className="font-medium">📄 Arquivos:</span> {backupData.arquivos.toLocaleString()}</span>
-                        <span><span className="font-medium">📂 Pastas:</span> {backupData.pastas.toLocaleString()}</span>
-                        <span><span className="font-medium">🔄 Backup:</span> Automático</span>
+                        <span><span className="font-medium">💾 Backups Replit:</span> {backupData.localBackups.count}</span>
+                        <span><span className="font-medium">☁️ Backups Drive:</span> {backupData.driveBackups.count}</span>
+                        <span><span className="font-medium">🔄 Modo:</span> Automático</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span><span className="font-medium">⏰ Última modificação:</span> {backupData.ultimaModificacao}</span>
-                        <span><span className="font-medium">🔄 Última sync:</span> {backupData.ultimaSync}</span>
+                        <span><span className="font-medium">📦 Local:</span> {backupData.localBackups.size}</span>
+                        <span><span className="font-medium">☁️ Drive:</span> {backupData.driveBackups.size}</span>
+                        <span><span className="font-medium">📊 Total:</span> {backupData.capacidade}</span>
                       </div>
                     </div>
                   </div>
@@ -561,7 +584,7 @@ export default function GoogleDriveSetup() {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
