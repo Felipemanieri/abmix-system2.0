@@ -86,7 +86,7 @@ export default function GoogleDriveSetup() {
   const [tabs, setTabs] = useState<DriveTab[]>([
     {
       id: 'backup',
-      nome: 'Pasta de Backup do Sistema',
+      nome: 'Backup Principal (Replit)',
       tipo: 'backup',
       url: 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
       ativo: true,
@@ -245,10 +245,47 @@ export default function GoogleDriveSetup() {
     // Aqui você pode implementar a lógica para salvar as alterações
   };
 
-  const handleManualBackup = () => {
+  const handleManualBackup = async () => {
     console.log('🔄 Iniciando backup manual...');
     if (activeTab === 'backup') {
-      fetchBackupData();
+      try {
+        // Fazer backup real do sistema para Google Drive
+        const response = await fetch('/api/backup/manual', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Backup manual executado:', result.backupInfo);
+          
+          // Atualizar dados da pasta de backup com os dados reais
+          const newBackupData = {
+            status: 'connected' as const,
+            arquivos: result.backupInfo.filesCount,
+            pastas: result.backupInfo.foldersCount,
+            capacidade: result.backupInfo.usedStorage,
+            totalCapacidade: '15 GB',
+            ultimaModificacao: result.backupInfo.lastModified,
+            ultimaSync: new Date().toLocaleString('pt-BR')
+          };
+          
+          setBackupData(newBackupData);
+          
+          // Atualizar dados na aba de backup
+          setTabs(prevTabs => 
+            prevTabs.map(tab => 
+              tab.id === 'backup' 
+                ? { ...tab, dados: newBackupData }
+                : tab
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Erro no backup manual:', error);
+      }
     } else {
       fetchDriveData();
     }
@@ -360,13 +397,13 @@ export default function GoogleDriveSetup() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h5 className="text-sm font-semibold text-orange-800 dark:text-orange-200">
-                  Informações da Pasta de Backup
+                  Backup Principal Sistema Abmix (Replit)
                 </h5>
                 <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                  Proprietário: Felipe Manieri | Auto: {syncIntervals[activeTab] || '10 minutos'}
+                  Backup primário: 67MB | 524 arquivos | Data: 24/07/2025
                 </p>
                 <p className="text-xs text-orange-600 dark:text-orange-400">
-                  Sincronização automática com Google Drive
+                  Google Drive: backup secundário (precaução)
                 </p>
               </div>
               <button
