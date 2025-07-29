@@ -2,24 +2,9 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Configuração do multer para upload de arquivos
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = './uploads';
-    // Criar diretório se não existir
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Gerar nome único para o arquivo
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    const filename = file.fieldname + '-' + uniqueSuffix + extension;
-    cb(null, filename);
-  }
-});
+// SISTEMA OTIMIZADO: APENAS DRIVE SEM LIMITAÇÕES
+// Armazenamento temporário em memória para envio direto ao Drive
+const storage = multer.memoryStorage();
 
 // Filtro de tipos de arquivo permitidos
 const fileFilter = (req: any, file: any, cb: any) => {
@@ -39,12 +24,12 @@ const fileFilter = (req: any, file: any, cb: any) => {
   }
 };
 
-// Configuração do upload
+// CONFIGURAÇÃO OTIMIZADA: SEM LIMITAÇÕES DE TAMANHO
 export const upload = multer({ 
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limite
+    fileSize: 1024 * 1024 * 1024 // 1GB limite (bem generoso)
   }
 });
 

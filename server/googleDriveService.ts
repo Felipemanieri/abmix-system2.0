@@ -303,39 +303,82 @@ export class GoogleDriveService {
     };
   }
 
-  // FAZER UPLOAD DE ANEXO PARA PASTA DO CLIENTE
+  // UPLOAD DIRETO PARA GOOGLE DRIVE (SEM ARMAZENAMENTO LOCAL)
   async uploadAttachment(file: any, folderId: string): Promise<DriveFile> {
-    console.log(`📎 Enviando anexo "${file.originalname}" para pasta ${folderId}`);
+    console.log(`📎 UPLOAD DIRETO: Enviando "${file.originalname}" para pasta ${folderId}`);
     
-    // LÓGICA REAL: Usar Google Drive API para upload
-    // const uploadedFile = await this.googleDriveAPI.uploadFile({
-    //   name: file.originalname,
-    //   parents: [folderId],
-    //   media: { body: file.buffer }
-    // });
-    
-    // SIMULAÇÃO - SUBSTITUIR POR INTEGRAÇÃO REAL
-    const fileId = `file_${file.originalname}_${Date.now()}`;
-    const fileLink = `https://drive.google.com/file/d/${fileId}/view`;
-    
-    const driveFile: DriveFile = {
-      id: fileId,
-      name: file.originalname,
-      link: fileLink,
-      folderId: folderId
-    };
+    try {
+      // UPLOAD REAL PARA GOOGLE DRIVE API
+      const response = await this.drive.files.create({
+        requestBody: {
+          name: file.originalname,
+          parents: [folderId]
+        },
+        media: {
+          mimeType: file.mimetype,
+          body: file.buffer // Buffer do arquivo em memória
+        },
+        fields: 'id, name, webViewLink, size'
+      });
+      
+      const uploadedFile = response.data;
+      const driveFile: DriveFile = {
+        id: uploadedFile.id!,
+        name: uploadedFile.name!,
+        link: uploadedFile.webViewLink || `https://drive.google.com/file/d/${uploadedFile.id}/view`,
+        folderId: folderId
+      };
 
-    console.log(`✅ Anexo enviado: ${fileLink}`);
-    return driveFile;
+      console.log(`✅ Anexo enviado diretamente ao Drive: ${driveFile.name}`);
+      return driveFile;
+      
+    } catch (error) {
+      console.error('❌ Erro no upload direto para Drive:', error);
+      throw new Error(`Falha no upload: ${(error as Error).message}`);
+    }
   }
 
-  // OBTER INFORMAÇÕES DA PASTA PRINCIPAL
-  getMainFolderInfo(): DriveFolder {
-    return {
-      id: this.mainFolderId,
-      name: 'Planilha Sistema Abmix 2.0',
-      link: this.mainFolderLink
-    };
+  // LISTAR ARQUIVOS DE UMA PASTA NO DRIVE
+  async listFolderFiles(folderId: string): Promise<DriveFile[]> {
+    console.log(`📋 Listando arquivos da pasta ${folderId} no Drive`);
+    
+    try {
+      const response = await this.drive.files.list({
+        q: `parents in '${folderId}' and trashed=false`,
+        fields: 'files(id, name, webViewLink, size, mimeType)'
+      });
+      
+      const files = response.data.files || [];
+      return files.map(file => ({
+        id: file.id!,
+        name: file.name!,
+        link: file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`,
+        folderId: folderId
+      }));
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar arquivos:', error);
+      return [];
+    }
+  }
+
+  // VALIDAR SE PASTA EXISTE NO DRIVE
+  async folderExists(folderId: string): Promise<boolean> {
+    console.log(`🔍 Verificando se pasta ${folderId} existe no Drive`);
+    
+    try {
+      await this.drive.files.get({
+        fileId: folderId,
+        fields: 'id, name'
+      });
+      return true;
+    } catch (error) {
+      if ((error as any).code === 404) {
+        return false;
+      }
+      console.error('Erro ao verificar pasta:', error);
+      return false;
+    }
   }
 
   // LISTAR ARQUIVOS DE UMA PASTA
