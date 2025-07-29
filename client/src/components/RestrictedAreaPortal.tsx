@@ -746,9 +746,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
               </div>
             </div>
 
-            {/* Componentes existentes */}
-            <TestCreator />
-            <InternalMessage />
+
           </div>
         );
 
