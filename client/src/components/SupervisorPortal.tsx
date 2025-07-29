@@ -3802,7 +3802,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
               {/* Tabela de Propostas */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Dados do Relatório ({reportData.length} propostas)</h3>
+                <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg px-4 py-2 mb-4">
+                  <h3 className="text-sm font-medium text-green-700 dark:text-green-200">Dados do Relatório ({reportData.length} propostas)</h3>
+                </div>
                 {/* Container da tabela com duas barras de rolagem sincronizadas */}
                 <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
                   {/* Barra de rolagem horizontal superior */}
