@@ -3,6 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { GoogleDriveService } from "./googleDriveService";
 import { GoogleSheetsSimple } from "./googleSheetsSimple";
@@ -770,20 +771,20 @@ async function startServer() {
 
         // Primeiro tentar vendedor
         const vendor = await storage.getVendorByEmail(email);
-        if (vendor && vendor.password === password) {
+        if (vendor && bcrypt.compareSync(password, vendor.password)) {
           // 🔧 ATUALIZAR ÚLTIMO LOGIN DO VENDEDOR
           await storage.updateVendorLastLogin(vendor.id);
           console.log(`🔍 LOGIN VENDEDOR: ${vendor.name} (${vendor.email}) - último login atualizado`);
 
           return res.json({
             success: true,
-            user: { ...vendor, type: 'vendor', role: 'vendor' }
+            user: { ...vendor, type: 'vendor' }
           });
         }
 
         // Depois tentar usuário do sistema
         const systemUser = await storage.getSystemUserByEmail(email);
-        if (systemUser && systemUser.password === password) {
+        if (systemUser && bcrypt.compareSync(password, systemUser.password)) {
           // 🔧 ATUALIZAR ÚLTIMO LOGIN DO USUÁRIO DO SISTEMA
           await storage.updateSystemUserLastLogin(systemUser.id);
           console.log(`🔍 LOGIN SISTEMA: ${systemUser.name} (${systemUser.email}) - último login atualizado`);
