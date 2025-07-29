@@ -92,7 +92,7 @@ export default function GoogleDriveSetup() {
     },
     {
       id: 'principal',
-      nome: 'Planilha Principal',
+      nome: 'Drive Principal',
       tipo: 'drive',
       url: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
       ativo: true,
@@ -476,10 +476,12 @@ export default function GoogleDriveSetup() {
               <div className="text-xs text-blue-600 dark:text-blue-400">Arquivos</div>
             </div>
             <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+              <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
                 {currentTabData.capacidade}
               </div>
-              <div className="text-xs text-blue-600 dark:text-blue-400">Capacidade</div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">
+                de {currentTabData.totalCapacidade} utilizados
+              </div>
             </div>
           </div>
 
