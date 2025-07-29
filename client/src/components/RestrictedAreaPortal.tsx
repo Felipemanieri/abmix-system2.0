@@ -266,7 +266,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showClientPortal 
                       ? 'bg-lime-500' 
-                      : 'bg-red-300 dark:bg-red-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
@@ -298,7 +298,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showVendorPortal 
                       ? 'bg-green-600' 
-                      : 'bg-orange-300 dark:bg-orange-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
@@ -330,7 +330,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showFinancialPortal 
                       ? 'bg-purple-600' 
-                      : 'bg-yellow-300 dark:bg-yellow-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
@@ -362,7 +362,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showImplementationPortal 
                       ? 'bg-teal-600' 
-                      : 'bg-pink-300 dark:bg-pink-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
@@ -394,7 +394,7 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     portalVisibility.showSupervisorPortal 
                       ? 'bg-sky-400' 
-                      : 'bg-cyan-300 dark:bg-cyan-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
