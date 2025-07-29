@@ -21,6 +21,14 @@ export default function GoogleDriveSetup() {
     linkCompartilhamento: '',
     observacao: ''
   });
+  const [folderStructure, setFolderStructure] = useState([
+    { id: 1, name: 'Propostas 2025', type: 'folder', files: 89, size: '1.2 GB', lastModified: '2025-01-29' },
+    { id: 2, name: 'Documentos Clientes', type: 'folder', files: 234, size: '876 MB', lastModified: '2025-01-28' },
+    { id: 3, name: 'Contratos', type: 'folder', files: 156, size: '423 MB', lastModified: '2025-01-27' },
+    { id: 4, name: 'Backup Sistema', type: 'folder', files: 67, size: '345 MB', lastModified: '2025-01-26' },
+    { id: 5, name: 'Relatórios', type: 'folder', files: 123, size: '289 MB', lastModified: '2025-01-25' }
+  ]);
+  const [selectedFolder, setSelectedFolder] = useState(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -143,15 +151,15 @@ export default function GoogleDriveSetup() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">247</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{driveData.pastas}</div>
             <div className="text-sm text-blue-500 dark:text-blue-400">Pastas</div>
           </div>
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">1,834</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{driveData.arquivos.toLocaleString()}</div>
             <div className="text-sm text-green-500 dark:text-green-400">Documentos</div>
           </div>
           <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">8.2 GB</div>
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{driveData.capacidade}</div>
             <div className="text-sm text-purple-500 dark:text-purple-400">Espaço Usado</div>
           </div>
         </div>
@@ -160,9 +168,22 @@ export default function GoogleDriveSetup() {
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600 dark:text-gray-300">Status da Conexão</span>
             <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-1" />
-              <span className="text-sm text-green-600 dark:text-green-400">Conectado</span>
+              <CheckCircle className={`w-4 h-4 mr-1 ${
+                driveData.status === 'connected' ? 'text-green-500' : 
+                driveData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
+              }`} />
+              <span className={`text-sm ${
+                driveData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
+                driveData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+              }`}>
+                {driveData.status === 'connected' ? 'Conectado' : 
+                 driveData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+              </span>
             </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600 dark:text-gray-300">Última Sincronização</span>
+            <span className="text-sm text-gray-900 dark:text-white">{driveData.ultimaSync}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600 dark:text-gray-300">Pasta Principal</span>
@@ -306,6 +327,85 @@ export default function GoogleDriveSetup() {
               Configurar
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Seção Pastas e Arquivos Navegáveis */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
+          <h4 className="text-base font-semibold text-gray-900 dark:text-white">Estrutura de Pastas</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Navegue pelas pastas do Google Drive</p>
+        </div>
+        <div className="p-4">
+          <div className="space-y-2">
+            {folderStructure.map((folder) => (
+              <div
+                key={folder.id}
+                onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors border border-gray-200 dark:border-gray-600"
+              >
+                <div className="flex items-center gap-3">
+                  <FolderOpen className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">{folder.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {folder.files} arquivos • {folder.size} • {folder.lastModified}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb`, '_blank');
+                    }}
+                    className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                    title="Abrir pasta"
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                  </button>
+                  <div className={`w-2 h-2 rounded-full transition-transform ${
+                    selectedFolder === folder.id ? 'rotate-90 bg-blue-500' : 'bg-gray-400'
+                  }`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Conteúdo da pasta selecionada */}
+          {selectedFolder && (
+            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+              <h5 className="font-medium text-blue-900 dark:text-blue-300 mb-3">
+                Conteúdo da pasta: {folderStructure.find(f => f.id === selectedFolder)?.name}
+              </h5>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                    <span className="text-gray-900 dark:text-white">documento_proposta_001.pdf</span>
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400">2.3 MB</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                    <span className="text-gray-900 dark:text-white">contrato_cliente_xyz.docx</span>
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400">1.8 MB</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+                    <span className="text-gray-900 dark:text-white">planilha_dados.xlsx</span>
+                  </div>
+                  <span className="text-gray-500 dark:text-gray-400">945 KB</span>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+                  + {folderStructure.find(f => f.id === selectedFolder)?.files - 3} mais arquivos
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
