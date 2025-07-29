@@ -652,7 +652,7 @@ export default function UserManagementDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <span className="font-mono bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded border">
-                      {showPasswords ? (user.password || '120784') : '••••••••'}
+                      {showPasswords ? '123456' : '••••••••'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
