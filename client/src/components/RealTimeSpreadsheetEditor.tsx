@@ -298,7 +298,7 @@ export default function RealTimeSpreadsheetEditor({ className = '' }: RealTimeSp
             <button
               onClick={() => refetch()}
               disabled={isLoading}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="flex items-center px-4 py-2 bg-cyan-400 text-black rounded-lg hover:bg-cyan-500 disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Sincronizar
