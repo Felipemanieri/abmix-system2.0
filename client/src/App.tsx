@@ -376,7 +376,7 @@ function App() {
           {portalVisibility.showClientPortal && (
             <div 
               onClick={() => setCurrentPortal('client')}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-teal-300 dark:border-teal-600 hover:border-teal-400 dark:hover:border-teal-500 transform hover:-translate-y-2 relative max-w-xs mx-auto"
+              className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-teal-300 dark:border-teal-600 hover:border-teal-400 dark:hover:border-teal-500 transform hover:-translate-y-2 relative"
             >
               <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -400,7 +400,7 @@ function App() {
           {portalVisibility.showVendorPortal && (
           <div 
             onClick={() => setCurrentPortal('vendor')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-green-300 dark:border-green-600 hover:border-green-400 dark:hover:border-green-500 transform hover:-translate-y-2 relative max-w-xs mx-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-green-300 dark:border-green-600 hover:border-green-400 dark:hover:border-green-500 transform hover:-translate-y-2 relative"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -424,20 +424,20 @@ function App() {
           {portalVisibility.showImplementationPortal && (
           <div 
             onClick={() => setCurrentPortal('implementation')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-teal-300 dark:border-teal-600 hover:border-teal-400 dark:hover:border-teal-500 transform hover:-translate-y-2 relative max-w-xs mx-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-orange-300 dark:border-orange-600 hover:border-orange-400 dark:hover:border-orange-500 transform hover:-translate-y-2 relative"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-teal-50 dark:bg-teal-900/30 rounded-2xl mb-4 mx-auto">
-              <Settings className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+            <div className="flex items-center justify-center w-12 h-12 bg-orange-50 dark:bg-orange-900/30 rounded-2xl mb-4 mx-auto">
+              <Settings className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-lg font-bold text-teal-600 dark:text-teal-400 mb-2 text-center">Portal Implantação</h3>
+            <h3 className="text-lg font-bold text-orange-600 dark:text-orange-400 mb-2 text-center">Portal Implantação</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Validação e automação de propostas
             </p>
-            <div className="flex items-center justify-center text-teal-600 dark:text-teal-400 font-semibold">
+            <div className="flex items-center justify-center text-orange-600 dark:text-orange-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
@@ -448,7 +448,7 @@ function App() {
           {portalVisibility.showFinancialPortal && (
           <div 
             onClick={() => setCurrentPortal('financial')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-purple-300 dark:border-purple-600 hover:border-purple-400 dark:hover:border-purple-500 transform hover:-translate-y-2 relative max-w-xs mx-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-purple-300 dark:border-purple-600 hover:border-purple-400 dark:hover:border-purple-500 transform hover:-translate-y-2 relative"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -472,20 +472,20 @@ function App() {
           {portalVisibility.showSupervisorPortal && (
           <div 
             onClick={() => setCurrentPortal('supervisor')}
-            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-gray-400 dark:border-gray-500 hover:border-gray-500 dark:hover:border-gray-400 transform hover:-translate-y-2 relative max-w-xs mx-auto"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-blue-300 dark:border-blue-600 hover:border-blue-400 dark:hover:border-blue-500 transform hover:-translate-y-2 relative"
           >
             <div className="absolute top-4 right-4 flex items-center bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
               Online
             </div>
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 dark:bg-gray-600/30 rounded-2xl mb-4 mx-auto">
-              <Crown className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+            <div className="flex items-center justify-center w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl mb-4 mx-auto">
+              <Crown className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-lg font-bold text-gray-600 dark:text-gray-400 mb-2 text-center">Portal Supervisor</h3>
+            <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2 text-center">Portal Supervisor</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm text-center">
               Supervisão e relatórios gerenciais
             </p>
-            <div className="flex items-center justify-center text-gray-600 dark:text-gray-400 font-semibold">
+            <div className="flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold">
               <ArrowRight className="w-4 h-4 mr-2" />
               Acessar Portal
             </div>
