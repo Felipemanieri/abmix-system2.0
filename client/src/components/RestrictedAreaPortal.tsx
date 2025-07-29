@@ -654,30 +654,42 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Limite Arquivo Local (MB)
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="5"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                      <p className="text-xs text-gray-500">Acima disso vai só para Drive</p>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <label className="flex items-center">
+                          <input type="checkbox" defaultChecked className="mr-2" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Sem limite de tamanho de arquivo
+                          </span>
+                        </label>
+                        <p className="text-xs text-gray-500">Quando ativado, permite arquivos de qualquer tamanho</p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Limite Arquivo Local (MB)
+                        </label>
+                        <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                          <option value="0">Sem limite</option>
+                          <option value="5" selected>5 MB</option>
+                          <option value="10">10 MB</option>
+                          <option value="20">20 MB</option>
+                          <option value="50">50 MB</option>
+                        </select>
+                        <p className="text-xs text-gray-500">Acima disso vai só para Drive</p>
+                      </div>
                     </div>
                     
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Limite Máximo Total (MB)
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="100"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                      <p className="text-xs text-gray-500">Limite generoso para testes</p>
+                    <div className="flex justify-end">
+                      <button 
+                        onClick={() => console.log('Salvando configurações de armazenamento...')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        Salvar Configurações
+                      </button>
                     </div>
+                  </div>
                     
                     <div className="space-y-3">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

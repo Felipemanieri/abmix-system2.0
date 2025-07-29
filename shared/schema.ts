@@ -186,6 +186,23 @@ export const systemSettings = pgTable("system_settings", {
   createdAt: timestamp("created_at").defaultNow()
 });
 
+// Configurações centralizadas com funcionalidades sem limites
+export const centralizedConfigs = pgTable("centralized_configs", {
+  id: serial("id").primaryKey(),
+  unlimited_files: boolean("unlimited_files").notNull().default(true),
+  local_file_limit_mb: integer("local_file_limit_mb").default(0), // 0 = sem limite
+  session_timeout_minutes: integer("session_timeout_minutes").default(0), // 0 = sem limite
+  company_name: text("company_name").default("Abmix Sistema"),
+  primary_color: text("primary_color").default("#4F46E5"),
+  sender_email: text("sender_email").default("sistema@abmix.digital"),
+  sender_name: text("sender_name").default("Sistema Abmix"),
+  auto_email_new_proposal: boolean("auto_email_new_proposal").default(true),
+  auto_email_pending_supervisor: boolean("auto_email_pending_supervisor").default(true),
+  auto_email_daily_report: boolean("auto_email_daily_report").default(false),
+  updated_at: timestamp("updated_at").defaultNow(),
+  updated_by: text("updated_by")
+});
+
 // Tabela de mensagens internas
 export const internalMessages = pgTable("internal_messages", {
   id: serial("id").primaryKey(),
@@ -205,6 +222,7 @@ export const internalMessages = pgTable("internal_messages", {
 export const insertAttachmentSchema = createInsertSchema(attachments);
 export const insertDriveConfigSchema = createInsertSchema(driveConfigs);
 export const insertSystemSettingSchema = createInsertSchema(systemSettings);
+export const insertCentralizedConfigSchema = createInsertSchema(centralizedConfigs);
 export const insertInternalMessageSchema = createInsertSchema(internalMessages);
 
 
@@ -214,6 +232,8 @@ export type InsertDriveConfig = z.infer<typeof insertDriveConfigSchema>;
 export type DriveConfig = typeof driveConfigs.$inferSelect;
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertCentralizedConfig = z.infer<typeof insertCentralizedConfigSchema>;
+export type CentralizedConfig = typeof centralizedConfigs.$inferSelect;
 export type InsertInternalMessage = z.infer<typeof insertInternalMessageSchema>;
 export type InternalMessage = typeof internalMessages.$inferSelect;
 
