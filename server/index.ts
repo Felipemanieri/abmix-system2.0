@@ -771,25 +771,7 @@ async function startServer() {
 
         const bcrypt = await import('bcrypt');
 
-        // Primeiro tentar vendedor
-        const vendor = await storage.getVendorByEmail(email);
-        if (vendor) {
-          const passwordMatch = await bcrypt.compare(password, vendor.password);
-          console.log(`🔍 Vendor ${email}: senha ${passwordMatch ? 'correta' : 'incorreta'}`);
-          
-          if (passwordMatch) {
-            // 🔧 ATUALIZAR ÚLTIMO LOGIN DO VENDEDOR
-            await storage.updateVendorLastLogin(vendor.id);
-            console.log(`✅ LOGIN VENDEDOR: ${vendor.name} (${vendor.email}) - último login atualizado`);
-
-            return res.json({
-              success: true,
-              user: { ...vendor, type: 'vendor', role: 'vendor' }
-            });
-          }
-        }
-
-        // Depois tentar usuário do sistema
+        // Primeiro tentar usuário do sistema (PRIORIDADE)
         const systemUser = await storage.getSystemUserByEmail(email);
         if (systemUser) {
           const passwordMatch = await bcrypt.compare(password, systemUser.password);
@@ -802,7 +784,25 @@ async function startServer() {
 
             return res.json({
               success: true,
-              user: { ...systemUser, type: 'system' }
+              user: { ...systemUser, type: 'system', role: systemUser.role, panel: systemUser.panel }
+            });
+          }
+        }
+
+        // Depois tentar vendedor
+        const vendor = await storage.getVendorByEmail(email);
+        if (vendor) {
+          const passwordMatch = await bcrypt.compare(password, vendor.password);
+          console.log(`🔍 Vendor ${email}: senha ${passwordMatch ? 'correta' : 'incorreta'}`);
+          
+          if (passwordMatch) {
+            // 🔧 ATUALIZAR ÚLTIMO LOGIN DO VENDEDOR
+            await storage.updateVendorLastLogin(vendor.id);
+            console.log(`✅ LOGIN VENDEDOR: ${vendor.name} (${vendor.email}) - último login atualizado`);
+
+            return res.json({
+              success: true,
+              user: { ...vendor, type: 'vendor', role: 'vendor', panel: 'vendor' }
             });
           }
         }
