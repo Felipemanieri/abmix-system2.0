@@ -511,7 +511,7 @@ export default function BackupManager() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {backupHistory.map((backup) => (
-                <tr key={backup.id} className="hover:bg-gray-50">
+                <tr key={backup.folder} className="hover:bg-gray-50">
                   <td className="p-4">
                     <div>
                       <div className="font-medium">{backup.date}</div>
@@ -519,44 +519,38 @@ export default function BackupManager() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      backup.type === 'Completo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {backup.type}
+                    <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                      Completo
                     </span>
                   </td>
-                  <td className="p-4 font-mono text-sm">{backup.size}</td>
+                  <td className="p-4 font-mono text-sm">{backup.size} MB</td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      {backup.tables.map((table) => (
-                        <span key={table} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                          {table}
-                        </span>
-                      ))}
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                        Sistema
+                      </span>
                     </div>
                   </td>
-                  <td className="p-4 font-mono text-sm">{backup.records.toLocaleString()}</td>
+                  <td className="p-4 font-mono text-sm">-</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      {getStatusIcon(backup.status)}
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(backup.status)}`}>
-                        {backup.status}
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                        Sucesso
                       </span>
                     </div>
                   </td>
                   <td className="p-4">
                     <div className="flex gap-2">
                       <button
-                        onClick={() => downloadBackup(backup.id)}
+                        onClick={() => downloadBackup(backup.folder)}
                         className="p-1 text-blue-600 hover:bg-blue-50 rounded"
                         title="Baixar backup"
                       >
                         <Download className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => restoreBackup(backup.id)}
+                        onClick={() => restoreBackup(backup.folder)}
                         disabled={isRestoring}
                         className="p-1 text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
                         title="Restaurar backup"
@@ -564,7 +558,7 @@ export default function BackupManager() {
                         {isRestoring ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                       </button>
                       <button
-                        onClick={() => deleteBackup(backup.id)}
+                        onClick={() => deleteBackup(backup.folder)}
                         className="p-1 text-red-600 hover:bg-red-50 rounded"
                         title="Excluir backup permanentemente"
                       >
