@@ -15,9 +15,17 @@ const SystemFooter: React.FC = () => {
         
         // Filtrar propostas criadas hoje
         const todayProposals = proposals.filter((proposal: any) => {
-          const proposalDate = new Date(proposal.createdAt).toISOString().split('T')[0];
+          // Tentar ambos os formatos de data (createdAt e created_at)
+          const createdAt = proposal.createdAt || proposal.created_at;
+          if (!createdAt) return false;
+          
+          const proposalDate = new Date(createdAt).toISOString().split('T')[0];
           return proposalDate === today;
         });
+        
+        console.log(`📊 SystemFooter - Total propostas: ${proposals.length}`);
+        console.log(`📊 SystemFooter - Propostas hoje (${today}): ${todayProposals.length}`);
+        console.log('📊 SystemFooter - Amostra das propostas:', proposals.slice(0, 2));
         
         setProposalsToday(todayProposals.length);
       }
