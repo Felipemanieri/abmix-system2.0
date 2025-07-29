@@ -21,10 +21,7 @@ export default function GoogleDriveSetup() {
     linkCompartilhamento: '',
     observacao: ''
   });
-  const [folderStructure, setFolderStructure] = useState([]);
-  const [selectedFolder, setSelectedFolder] = useState(null);
-  const [folderContents, setFolderContents] = useState({});
-  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -117,53 +114,14 @@ export default function GoogleDriveSetup() {
     }
   };
 
-  // Função para buscar pastas reais do Google Drive
-  const fetchFolderStructure = async () => {
-    setIsLoadingFolders(true);
-    try {
-      const response = await fetch('/api/google/drive-folders');
-      const data = await response.json();
-      
-      if (data.success && data.folders) {
-        setFolderStructure(data.folders);
-      } else {
-        setFolderStructure([]);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar pastas do Drive:', error);
-      setFolderStructure([]);
-    } finally {
-      setIsLoadingFolders(false);
-    }
-  };
 
-  // Função para buscar conteúdo de uma pasta específica
-  const fetchFolderContents = async (folderId: string) => {
-    try {
-      const response = await fetch(`/api/google/drive-folder-contents/${folderId}`);
-      const data = await response.json();
-      
-      if (data.success && data.files) {
-        setFolderContents(prev => ({
-          ...prev,
-          [folderId]: data.files
-        }));
-      }
-    } catch (error) {
-      console.error('Erro ao buscar conteúdo da pasta:', error);
-    }
-  };
 
   // Carregar dados do Drive ao montar o componente
   useEffect(() => {
     fetchDriveData();
-    fetchFolderStructure();
     
     // Atualizar dados a cada 30 segundos
-    const interval = setInterval(() => {
-      fetchDriveData();
-      fetchFolderStructure();
-    }, 30000);
+    const interval = setInterval(fetchDriveData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -229,98 +187,7 @@ export default function GoogleDriveSetup() {
         </div>
       </div>
 
-      {/* Seção Pastas e Arquivos Navegáveis */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-base font-semibold text-gray-900 dark:text-white">Estrutura de Pastas</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Navegue pelas pastas do Google Drive</p>
-            </div>
-            {isLoadingFolders && (
-              <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-            )}
-          </div>
-        </div>
-        <div className="p-4">
-          {folderStructure.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              {isLoadingFolders ? 'Carregando pastas...' : 'Nenhuma pasta encontrada'}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {folderStructure.map((folder: any) => (
-                <div
-                  key={folder.id}
-                  onClick={() => {
-                    const newSelected = selectedFolder === folder.id ? null : folder.id;
-                    setSelectedFolder(newSelected);
-                    if (newSelected && !folderContents[folder.id]) {
-                      fetchFolderContents(folder.id);
-                    }
-                  }}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors border border-gray-200 dark:border-gray-600"
-                >
-                  <div className="flex items-center gap-3">
-                    <FolderOpen className="w-5 h-5 text-blue-500" />
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">{folder.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {folder.files} arquivos • {folder.size} • {folder.lastModified}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(folder.webViewLink || 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb', '_blank');
-                      }}
-                      className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                      title="Abrir pasta"
-                    >
-                      <FolderOpen className="w-4 h-4" />
-                    </button>
-                    <div className={`w-2 h-2 rounded-full transition-transform ${
-                      selectedFolder === folder.id ? 'rotate-90 bg-blue-500' : 'bg-gray-400'
-                    }`}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Conteúdo da pasta selecionada */}
-          {selectedFolder && folderContents[selectedFolder] && (
-            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-              <h5 className="font-medium text-blue-900 dark:text-blue-300 mb-3">
-                Conteúdo da pasta: {folderStructure.find((f: any) => f.id === selectedFolder)?.name}
-              </h5>
-              <div className="space-y-2">
-                {folderContents[selectedFolder].slice(0, 3).map((file: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-sm ${
-                        file.type === 'pdf' ? 'bg-red-500' :
-                        file.type === 'docx' ? 'bg-blue-500' :
-                        file.type === 'xlsx' ? 'bg-green-500' :
-                        file.type === 'zip' ? 'bg-purple-500' : 'bg-gray-500'
-                      }`}></div>
-                      <span className="text-gray-900 dark:text-white">{file.name}</span>
-                    </div>
-                    <span className="text-gray-500 dark:text-gray-400">{file.size}</span>
-                  </div>
-                ))}
-                {folderContents[selectedFolder].length > 3 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
-                    + {folderContents[selectedFolder].length - 3} mais arquivos
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+
 
       {/* Seção Drive Conectado - Baseada na aba Visualizar Planilha */}
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
