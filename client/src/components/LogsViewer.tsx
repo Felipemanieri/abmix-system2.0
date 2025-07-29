@@ -51,30 +51,72 @@ export default function LogsViewer() {
   useEffect(() => {
     if (!isLive) return;
 
-    // Logs iniciais reais do sistema
-    const initialLogs = [
-      generateLog('LOGS REAIS ATIVADOS - Simulação desabilitada', 'success', 'Sistema'),
-      generateLog('Promise rejeitada não tratada: TypeError: Failed to fetch', 'error', 'Sistema'),
-      generateLog('Sistema Abmix carregado com sucesso', 'success', 'Sistema'),
-      generateLog('Conexão PostgreSQL estabelecida', 'info', 'Database'),
-      generateLog('Google Drive backup ativo', 'success', 'Google'),
-      generateLog('Portal vendedor carregado', 'info', 'Portais'),
-      generateLog('Servidor Express rodando na porta 5000', 'info', 'Servidor')
-    ];
+    // Log inicial
+    const initLog = generateLog('Sistema de logs reais iniciado', 'success', 'Sistema');
+    setLogs([initLog]);
+    setFilteredLogs([initLog]);
 
-    setLogs(initialLogs);
-    setFilteredLogs(initialLogs);
+    // Interceptar console.log original
+    const originalConsoleLog = console.log;
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
 
-    // Buscar estatísticas do sistema
+    // Capturar unhandled rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const errorLog = generateLog(`Promise rejeitada: ${event.reason}`, 'error', 'Sistema');
+      setLogs(prevLogs => [...prevLogs, errorLog].slice(-100));
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    // Interceptar console.log
+    console.log = (...args) => {
+      originalConsoleLog.apply(console, args);
+      const message = args.join(' ');
+      
+      // Filtrar mensagens relevantes
+      if (message.includes('🔍') || message.includes('✅') || message.includes('❌') || 
+          message.includes('LOGIN') || message.includes('API') || message.includes('STORAGE') ||
+          message.includes('ERROR') || message.includes('WARNING')) {
+        const realLog = generateLog(message, 'info', 'Console');
+        setLogs(prevLogs => [...prevLogs, realLog].slice(-100));
+      }
+    };
+
+    // Interceptar console.error
+    console.error = (...args) => {
+      originalConsoleError.apply(console, args);
+      const message = args.join(' ');
+      const errorLog = generateLog(message, 'error', 'Console');
+      setLogs(prevLogs => [...prevLogs, errorLog].slice(-100));
+    };
+
+    // Interceptar console.warn
+    console.warn = (...args) => {
+      originalConsoleWarn.apply(console, args);
+      const message = args.join(' ');
+      const warnLog = generateLog(message, 'warning', 'Console');
+      setLogs(prevLogs => [...prevLogs, warnLog].slice(-100));
+    };
+
+    // Cleanup
+    return () => {
+      console.log = originalConsoleLog;
+      console.error = originalConsoleError;
+      console.warn = originalConsoleWarn;
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+
+    // Buscar estatísticas do sistema com tratamento correto de promises
     const fetchSystemStats = async () => {
       try {
         // Buscar propostas
-        const proposalsResponse = await fetch('/api/proposals');
-        const proposals = proposalsResponse.ok ? await proposalsResponse.json() : [];
+        const proposalsResponse = await fetch('/api/proposals').catch(() => null);
+        const proposals = proposalsResponse?.ok ? await proposalsResponse.json().catch(() => []) : [];
         
-        // Buscar usuários
-        const usersResponse = await fetch('/api/users');
-        const users = usersResponse.ok ? await usersResponse.json() : [];
+        // Buscar usuários  
+        const usersResponse = await fetch('/api/users').catch(() => null);
+        const users = usersResponse?.ok ? await usersResponse.json().catch(() => []) : [];
 
         setSystemStats(prev => ({
           ...prev,
@@ -87,7 +129,10 @@ export default function LogsViewer() {
       }
     };
 
-    fetchSystemStats();
+    // Executar com tratamento de promise
+    fetchSystemStats().catch(error => {
+      console.error('Promise rejeitada tratada - Stats:', error);
+    });
 
     // Atualizar tempo ativo
     const startTime = Date.now();
