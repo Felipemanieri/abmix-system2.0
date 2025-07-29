@@ -440,7 +440,7 @@ export default function GoogleDriveSetup() {
                 
                 {showSyncOptions && (
                   <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
-                    {['1 segundo', '5 segundos', '15 segundos', '30 segundos', '1 minuto', '5 minutos', '15 minutos', '30 minutos', '1 hora', '2 horas', '6 horas', '12 horas', '24 horas', 'Manual'].map(interval => (
+                    {['1 segundo', '5 segundos', '10 segundos', '30 segundos', '1 minuto', '5 minutos', '10 minutos', '15 minutos', '1 hora', '5 horas', '10 horas', '24 horas', 'Manual'].map(interval => (
                       <button
                         key={interval}
                         onClick={() => handleSyncIntervalChange(interval)}
