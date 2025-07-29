@@ -871,6 +871,79 @@ export function setupRoutes(app: any) {
     
     return 'text';
   }
+  // Log storage para capturar logs do sistema em tempo real
+  let systemLogs: Array<{id: string, timestamp: Date, level: string, module: string, message: string}> = [];
+  const MAX_LOGS = 1000;
   
-  console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos e Google test)');
+  // Interceptar console.log para capturar logs do servidor
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  
+  console.log = (...args: any[]) => {
+    originalConsoleLog.apply(console, args);
+    const message = args.join(' ');
+    systemLogs.push({
+      id: `server-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      level: 'info',
+      module: 'Servidor',
+      message: message
+    });
+    if (systemLogs.length > MAX_LOGS) {
+      systemLogs = systemLogs.slice(-MAX_LOGS);
+    }
+  };
+  
+  console.error = (...args: any[]) => {
+    originalConsoleError.apply(console, args);
+    const message = args.join(' ');
+    systemLogs.push({
+      id: `server-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      level: 'error',
+      module: 'Servidor',
+      message: message
+    });
+    if (systemLogs.length > MAX_LOGS) {
+      systemLogs = systemLogs.slice(-MAX_LOGS);
+    }
+  };
+  
+  console.warn = (...args: any[]) => {
+    originalConsoleWarn.apply(console, args);
+    const message = args.join(' ');
+    systemLogs.push({
+      id: `server-${Date.now()}-${Math.random()}`,
+      timestamp: new Date(),
+      level: 'warning',
+      module: 'Servidor',
+      message: message
+    });
+    if (systemLogs.length > MAX_LOGS) {
+      systemLogs = systemLogs.slice(-MAX_LOGS);
+    }
+  };
+
+  // ROTA: Endpoint para logs do sistema
+  app.get('/api/system/logs', (req: Request, res: Response) => {
+    try {
+      // Retornar apenas os últimos 50 logs para não sobrecarregar o frontend
+      const recentLogs = systemLogs.slice(-50);
+      res.json({
+        success: true,
+        logs: recentLogs,
+        total: systemLogs.length
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar logs do sistema:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao buscar logs',
+        logs: []
+      });
+    }
+  });
+
+  console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test e logs do sistema)');
 }

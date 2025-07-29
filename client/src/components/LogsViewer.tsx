@@ -164,17 +164,39 @@ export default function LogsViewer() {
     };
   };
 
-  // INTERCEPTAR LOGS REAIS DO CONSOLE
+  // BUSCAR LOGS DO SERVIDOR EM TEMPO REAL
   useEffect(() => {
     if (!isLive) return;
 
     // Log inicial
     const initLog = captureConsoleLog(
-      '🔍 LOGS REAIS ATIVADOS - Simulação desabilitada', 
+      'Logs em tempo real', 
       'success', 
       'Sistema'
     );
     setLogs(prevLogs => [...prevLogs, initLog].slice(-1000));
+
+    // Capturar logs diretamente do workflow console em tempo real
+    let lastLogCount = 0;
+    
+    const captureWorkflowLogs = () => {
+      // Procurar por novos logs no console global
+      const workflowLogs = (window as any).__workflowLogs || [];
+      if (workflowLogs.length > lastLogCount) {
+        const newLogs = workflowLogs.slice(lastLogCount).map((log: any) => ({
+          id: `workflow-${Date.now()}-${Math.random()}`,
+          timestamp: new Date(),
+          level: 'info',
+          module: 'Sistema',
+          message: log.message || String(log)
+        }));
+        setLogs(prevLogs => [...prevLogs, ...newLogs].slice(-1000));
+        lastLogCount = workflowLogs.length;
+      }
+    };
+
+    // Executar a cada 1 segundo para captura em tempo real
+    const logInterval = setInterval(captureWorkflowLogs, 1000);
 
     // Interceptar console.log, console.error, etc.
     const originalConsoleLog = console.log;
@@ -184,7 +206,7 @@ export default function LogsViewer() {
     console.log = (...args) => {
       originalConsoleLog.apply(console, args);
       
-      // Filtrar apenas logs importantes do sistema
+      // Capturar TODOS os logs importantes do sistema em tempo real
       const message = args.join(' ');
       if (
         message.includes('🔍') || 
@@ -192,15 +214,23 @@ export default function LogsViewer() {
         message.includes('✅') || 
         message.includes('⚠️') ||
         message.includes('❌') ||
-        message.includes('Promise rejeitada') ||
-        message.includes('Buscando') ||
-        message.includes('Estatísticas') ||
-        message.includes('GoogleSheetsSimple') ||
+        message.includes('🚀') ||
+        message.includes('🔌') ||
+        message.includes('🔗') ||
+        message.includes('📎') ||
+        message.includes('LOGIN') ||
+        message.includes('API') ||
         message.includes('STORAGE') ||
-        message.includes('Falha na autenticação')
+        message.includes('GoogleSheetsSimple') ||
+        message.includes('Buscando') ||
+        message.includes('Falha na autenticação') ||
+        message.includes('Servidor') ||
+        message.includes('Environment') ||
+        message.includes('running on port') ||
+        message.includes('WebSocket')
       ) {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
-        setLogs(prevLogs => [...prevLogs, realLog].slice(-100)); // Manter apenas 100 logs
+        setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
       }
     };
 
@@ -208,21 +238,22 @@ export default function LogsViewer() {
       originalConsoleError.apply(console, args);
       const message = args.join(' ');
       const realLog = captureConsoleLog(message, 'error', 'Sistema');
-      setLogs(prevLogs => [...prevLogs, realLog].slice(-100));
+      setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
     };
 
     console.warn = (...args) => {
       originalConsoleWarn.apply(console, args);
       const message = args.join(' ');
       const realLog = captureConsoleLog(message, 'warning', 'Sistema');
-      setLogs(prevLogs => [...prevLogs, realLog].slice(-100));
+      setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
     };
 
-    // Cleanup: restaurar console original
+    // Cleanup: restaurar console original e limpar interval
     return () => {
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
+      clearInterval(logInterval);
     };
   }, [isLive]);
 

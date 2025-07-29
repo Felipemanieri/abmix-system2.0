@@ -1261,11 +1261,17 @@ async function startServer() {
     console.log("📎 Registrando rotas com multer para anexos...");
     setupRoutes(app);
 
-    // Then Vite middleware
+    // Then Vite middleware  
     app.use(vite.middlewares);
 
-    app.use("*", async (req: Request, res: Response, next: NextFunction) => {
+    app.get("*", async (req: Request, res: Response, next: NextFunction) => {
       const url = req.originalUrl;
+      
+      // Só processar requests que não são da API
+      if (url.startsWith('/api/')) {
+        return next();
+      }
+      
       try {
         const clientTemplate = path.resolve(__dirname, "..", "client", "index.html");
         let template = await fs.promises.readFile(clientTemplate, "utf-8");
