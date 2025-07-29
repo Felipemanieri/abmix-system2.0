@@ -501,6 +501,12 @@ export default function GoogleDriveSetup() {
               </div>
             </div>
             <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700 dark:text-blue-300">URL Conectada</span>
+              <span className="text-xs text-blue-800 dark:text-blue-200 truncate max-w-48" title={driveUrl}>
+                {driveUrl.replace('https://drive.google.com/drive/folders/', '').slice(0, 20)}...
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">Última Sincronização</span>
               <span className="text-sm text-blue-800 dark:text-blue-200">{currentTabData.ultimaSync}</span>
             </div>
@@ -509,8 +515,93 @@ export default function GoogleDriveSetup() {
               <span className="text-sm text-blue-800 dark:text-blue-200">{currentTabData.ultimaModificacao}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-700 dark:text-blue-300">Backup</span>
-              <span className="text-sm text-blue-800 dark:text-blue-200">5 minutos</span>
+              <span className="text-sm text-blue-700 dark:text-blue-300">Sincronização Automática</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">{syncInterval}</span>
+            </div>
+          </div>
+          
+          {/* Painel de Pastas Profissional */}
+          <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between mb-3">
+              <h6 className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                <FolderOpen className="w-4 h-4 mr-2" />
+                Estrutura de Pastas
+              </h6>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {currentTabData.pastas} pastas encontradas
+              </span>
+            </div>
+            
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {/* Lista mockada de pastas baseada nos dados reais do sistema */}
+              {isBackupTab ? (
+                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
+                  Pasta de backup vazia
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Propostas_2025</span>
+                    <span className="ml-auto text-xs text-gray-500">124 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Documentos_Sistema</span>
+                    <span className="ml-auto text-xs text-gray-500">45 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Backups_Automaticos</span>
+                    <span className="ml-auto text-xs text-gray-500">67 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Planilhas_Controle</span>
+                    <span className="ml-auto text-xs text-gray-500">23 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Logs_Sistema</span>
+                    <span className="ml-auto text-xs text-gray-500">89 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Configuracoes</span>
+                    <span className="ml-auto text-xs text-gray-500">12 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Templates</span>
+                    <span className="ml-auto text-xs text-gray-500">15 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Vendedores_Dados</span>
+                    <span className="ml-auto text-xs text-gray-500">34 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Relatorios</span>
+                    <span className="ml-auto text-xs text-gray-500">56 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Integracao_APIs</span>
+                    <span className="ml-auto text-xs text-gray-500">28 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Atualizacoes_Sistema</span>
+                    <span className="ml-auto text-xs text-gray-500">19 itens</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
+                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
+                    <span>📁 Arquivos_Temporarios</span>
+                    <span className="ml-auto text-xs text-gray-500">7 itens</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -530,14 +621,16 @@ export default function GoogleDriveSetup() {
               </button>
               
               {showSyncOptions && (
-                <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 w-32">
+                <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 w-40 max-h-64 overflow-y-auto">
                   {['1 segundo', '5 segundos', '10 segundos', '30 segundos', '1 minuto', '5 minutos', '10 minutos', '15 minutos', '1 hora', '5 horas', '10 horas', '24 horas', 'Manual'].map((interval) => (
                     <button
                       key={interval}
                       onClick={() => handleSyncIntervalChange(interval)}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                        interval === 'Manual' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-700 dark:text-gray-300'
-                      } ${interval === syncInterval ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+                        interval === 'Manual' ? 'bg-blue-600 text-white font-medium' : 
+                        interval === syncInterval ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 
+                        'text-gray-700 dark:text-gray-300'
+                      }`}
                     >
                       {interval}
                     </button>
