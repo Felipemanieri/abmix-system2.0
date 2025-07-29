@@ -149,28 +149,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(vendors).where(eq(vendors.id, id));
   }
 
-  async updateVendorLastLogin(id: number): Promise<void> {
-    await db.update(vendors)
-      .set({ last_login: new Date() })
-      .where(eq(vendors.id, id));
-  }
-
-  async updateSystemUserLastLogin(id: number): Promise<void> {
-    await db.update(systemUsers)
-      .set({ last_login: new Date() })
-      .where(eq(systemUsers.id, id));
-  }
-
-  async getSystemUserByEmail(email: string): Promise<SystemUser | undefined> {
-    const [user] = await db.select().from(systemUsers).where(eq(systemUsers.email, email));
-    return user || undefined;
-  }
-
-  async getSystemUserById(id: number): Promise<SystemUser | undefined> {
-    const [user] = await db.select().from(systemUsers).where(eq(systemUsers.id, id));
-    return user || undefined;
-  }
-
   // Proposal operations
   async createProposal(proposalData: any): Promise<any> {
     try {
