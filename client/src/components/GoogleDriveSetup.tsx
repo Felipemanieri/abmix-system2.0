@@ -49,7 +49,7 @@ interface BackupData {
 }
 
 export default function GoogleDriveSetup() {
-  const [activeTab, setActiveTab] = useState<string>('backup');
+  const [activeTab, setActiveTab] = useState<string>('principal');
   const [showAddDriveModal, setShowAddDriveModal] = useState(false);
   const [newDriveForm, setNewDriveForm] = useState({
     nome: '',
@@ -362,6 +362,13 @@ export default function GoogleDriveSetup() {
     }
 
     // Conteúdo para abas de drive normais
+    const currentTabData = currentTab.tipo === 'backup' ? backupData : driveData;
+    const isCurrentTabLoading = currentTab.tipo === 'backup' ? isLoadingBackupData : isLoadingDriveData;
+    const fetchCurrentTabData = currentTab.tipo === 'backup' ? fetchBackupData : fetchDriveData;
+    const driveUrl = currentTab.tipo === 'backup' 
+      ? 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link'
+      : 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link';
+
     return (
       <div className="space-y-6">
         {/* Seção de Informações do Drive */}
@@ -369,40 +376,43 @@ export default function GoogleDriveSetup() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h5 className="text-sm font-semibold text-blue-800 dark:text-blue-200">
-                Informações do Drive
+                {currentTab.nome}
               </h5>
               <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                Fonte: Sistema Abmix
+                Conectado: {driveUrl}
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                Proprietário: Felipe Manieri | Auto: 5 minutos
               </p>
             </div>
             <button
-              onClick={fetchDriveData}
-              disabled={isLoadingDriveData}
+              onClick={fetchCurrentTabData}
+              disabled={isCurrentTabLoading}
               className="px-3 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
               title="Atualizar dados do drive"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoadingDriveData ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isCurrentTabLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                {driveData.pastas}
+                {currentTabData.pastas}
               </div>
               <div className="text-xs text-blue-600 dark:text-blue-400">Pastas</div>
             </div>
             <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                {driveData.arquivos.toLocaleString()}
+                {currentTabData.arquivos.toLocaleString()}
               </div>
-              <div className="text-xs text-blue-600 dark:text-blue-400">Documentos</div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">Arquivos</div>
             </div>
             <div className="bg-blue-100 dark:bg-blue-800/30 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
-                {driveData.capacidade}
+                {currentTabData.capacidade}
               </div>
-              <div className="text-xs text-blue-600 dark:text-blue-400">Espaço Usado</div>
+              <div className="text-xs text-blue-600 dark:text-blue-400">Capacidade</div>
             </div>
           </div>
 
@@ -411,25 +421,29 @@ export default function GoogleDriveSetup() {
               <span className="text-sm text-blue-700 dark:text-blue-300">Status da Conexão</span>
               <div className="flex items-center">
                 <CheckCircle className={`w-4 h-4 mr-1 ${
-                  driveData.status === 'connected' ? 'text-green-500' : 
-                  driveData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
+                  currentTabData.status === 'connected' ? 'text-green-500' : 
+                  currentTabData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
                 }`} />
                 <span className={`text-sm ${
-                  driveData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
-                  driveData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
+                  currentTabData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
+                  currentTabData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                 }`}>
-                  {driveData.status === 'connected' ? 'Conectado' : 
-                   driveData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+                  {currentTabData.status === 'connected' ? 'Conectado' : 
+                   currentTabData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">Última Sincronização</span>
-              <span className="text-sm text-blue-800 dark:text-blue-200">{driveData.ultimaSync}</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">{currentTabData.ultimaSync}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-700 dark:text-blue-300">Pasta Principal</span>
-              <span className="text-sm text-blue-800 dark:text-blue-200">Sistema Abmix</span>
+              <span className="text-sm text-blue-700 dark:text-blue-300">Última modificação</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">{currentTabData.ultimaModificacao}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700 dark:text-blue-300">Backup</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">5 minutos</span>
             </div>
           </div>
         </div>
