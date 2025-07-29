@@ -83,6 +83,10 @@ export default function GoogleDriveSetup() {
   });
   const [showSyncOptions, setShowSyncOptions] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [showBackupCleanupModal, setShowBackupCleanupModal] = useState(false);
+  const [backupList, setBackupList] = useState<any[]>([]);
+  const [isLoadingBackupList, setIsLoadingBackupList] = useState(false);
+  const [isCleaningBackups, setIsCleaningBackups] = useState(false);
   const [tabs, setTabs] = useState<DriveTab[]>([
     {
       id: 'backup',
@@ -288,6 +292,56 @@ export default function GoogleDriveSetup() {
       }
     } else {
       fetchDriveData();
+    }
+  };
+
+  // Função para abrir modal de limpeza de backups
+  const handleOpenBackupCleanup = async () => {
+    setIsLoadingBackupList(true);
+    setShowBackupCleanupModal(true);
+    
+    try {
+      const response = await fetch('/api/backup/list');
+      if (response.ok) {
+        const result = await response.json();
+        setBackupList(result.backups || []);
+      }
+    } catch (error) {
+      console.error('Erro ao listar backups:', error);
+    } finally {
+      setIsLoadingBackupList(false);
+    }
+  };
+
+  // Função para executar limpeza de backups
+  const handleCleanupBackups = async () => {
+    setIsCleaningBackups(true);
+    
+    try {
+      const response = await fetch('/api/backup/cleanup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Limpeza concluída:', result);
+        
+        // Atualizar dados do backup após limpeza
+        await fetchBackupData();
+        
+        // Fechar modal
+        setShowBackupCleanupModal(false);
+        
+        // Atualizar lista de backups
+        await handleOpenBackupCleanup();
+      }
+    } catch (error) {
+      console.error('Erro na limpeza de backups:', error);
+    } finally {
+      setIsCleaningBackups(false);
     }
   };
 
@@ -522,24 +576,49 @@ export default function GoogleDriveSetup() {
             )}
           </div>
 
+          {/* Gerenciamento de Backup */}
+          <div className="bg-slate-50 dark:bg-slate-700/30 rounded-lg p-4 border border-slate-200 dark:border-slate-600">
+            <h6 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">Gerenciamento de Backup</h6>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button
+                onClick={handleManualBackup}
+                className="px-3 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                title="Criar backup manual agora"
+              >
+                <Upload className="w-4 h-4" />
+                Backup Manual
+              </button>
+              
+              <button
+                onClick={handleOpenBackupCleanup}
+                className="px-3 py-2 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-800/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                title="Limpar backups antigos (preserva os 2 mais recentes)"
+              >
+                <Trash className="w-4 h-4" />
+                Limpar Antigos
+              </button>
+              
+              <button
+                onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu', '_blank')}
+                className="px-3 py-2 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/20 dark:hover:bg-orange-800/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                title="Abrir no Google Drive"
+              >
+                <FolderOpen className="w-4 h-4" />
+                Abrir Drive
+              </button>
+            </div>
+          </div>
+
           {/* Ações do Drive */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
-              onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu', '_blank')}
-              className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-              title="Abrir no Google Drive"
-            >
-              <FolderOpen className="w-4 h-4" />
-              Abrir no Google Drive
-            </button>
-            
-            <button
               onClick={handleEditDrive}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-              title="Editar configurações"
+              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/30 dark:hover:bg-gray-600/40 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Editar configurações do backup"
             >
               <Pencil className="w-4 h-4" />
-              Editar
+              Configurações
             </button>
             
             <button
@@ -1175,6 +1254,127 @@ export default function GoogleDriveSetup() {
           </div>
         </div>
       </div>
+      {/* Modal Limpeza de Backups */}
+      {showBackupCleanupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-amber-900 dark:text-amber-100 flex items-center">
+                <Trash className="w-5 h-5 mr-2 text-amber-600" />
+                Limpeza de Backups Antigos
+              </h3>
+              <button
+                onClick={() => setShowBackupCleanupModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700 dark:text-gray-300 mb-4">
+                Preserva os <strong>2 backups mais recentes</strong> e remove os demais para liberar espaço.
+              </p>
+              
+              {isLoadingBackupList ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">Carregando backups...</span>
+                </div>
+              ) : backupList.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+                    <h4 className="text-sm font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center">
+                      ✅ Backups que serão PRESERVADOS:
+                    </h4>
+                    {backupList.slice(0, 2).map((backup, index) => (
+                      <div key={backup.folder} className="flex justify-between items-center text-sm">
+                        <span className="text-green-700 dark:text-green-300">
+                          {backup.folder} ({backup.date})
+                        </span>
+                        <span className="text-green-600 dark:text-green-400 font-medium">
+                          {backup.size} MB
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {backupList.length > 2 && (
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
+                      <h4 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-2 flex items-center">
+                        🗑️ Backups que serão REMOVIDOS:
+                      </h4>
+                      {backupList.slice(2).map((backup, index) => (
+                        <div key={backup.folder} className="flex justify-between items-center text-sm">
+                          <span className="text-red-700 dark:text-red-300">
+                            {backup.folder} ({backup.date})
+                          </span>
+                          <span className="text-red-600 dark:text-red-400 font-medium">
+                            {backup.size} MB
+                          </span>
+                        </div>
+                      ))}
+                      <div className="mt-2 pt-2 border-t border-red-200 dark:border-red-700">
+                        <div className="flex justify-between items-center text-sm font-semibold">
+                          <span className="text-red-800 dark:text-red-300">
+                            Espaço a liberar:
+                          </span>
+                          <span className="text-red-600 dark:text-red-400">
+                            {backupList.slice(2).reduce((total, backup) => total + backup.size, 0)} MB
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {backupList.length <= 2 && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
+                      <p className="text-blue-700 dark:text-blue-300 text-sm">
+                        Nenhum backup antigo para remover.<br />
+                        Máximo de 2 backups mantidos: {backupList.length} encontrados.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Nenhum backup encontrado no sistema.
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowBackupCleanupModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              {backupList.length > 2 && (
+                <button
+                  onClick={handleCleanupBackups}
+                  disabled={isCleaningBackups}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  {isCleaningBackups ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Limpando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash className="w-4 h-4" />
+                      Confirmar Limpeza
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

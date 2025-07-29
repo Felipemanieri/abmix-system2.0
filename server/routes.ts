@@ -1200,5 +1200,150 @@ export function setupRoutes(app: any) {
     }
   });
 
-  console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup e backup manual)');
+  // ROTA: Listar backups disponíveis
+  app.get('/api/backup/list', async (req: Request, res: Response) => {
+    try {
+      const fs = require('fs').promises;
+      const path = require('path');
+      
+      // Buscar todas as pastas de backup
+      const items = await fs.readdir('./');
+      const backupFolders = items.filter((item: string) => 
+        item.startsWith('backup-abmix-') && item.match(/backup-abmix-\d{8}$/)
+      );
+      
+      const backupInfo = [];
+      
+      for (const folder of backupFolders) {
+        try {
+          const stats = await fs.stat(folder);
+          if (stats.isDirectory()) {
+            // Calcular tamanho da pasta
+            const calculateSize = async (dirPath: string): Promise<number> => {
+              let totalSize = 0;
+              const items = await fs.readdir(dirPath);
+              for (const item of items) {
+                const itemPath = path.join(dirPath, item);
+                const stats = await fs.stat(itemPath);
+                if (stats.isDirectory()) {
+                  totalSize += await calculateSize(itemPath);
+                } else {
+                  totalSize += stats.size;
+                }
+              }
+              return totalSize;
+            };
+            
+            const size = await calculateSize(folder);
+            const dateMatch = folder.match(/backup-abmix-(\d{4})(\d{2})(\d{2})$/);
+            
+            backupInfo.push({
+              folder,
+              size: Math.round(size / (1024 * 1024)), // MB
+              date: dateMatch ? `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}` : 'Data inválida',
+              timestamp: dateMatch ? new Date(parseInt(dateMatch[1]), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[3])).getTime() : 0
+            });
+          }
+        } catch (error) {
+          console.log(`Erro ao processar ${folder}:`, error);
+        }
+      }
+      
+      // Ordenar por data (mais recente primeiro)
+      backupInfo.sort((a, b) => b.timestamp - a.timestamp);
+      
+      res.json({
+        success: true,
+        backups: backupInfo,
+        total: backupInfo.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar backups:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao listar backups'
+      });
+    }
+  });
+
+  // ROTA: Limpar backups antigos (manter os 2 mais recentes)
+  app.post('/api/backup/cleanup', async (req: Request, res: Response) => {
+    try {
+      const fs = require('fs').promises;
+      const path = require('path');
+      
+      // Buscar todas as pastas de backup
+      const items = await fs.readdir('./');
+      const backupFolders = items.filter((item: string) => 
+        item.startsWith('backup-abmix-') && item.match(/backup-abmix-\d{8}$/)
+      );
+      
+      if (backupFolders.length <= 2) {
+        return res.json({
+          success: true,
+          message: 'Nenhum backup antigo para remover (máximo 2 backups mantidos)',
+          removed: [],
+          preserved: backupFolders
+        });
+      }
+      
+      // Ordenar por data (mais recente primeiro)
+      const backupInfo = [];
+      for (const folder of backupFolders) {
+        const dateMatch = folder.match(/backup-abmix-(\d{4})(\d{2})(\d{2})$/);
+        backupInfo.push({
+          folder,
+          timestamp: dateMatch ? new Date(parseInt(dateMatch[1]), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[3])).getTime() : 0
+        });
+      }
+      
+      backupInfo.sort((a, b) => b.timestamp - a.timestamp);
+      
+      // Preservar os 2 mais recentes, remover o resto
+      const toPreserve = backupInfo.slice(0, 2);
+      const toRemove = backupInfo.slice(2);
+      
+      const removeDir = async (dirPath: string) => {
+        const items = await fs.readdir(dirPath);
+        for (const item of items) {
+          const itemPath = path.join(dirPath, item);
+          const stats = await fs.stat(itemPath);
+          if (stats.isDirectory()) {
+            await removeDir(itemPath);
+          } else {
+            await fs.unlink(itemPath);
+          }
+        }
+        await fs.rmdir(dirPath);
+      };
+      
+      const removedBackups = [];
+      for (const backup of toRemove) {
+        try {
+          await removeDir(backup.folder);
+          removedBackups.push(backup.folder);
+          console.log(`🗑️ Backup removido: ${backup.folder}`);
+        } catch (error) {
+          console.error(`❌ Erro ao remover ${backup.folder}:`, error);
+        }
+      }
+      
+      res.json({
+        success: true,
+        message: `Limpeza concluída: ${removedBackups.length} backups removidos`,
+        removed: removedBackups,
+        preserved: toPreserve.map(b => b.folder)
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro na limpeza de backups:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao limpar backups antigos'
+      });
+    }
+  });
+
+  console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual e limpeza de backups)');
 }
