@@ -8,7 +8,11 @@ import {
   PlusCircle,
   X,
   Trash2,
-  Settings 
+  Settings,
+  Clock,
+  ChevronDown,
+  Upload,
+  Trash 
 } from 'lucide-react';
 
 interface DriveTab {
@@ -58,6 +62,17 @@ export default function GoogleDriveSetup() {
     linkCompartilhamento: '',
     observacao: ''
   });
+  
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nome: '',
+    url: '',
+    observacao: ''
+  });
+  const [syncInterval, setSyncInterval] = useState<string>('5 minutos');
+  const [isManualSync, setIsManualSync] = useState(false);
+  const [showSyncOptions, setShowSyncOptions] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [tabs, setTabs] = useState<DriveTab[]>([
     {
       id: 'backup',
@@ -199,7 +214,58 @@ export default function GoogleDriveSetup() {
   }, []);
 
   const handleEditDrive = () => {
-    console.log('Editar configurações do drive');
+    const currentTab = tabs.find(tab => tab.id === activeTab);
+    if (currentTab) {
+      setEditForm({
+        nome: currentTab.nome,
+        url: currentTab.tipo === 'backup' 
+          ? 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu'
+          : 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
+        observacao: currentTab.tipo === 'backup' 
+          ? 'Pasta de backup do sistema Abmix'
+          : 'Drive principal REAL configurado com credenciais de serviço'
+      });
+      setShowEditModal(true);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    console.log('💾 Salvando alterações do drive:', editForm);
+    setShowEditModal(false);
+    // Aqui você pode implementar a lógica para salvar as alterações
+  };
+
+  const handleManualBackup = () => {
+    console.log('🔄 Iniciando backup manual...');
+    if (activeTab === 'backup') {
+      fetchBackupData();
+    } else {
+      fetchDriveData();
+    }
+  };
+
+
+
+  const handleClearDrive = () => {
+    setShowConfirmClear(true);
+  };
+
+  const confirmClearDrive = () => {
+    console.log('🗑️ Limpando todas as informações do drive');
+    setShowConfirmClear(false);
+    // Implementar lógica de limpeza
+  };
+
+  const handleSyncIntervalChange = (interval: string) => {
+    setSyncInterval(interval);
+    setShowSyncOptions(false);
+    if (interval === 'Manual') {
+      setIsManualSync(true);
+      console.log('⏱️ Sincronização definida para manual');
+    } else {
+      setIsManualSync(false);
+      console.log('⏱️ Sincronização automática definida para:', interval);
+    }
   };
 
   const handleAddNewDrive = () => {
@@ -362,10 +428,11 @@ export default function GoogleDriveSetup() {
     }
 
     // Conteúdo para abas de drive normais
-    const currentTabData = currentTab.tipo === 'backup' ? backupData : driveData;
-    const isCurrentTabLoading = currentTab.tipo === 'backup' ? isLoadingBackupData : isLoadingDriveData;
-    const fetchCurrentTabData = currentTab.tipo === 'backup' ? fetchBackupData : fetchDriveData;
-    const driveUrl = currentTab.tipo === 'backup' 
+    const isBackupTab = currentTab.id === 'backup';
+    const currentTabData = isBackupTab ? backupData : driveData;
+    const isCurrentTabLoading = isBackupTab ? isLoadingBackupData : isLoadingDriveData;
+    const fetchCurrentTabData = isBackupTab ? fetchBackupData : fetchDriveData;
+    const driveUrl = isBackupTab 
       ? 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link'
       : 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link';
 
@@ -448,29 +515,102 @@ export default function GoogleDriveSetup() {
           </div>
         </div>
 
-        {/* Ações do Drive */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => window.open(driveUrl, '_blank')}
-              className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              title="Abrir no Google Drive"
-            >
-              <FolderOpen className="w-4 h-4" />
-              Abrir no Google Drive
-            </button>
-            
-            <button
-              onClick={handleEditDrive}
-              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
-              title="Editar configurações"
-            >
-              <Pencil className="w-4 h-4" />
-              Editar
-            </button>
+        {/* Controles de Sincronização */}
+        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+          <div className="flex items-center justify-between mb-3">
+            <h6 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Sincronização</h6>
+            <div className="relative">
+              <button
+                onClick={() => setShowSyncOptions(!showSyncOptions)}
+                className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Clock className="w-4 h-4" />
+                {syncInterval}
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {showSyncOptions && (
+                <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 w-32">
+                  {['1 segundo', '5 segundos', '10 segundos', '30 segundos', '1 minuto', '5 minutos', '10 minutos', '15 minutos', '1 hora', '5 horas', '10 horas', '24 horas', 'Manual'].map((interval) => (
+                    <button
+                      key={interval}
+                      onClick={() => handleSyncIntervalChange(interval)}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                        interval === 'Manual' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-700 dark:text-gray-300'
+                      } ${interval === syncInterval ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                    >
+                      {interval}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+          {isManualSync && (
+            <button
+              onClick={handleManualBackup}
+              className="w-full px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Sincronizar Manualmente
+            </button>
+          )}
+        </div>
+
+        {/* Ações do Drive */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <button
+            onClick={() => window.open(driveUrl, '_blank')}
+            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            title="Abrir no Google Drive"
+          >
+            <FolderOpen className="w-4 h-4" />
+            Abrir no Google Drive
+          </button>
+          
+          <button
+            onClick={handleEditDrive}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            title="Editar configurações"
+          >
+            <Pencil className="w-4 h-4" />
+            Editar
+          </button>
+          
+          <button
+            onClick={handleManualBackup}
+            className="px-4 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-700 dark:hover:bg-green-600 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            title="Fazer backup manual"
+          >
+            <Upload className="w-4 h-4" />
+            Backup Manual
+          </button>
+          
+          {currentTab?.id !== 'principal' && currentTab?.id !== 'backup' && (
+            <button
+              onClick={() => handleRemoveDrive(currentTab?.id || '')}
+              className="px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-700 dark:hover:bg-red-600 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Remover drive"
+            >
+              <Trash2 className="w-4 h-4" />
+              Remover Drive
+            </button>
+          )}
+          
+          <button
+            onClick={handleClearDrive}
+            className="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            title="Limpar todas as informações do drive"
+          >
+            <Trash className="w-4 h-4" />
+            Limpar Drive
+          </button>
+        </div>
+        
+        {/* Status de Conexão */}
+        <div className="flex items-center justify-center">
+          <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
             currentTabData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
             currentTabData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
             'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
@@ -564,6 +704,123 @@ export default function GoogleDriveSetup() {
           {renderTabContent()}
         </div>
       </div>
+
+      {/* Modal Editar Drive */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <Pencil className="w-5 h-5 mr-2 text-gray-600" />
+                Editar Drive
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nome do Drive *
+                </label>
+                <input
+                  type="text"
+                  value={editForm.nome}
+                  onChange={(e) => setEditForm({...editForm, nome: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  URL do Google Drive *
+                </label>
+                <input
+                  type="text"
+                  value={editForm.url}
+                  onChange={(e) => setEditForm({...editForm, url: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Observação (Opcional)
+                </label>
+                <textarea
+                  value={editForm.observacao}
+                  onChange={(e) => setEditForm({...editForm, observacao: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                ></textarea>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmação Limpar Drive */}
+      {showConfirmClear && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 flex items-center">
+                <Trash className="w-5 h-5 mr-2 text-red-600" />
+                Confirmar Limpeza
+              </h3>
+              <button
+                onClick={() => setShowConfirmClear(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Você tem certeza que deseja limpar TODAS as informações deste drive?
+              </p>
+              <p className="text-red-600 dark:text-red-400 text-sm font-medium">
+                ⚠️ Esta ação é IRREVERSÍVEL e removerá todos os arquivos e pastas!
+              </p>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowConfirmClear(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmClearDrive}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Sim, Limpar Tudo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Adicionar Novo Drive */}
       {showAddDriveModal && (
