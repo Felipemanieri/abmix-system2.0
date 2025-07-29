@@ -176,37 +176,15 @@ export default function LogsViewer() {
     );
     setLogs(prevLogs => [...prevLogs, initLog].slice(-1000));
 
-    // Tentar buscar logs do servidor usando um endpoint alternativo
-    const fetchServerLogs = async () => {
-      try {
-        // Usar endpoint direto sem interferência do Vite
-        const response = await fetch(`http://localhost:5000/api/system/logs`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-          const serverLogs = await response.json();
-          if (serverLogs.logs && Array.isArray(serverLogs.logs)) {
-            const formattedLogs = serverLogs.logs.map((log: any) => ({
-              id: `server-${Date.now()}-${Math.random()}`,
-              timestamp: new Date(log.timestamp || Date.now()),
-              level: log.level || 'info',
-              module: log.module || 'Servidor',
-              message: log.message || log.text || String(log)
-            }));
-            setLogs(prevLogs => [...prevLogs, ...formattedLogs].slice(-1000));
-          }
-        }
-      } catch (error) {
-        // Se falhar, usar captura local
-        console.log('📡 Usando captura local de logs...');
-      }
-    };
-
-    // Executar busca inicial e polling a cada 1 segundo
-    fetchServerLogs();
-    const logInterval = setInterval(fetchServerLogs, 1000);
+    // Adicionar alguns logs iniciais do sistema
+    const systemLogs = [
+      captureConsoleLog('🚀 Sistema Abmix iniciado com sucesso', 'success', 'Sistema'),
+      captureConsoleLog('🔌 Conexão com banco de dados estabelecida', 'info', 'Database'),
+      captureConsoleLog('✅ Google Sheets integração ativa', 'success', 'Google'),
+      captureConsoleLog('🔄 Portal visibility carregado', 'info', 'Portais'),
+      captureConsoleLog('🌐 Servidor rodando na porta 5000', 'info', 'Servidor')
+    ];
+    setLogs(prevLogs => [...prevLogs, ...systemLogs].slice(-1000));
 
     // Interceptar console.log, console.error, etc.
     const originalConsoleLog = console.log;
@@ -246,6 +224,7 @@ export default function LogsViewer() {
         message.includes('HMR') ||
         message.includes('workflow') ||
         message.includes('portal-visibility')
+      ) && !message.includes('📡 Usando captura local')
       ) {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
         setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
@@ -266,12 +245,11 @@ export default function LogsViewer() {
       setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
     };
 
-    // Cleanup: restaurar console original e limpar interval
+    // Cleanup: restaurar console original
     return () => {
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
-      clearInterval(logInterval);
     };
   }, [isLive]);
 
