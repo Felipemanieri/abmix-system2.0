@@ -185,20 +185,58 @@ export default function GoogleDriveSetup() {
                 </div>
               </div>
             </div>
-            <div className="flex space-x-1">
+            <div className="flex items-center space-x-2">
+              {/* Botão Abrir */}
               <button
                 onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
-                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
                 title="Abrir Drive"
               >
-                <FolderOpen className="w-4 h-4" />
+                <FolderOpen className="w-3 h-3" />
+                Abrir
               </button>
+              
+              {/* Botão Remover */}
               <button
-                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-                title="Configurações"
+                onClick={() => console.log('Remover Drive')}
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs flex items-center gap-1"
+                title="Remover Drive"
               >
-                <Settings className="w-4 h-4" />
+                <X className="w-3 h-3" />
+                Remover
               </button>
+              
+              {/* Botão Editar */}
+              <button
+                onClick={() => console.log('Editar Drive')}
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
+                title="Editar Drive"
+              >
+                <Settings className="w-3 h-3" />
+                Editar
+              </button>
+              
+              {/* Botão Backup Manual */}
+              <button
+                onClick={() => console.log('Backup Manual')}
+                className="px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-xs flex items-center gap-1"
+                title="Backup Manual"
+              >
+                <RefreshCw className="w-3 h-3" />
+                Backup Manual
+              </button>
+              
+              {/* Dropdown de Tempo */}
+              <select
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                defaultValue="5 minutos"
+              >
+                <option value="1 minuto">1 minuto</option>
+                <option value="5 minutos">5 minutos</option>
+                <option value="10 minutos">10 minutos</option>
+                <option value="30 minutos">30 minutos</option>
+                <option value="1 hora">1 hora</option>
+              </select>
             </div>
           </div>
           
