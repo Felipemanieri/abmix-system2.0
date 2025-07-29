@@ -3833,35 +3833,35 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     }}
                   >
                     <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '2400px' }}>
-                    <thead className="bg-gray-100 dark:bg-gray-700">
+                    <thead className="bg-green-50 dark:bg-green-900">
                       <tr>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">ID</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Data/Hora</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Cliente</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">CNPJ</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Vendedor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Valor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Plano</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Status</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Desconto</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Data de Pagamento do Cliente</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Venda Dupla</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">% do vendedor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Vendedor 2</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">% vendedor 2</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Comissão Venda em Dupla</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Reunião</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">% Comissão Reunião</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Comissão de Reunião</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Premiação</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Supervisor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">%supervisor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Comissão do Supervisor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Comissão do Vendedor</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Status Pagamento Premiação</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Status Pagamento</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Data Pagamento</th>
-                        <th className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-left font-semibold">Observações</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">ID</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data/Hora</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Cliente</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">CNPJ</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Vendedor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Valor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Plano</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Desconto</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data de Pagamento do Cliente</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Venda Dupla</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% do vendedor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Vendedor 2</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% vendedor 2</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão Venda em Dupla</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% Comissão Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão de Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">%supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão do Supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão do Vendedor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status Pagamento Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status Pagamento</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data Pagamento</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Observações</th>
                       </tr>
                     </thead>
                     <tbody>
