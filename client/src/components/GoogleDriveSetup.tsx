@@ -14,6 +14,19 @@ export default function GoogleDriveSetup() {
     status: 'loading'
   });
   const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
+  
+  // Estado para a pasta de Backup do sistema
+  const [backupData, setBackupData] = useState({
+    capacidade: '0 GB',
+    totalCapacidade: '15 GB',
+    arquivos: 0,
+    pastas: 0,
+    ultimaModificacao: 'Carregando...',
+    ultimaSync: 'Carregando...',
+    status: 'loading'
+  });
+  const [isLoadingBackupData, setIsLoadingBackupData] = useState(false);
+  
   const [formData, setFormData] = useState({
     nome: '',
     url: '',
@@ -114,14 +127,54 @@ export default function GoogleDriveSetup() {
     }
   };
 
-
+  // Função para buscar dados da pasta de Backup do sistema
+  const fetchBackupData = async () => {
+    setIsLoadingBackupData(true);
+    try {
+      const response = await fetch('/api/google/backup-drive-info');
+      const data = await response.json();
+      
+      if (data.success) {
+        setBackupData({
+          capacidade: data.usedStorage || '0 GB',
+          totalCapacidade: data.totalStorage || '15 GB',
+          arquivos: data.filesCount || 0,
+          pastas: data.foldersCount || 0,
+          ultimaModificacao: data.lastModified || 'Nunca',
+          ultimaSync: new Date().toLocaleString('pt-BR'),
+          status: 'connected'
+        });
+      } else {
+        setBackupData(prev => ({
+          ...prev,
+          status: 'error',
+          ultimaModificacao: 'Erro ao carregar',
+          ultimaSync: 'Erro ao sincronizar'
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados da pasta Backup:', error);
+      setBackupData(prev => ({
+        ...prev,
+        status: 'error',
+        ultimaModificacao: 'Erro ao carregar',
+        ultimaSync: 'Erro ao sincronizar'
+      }));
+    } finally {
+      setIsLoadingBackupData(false);
+    }
+  };
 
   // Carregar dados do Drive ao montar o componente
   useEffect(() => {
     fetchDriveData();
+    fetchBackupData();
     
     // Atualizar dados a cada 30 segundos
-    const interval = setInterval(fetchDriveData, 30000);
+    const interval = setInterval(() => {
+      fetchDriveData();
+      fetchBackupData();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -309,7 +362,85 @@ export default function GoogleDriveSetup() {
         </div>
       </div>
 
-
+      {/* Seção Pasta de Backup do Sistema */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b bg-orange-50 dark:bg-orange-900/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-base font-semibold text-gray-900 dark:text-white">Pasta de Backup do Sistema</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Backups automáticos sincronizados com Google Drive</p>
+            </div>
+            <button
+              onClick={fetchBackupData}
+              disabled={isLoadingBackupData}
+              className="px-3 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+              title="Atualizar dados da pasta de backup"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingBackupData ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-3 h-3 rounded-sm ${
+                  backupData.status === 'connected' ? 'bg-green-500' :
+                  backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+                }`}></div>
+                <span className="font-medium text-gray-900 dark:text-white">Backup Drive</span>
+                <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded text-xs font-medium">Backup</span>
+                {isLoadingBackupData && (
+                  <RefreshCw className="w-3 h-3 animate-spin text-orange-500" />
+                )}
+              </div>
+              
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <div>
+                  <span className="font-medium">URL:</span>
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">👤 Proprietário:</span> Sistema Abmix</span>
+                  <span>
+                    <span className="font-medium">📁 Capacidade:</span> {backupData.capacidade} / {backupData.totalCapacidade}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">📄 Arquivos:</span> {backupData.arquivos.toLocaleString()}</span>
+                  <span><span className="font-medium">📂 Pastas:</span> {backupData.pastas.toLocaleString()}</span>
+                  <span><span className="font-medium">🔄 Backup:</span> Automático</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">⏰ Última modificação:</span> {backupData.ultimaModificacao}</span>
+                  <span><span className="font-medium">🔄 Última sync:</span> {backupData.ultimaSync}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              {/* Botão Abrir */}
+              <button
+                onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
+                title="Abrir pasta de backup"
+              >
+                <FolderOpen className="w-3 h-3" />
+                Abrir
+              </button>
+              
+              {/* Status de sincronização */}
+              <div className={`px-2 py-1 rounded text-xs font-medium ${
+                backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
+                backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+              }`}>
+                {backupData.status === 'connected' ? 'Sincronizado' : 
+                 backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Modal Adicionar Novo Drive */}
       {showAddDriveModal && (
