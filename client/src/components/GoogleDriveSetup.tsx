@@ -5,7 +5,10 @@ import {
   RefreshCw, 
   CheckCircle, 
   Pencil, 
-  PlusCircle 
+  PlusCircle,
+  X,
+  Trash2,
+  Settings 
 } from 'lucide-react';
 
 interface DriveTab {
@@ -47,12 +50,36 @@ interface BackupData {
 
 export default function GoogleDriveSetup() {
   const [activeTab, setActiveTab] = useState<string>('backup');
+  const [showAddDriveModal, setShowAddDriveModal] = useState(false);
+  const [newDriveForm, setNewDriveForm] = useState({
+    nome: '',
+    url: '',
+    proprietario: '',
+    linkCompartilhamento: '',
+    observacao: ''
+  });
   const [tabs, setTabs] = useState<DriveTab[]>([
     {
       id: 'backup',
       nome: 'Pasta de Backup do Sistema',
       tipo: 'backup',
       url: 'https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
+      ativo: true,
+      dados: {
+        status: 'loading',
+        arquivos: 0,
+        pastas: 0,
+        capacidade: '0 GB',
+        totalCapacidade: '15 GB',
+        ultimaModificacao: '-',
+        ultimaSync: '-'
+      }
+    },
+    {
+      id: 'principal',
+      nome: 'Planilha Principal',
+      tipo: 'drive',
+      url: 'https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb',
       ativo: true,
       dados: {
         status: 'loading',
@@ -176,25 +203,59 @@ export default function GoogleDriveSetup() {
   };
 
   const handleAddNewDrive = () => {
-    const newDriveId = `drive-${tabs.length}`;
+    setShowAddDriveModal(true);
+  };
+
+  const handleSaveNewDrive = () => {
+    if (!newDriveForm.nome || !newDriveForm.url) {
+      alert('Nome e URL são obrigatórios');
+      return;
+    }
+
+    const newDriveId = `drive-${Date.now()}`;
     const newTab: DriveTab = {
       id: newDriveId,
-      nome: `Drive ${tabs.length}`,
+      nome: newDriveForm.nome,
       tipo: 'drive',
+      url: newDriveForm.url,
       ativo: true,
       dados: {
-        status: 'loading',
+        status: 'connected',
         arquivos: 0,
         pastas: 0,
         capacidade: '0 GB',
         totalCapacidade: '15 GB',
-        ultimaModificacao: '-',
-        ultimaSync: '-'
+        ultimaModificacao: 'Agora',
+        ultimaSync: new Date().toLocaleString('pt-BR')
       }
     };
     
     setTabs([...tabs, newTab]);
     setActiveTab(newDriveId);
+    setShowAddDriveModal(false);
+    setNewDriveForm({
+      nome: '',
+      url: '',
+      proprietario: '',
+      linkCompartilhamento: '',
+      observacao: ''
+    });
+  };
+
+  const handleRemoveDrive = (driveId: string) => {
+    if (driveId === 'backup') {
+      alert('Não é possível remover a pasta de backup do sistema');
+      return;
+    }
+    
+    if (confirm('Tem certeza que deseja remover este drive?')) {
+      const newTabs = tabs.filter(tab => tab.id !== driveId);
+      setTabs(newTabs);
+      
+      if (activeTab === driveId) {
+        setActiveTab(newTabs.length > 0 ? newTabs[0].id : 'backup');
+      }
+    }
   };
 
   const renderTabContent = () => {
@@ -436,24 +497,50 @@ export default function GoogleDriveSetup() {
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6" aria-label="Tabs">
             {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`${
-                  activeTab === tab.id
-                    ? tab.tipo === 'backup' 
-                      ? 'border-orange-500 text-orange-600 dark:text-orange-400'
-                      : 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                {tab.nome}
-                {tab.tipo === 'backup' && (
-                  <span className="ml-2 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded text-xs font-medium">
-                    Backup
-                  </span>
+              <div key={tab.id} className="flex items-center group">
+                <button
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`${
+                    activeTab === tab.id
+                      ? tab.tipo === 'backup' 
+                        ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+                        : 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center`}
+                >
+                  {tab.nome}
+                  {tab.tipo === 'backup' && (
+                    <span className="ml-2 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded text-xs font-medium">
+                      Backup
+                    </span>
+                  )}
+                  {tab.tipo === 'drive' && tab.id !== 'principal' && (
+                    <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded text-xs font-medium">
+                      Sistema
+                    </span>
+                  )}
+                  
+                  {/* Status em tempo real */}
+                  <div className={`ml-2 w-2 h-2 rounded-full ${
+                    (tab.tipo === 'backup' ? backupData.status : driveData.status) === 'connected' ? 'bg-green-500' :
+                    (tab.tipo === 'backup' ? backupData.status : driveData.status) === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                </button>
+                
+                {/* Botão remover (apenas para drives criados pelo usuário) */}
+                {tab.tipo === 'drive' && tab.id !== 'principal' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveDrive(tab.id);
+                    }}
+                    className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 p-1"
+                    title="Remover drive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 )}
-              </button>
+              </div>
             ))}
           </nav>
         </div>
@@ -461,6 +548,195 @@ export default function GoogleDriveSetup() {
         {/* Conteúdo da aba ativa */}
         <div className="p-6">
           {renderTabContent()}
+        </div>
+      </div>
+
+      {/* Modal Adicionar Novo Drive */}
+      {showAddDriveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <PlusCircle className="w-5 h-5 mr-2 text-blue-600" />
+                Adicionar Novo Drive
+              </h3>
+              <button
+                onClick={() => setShowAddDriveModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nome do Drive *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Drive Principal"
+                  value={newDriveForm.nome}
+                  onChange={(e) => setNewDriveForm({...newDriveForm, nome: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  URL do Google Drive *
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  value={newDriveForm.url}
+                  onChange={(e) => setNewDriveForm({...newDriveForm, url: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Proprietário *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Felipe Manieri"
+                  value={newDriveForm.proprietario}
+                  onChange={(e) => setNewDriveForm({...newDriveForm, proprietario: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Link de Compartilhamento (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Link de compartilhamento do drive"
+                  value={newDriveForm.linkCompartilhamento}
+                  onChange={(e) => setNewDriveForm({...newDriveForm, linkCompartilhamento: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Observação (Opcional)
+                </label>
+                <textarea
+                  placeholder="Ex: Drive para documentos principais"
+                  value={newDriveForm.observacao}
+                  onChange={(e) => setNewDriveForm({...newDriveForm, observacao: e.target.value})}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                ></textarea>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddDriveModal(false)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveNewDrive}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Adicionar Drive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Seção de informações em tempo real */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Card Drive Principal */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Drive Principal</h4>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${
+                driveData.status === 'connected' ? 'bg-green-500' :
+                driveData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+              }`}></div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {driveData.status === 'connected' ? 'Conectado' :
+                 driveData.status === 'loading' ? 'Carregando...' : 'Erro'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-2">
+              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                {driveData.arquivos}
+              </div>
+              <div className="text-xs text-blue-500 dark:text-blue-400">Arquivos</div>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                {driveData.pastas}
+              </div>
+              <div className="text-xs text-green-500 dark:text-green-400">Pastas</div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded p-2">
+              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                {driveData.capacidade}
+              </div>
+              <div className="text-xs text-purple-500 dark:text-purple-400">Usado</div>
+            </div>
+          </div>
+          
+          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            Última sync: {driveData.ultimaSync}
+          </div>
+        </div>
+
+        {/* Card Backup */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Pasta de Backup</h4>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${
+                backupData.status === 'connected' ? 'bg-green-500' :
+                backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+              }`}></div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {backupData.status === 'connected' ? 'Conectado' :
+                 backupData.status === 'loading' ? 'Carregando...' : 'Erro'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded p-2">
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                {backupData.arquivos}
+              </div>
+              <div className="text-xs text-orange-500 dark:text-orange-400">Arquivos</div>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded p-2">
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                {backupData.pastas}
+              </div>
+              <div className="text-xs text-orange-500 dark:text-orange-400">Pastas</div>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded p-2">
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                {backupData.capacidade}
+              </div>
+              <div className="text-xs text-orange-500 dark:text-orange-400">Usado</div>
+            </div>
+          </div>
+          
+          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            Última sync: {backupData.ultimaSync}
+          </div>
         </div>
       </div>
     </div>
