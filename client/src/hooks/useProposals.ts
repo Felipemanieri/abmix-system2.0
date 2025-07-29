@@ -47,11 +47,17 @@ export function useProposals() {
   const { data: proposals = [], isLoading, error } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: async () => {
-      const response = await fetch('/api/proposals');
-      if (!response.ok) {
-        throw new Error('Erro ao carregar propostas');
+      try {
+        const response = await fetch('/api/proposals');
+        if (!response.ok) {
+          console.warn('Erro ao carregar propostas:', response.status);
+          return []; // Retornar array vazio em caso de erro
+        }
+        return response.json();
+      } catch (error) {
+        console.warn('Fetch failed for proposals:', error.message);
+        return []; // Retornar array vazio em caso de erro
       }
-      return response.json();
     },
     select: (data: any[]) => {
       console.log('Dados recebidos da API:', data);
@@ -77,10 +83,19 @@ export function useProposals() {
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
     queryFn: async () => {
-      const response = await fetch('/api/vendors');
-      if (!response.ok) throw new Error('Failed to fetch vendors');
-      return response.json();
+      try {
+        const response = await fetch('/api/vendors');
+        if (!response.ok) {
+          console.warn('Erro ao carregar vendedores:', response.status);
+          return []; // Retornar array vazio em caso de erro
+        }
+        return response.json();
+      } catch (error) {
+        console.warn('Fetch failed for vendors:', error.message);
+        return []; // Retornar array vazio em caso de erro
+      }
     },
+    retry: false, // Desabilitar retry para evitar loops
   });
 
   // Adicionar nome do vendedor às propostas
@@ -93,13 +108,21 @@ export function useProposals() {
   const updateProposal = useMutation({
     mutationFn: async ({ id, status, priority }: { id: string, status?: string, priority?: string }) => {
       console.log(`UPDATING PROPOSAL STATUS: ${id} -> ${status}`);
-      const response = await fetch(`/api/proposals/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, priority })
-      });
-      if (!response.ok) throw new Error('Erro ao atualizar proposta');
-      return response.json();
+      try {
+        const response = await fetch(`/api/proposals/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, priority })
+        });
+        if (!response.ok) {
+          console.warn(`Erro ao atualizar proposta ${id}:`, response.status);
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.warn(`Update failed for proposal ${id}:`, error.message);
+        return null;
+      }
     },
     onSuccess: (data) => {
       console.log(`STATUS UPDATE SUCCESS:`, data);
@@ -120,12 +143,20 @@ export function useProposals() {
   const rejectProposal = useMutation({
     mutationFn: async (proposalId: string) => {
       console.log(`❌ REJECTING PROPOSAL: ${proposalId}`);
-      const response = await fetch(`/api/proposals/${proposalId}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Erro ao rejeitar proposta');
-      return response.json();
+      try {
+        const response = await fetch(`/api/proposals/${proposalId}/reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+          console.warn(`Erro ao rejeitar proposta ${proposalId}:`, response.status);
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.warn(`Reject failed for proposal ${proposalId}:`, error.message);
+        return null;
+      }
     },
     onSuccess: (data) => {
       console.log(`❌ REJECTION SUCCESS:`, data);
@@ -158,11 +189,17 @@ export function useVendorProposals(vendorId: number) {
   const { data: proposals = [], isLoading, error } = useQuery({
     queryKey: ['/api/proposals/vendor', vendorId],
     queryFn: async () => {
-      const response = await fetch(`/api/proposals/vendor/${vendorId}`);
-      if (!response.ok) {
-        throw new Error('Erro ao carregar propostas do vendedor');
+      try {
+        const response = await fetch(`/api/proposals/vendor/${vendorId}`);
+        if (!response.ok) {
+          console.warn(`Erro ao carregar propostas do vendedor ${vendorId}:`, response.status);
+          return []; // Retornar array vazio em caso de erro
+        }
+        return response.json();
+      } catch (error) {
+        console.warn(`Fetch failed for vendor ${vendorId} proposals:`, error.message);
+        return []; // Retornar array vazio em caso de erro
       }
-      return response.json();
     },
     select: (data: any[]) => {
       console.log(`Propostas do vendedor ${vendorId}:`, data);
@@ -229,13 +266,21 @@ export function useUpdateProposal() {
   return useMutation({
     mutationFn: async ({ id, status, priority }: { id: string, status?: string, priority?: string }) => {
       console.log(`🔄 GLOBAL UPDATE PROPOSAL: ${id} -> Status: ${status}, Priority: ${priority}`);
-      const response = await fetch(`/api/proposals/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, priority })
-      });
-      if (!response.ok) throw new Error('Erro ao atualizar proposta');
-      return response.json();
+      try {
+        const response = await fetch(`/api/proposals/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, priority })
+        });
+        if (!response.ok) {
+          console.warn(`Erro global ao atualizar proposta ${id}:`, response.status);
+          return null;
+        }
+        return response.json();
+      } catch (error) {
+        console.warn(`Global update failed for proposal ${id}:`, error.message);
+        return null;
+      }
     },
     onSuccess: (data) => {
       console.log(`✅ GLOBAL STATUS UPDATE SUCCESS:`, data);
@@ -269,15 +314,21 @@ export function useDeleteProposal() {
   return useMutation({
     mutationFn: async (proposalId: string) => {
       console.log(`🗑️ DELETING PROPOSAL: ${proposalId}`);
-      const response = await fetch(`/api/proposals/${proposalId}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Erro ao excluir proposta');
+      try {
+        const response = await fetch(`/api/proposals/${proposalId}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          console.warn(`Erro ao excluir proposta ${proposalId}:`, response.status);
+          return null;
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.warn(`Delete failed for proposal ${proposalId}:`, error.message);
+        return null;
       }
-      
-      return response.json();
     },
     onSuccess: (data, proposalId) => {
       console.log(`✅ PROPOSAL DELETED SUCCESSFULLY: ${proposalId}`, data);
