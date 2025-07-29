@@ -11,7 +11,8 @@ import {
   Trash2, 
   Plus,
   Wifi,
-  WifiOff
+  WifiOff,
+  X
 } from 'lucide-react';
 
 interface ApiStatus {
@@ -113,11 +114,36 @@ export default function ApiManagementPanel() {
     }
   ]);
 
+  // Estados para modals
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingApi, setEditingApi] = useState<ApiStatus | null>(null);
+  const [notification, setNotification] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  // Estados do formulário
+  const [formData, setFormData] = useState({
+    name: '',
+    type: '',
+    clientId: '',
+    clientSecret: '',
+    apiKey: '',
+    activateImmediately: true
+  });
+
   // Contadores para o dashboard
   const connectedApis = apis.filter(api => api.status === 'connected').length;
   const errorApis = apis.filter(api => api.status === 'error').length;
   const disconnectedApis = apis.filter(api => api.status === 'disconnected').length;
   const totalApis = apis.length;
+
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
+  };
 
   const handleTestApi = async (apiId: string) => {
     const api = apis.find(a => a.id === apiId);
@@ -137,12 +163,85 @@ export default function ApiManagementPanel() {
           }
         : a
     ));
+
+    // Mostrar notificação
+    if (isSuccess) {
+      showNotification(`API ${api.name} testada com sucesso! Conexão funcionando corretamente.`, 'success');
+    } else {
+      showNotification(`Falha no teste da API ${api.name}. Verifique as credenciais e configurações.`, 'error');
+    }
   };
 
   const handleToggleActive = (apiId: string) => {
     setApis(prev => prev.map(a => 
       a.id === apiId ? { ...a, isActive: !a.isActive } : a
     ));
+  };
+
+  const handleOpenAddModal = () => {
+    setFormData({
+      name: '',
+      type: 'Google Drive',
+      clientId: '',
+      clientSecret: '',
+      apiKey: '',
+      activateImmediately: true
+    });
+    setShowAddModal(true);
+  };
+
+  const handleOpenEditModal = (api: ApiStatus) => {
+    setEditingApi(api);
+    setFormData({
+      name: api.name,
+      type: api.type,
+      clientId: api.clientId || '',
+      clientSecret: api.clientSecret || '',
+      apiKey: api.url,
+      activateImmediately: api.isActive
+    });
+    setShowEditModal(true);
+  };
+
+  const handleAddApi = () => {
+    const newApi: ApiStatus = {
+      id: `api-${Date.now()}`,
+      name: formData.name,
+      type: formData.type,
+      url: formData.apiKey,
+      status: 'disconnected',
+      lastTest: 'Nunca testado',
+      result: 'error',
+      clientId: formData.clientId,
+      clientSecret: formData.clientSecret,
+      isActive: formData.activateImmediately
+    };
+
+    setApis(prev => [...prev, newApi]);
+    setShowAddModal(false);
+    showNotification(`API ${formData.name} adicionada com sucesso!`, 'success');
+  };
+
+  const handleEditApi = () => {
+    if (!editingApi) return;
+
+    setApis(prev => prev.map(a => 
+      a.id === editingApi.id 
+        ? {
+            ...a,
+            name: formData.name,
+            type: formData.type,
+            url: formData.apiKey,
+            clientId: formData.clientId,
+            clientSecret: formData.clientSecret,
+            isActive: formData.activateImmediately
+          }
+        : a
+    ));
+
+    setShowEditModal(false);
+    setEditingApi(null);
+    showNotification(`API ${formData.name} editada com sucesso!`, 'success');
   };
 
   const getStatusColor = (status: string) => {
@@ -173,7 +272,10 @@ export default function ApiManagementPanel() {
             Gerenciamento de APIs
           </h2>
         </div>
-        <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={handleOpenAddModal}
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Adicionar API
         </button>
@@ -304,7 +406,10 @@ export default function ApiManagementPanel() {
                     Testar
                   </button>
 
-                  <button className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                  <button 
+                    onClick={() => handleOpenEditModal(api)}
+                    className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
                     <Edit className="w-4 h-4 mr-1" />
                     Editar
                   </button>
@@ -340,6 +445,237 @@ export default function ApiManagementPanel() {
           ))}
         </div>
       </div>
+
+      {/* Notificação */}
+      {notification.show && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className={`px-4 py-3 rounded-lg shadow-lg border ${
+            notification.type === 'success' 
+              ? 'bg-green-50 border-green-200 text-green-800' 
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircle className="w-4 h-4 mr-2" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 mr-2" />
+              )}
+              <span className="text-sm font-medium">{notification.message}</span>
+              <button
+                onClick={() => setNotification({ show: false, message: '', type: 'success' })}
+                className="ml-4 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Adicionar API */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Adicionar Nova API
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nome da API *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Google Drive API"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tipo *
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="Google Drive">Google Drive</option>
+                  <option value="Google Sheets">Google Sheets</option>
+                  <option value="Email">Email</option>
+                  <option value="SMS">SMS</option>
+                  <option value="Pagamento">Pagamento</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Client ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientId}
+                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                  placeholder="Ex: 123456789.apps.googleusercontent.com"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Client Secret
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientSecret}
+                  onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
+                  placeholder="Ex: GOCSPX-123456789abcdefghijk"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  API Key
+                </label>
+                <input
+                  type="text"
+                  value={formData.apiKey}
+                  onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                  placeholder="Ex: AlzaSyB123456789abcdefghijklmnopqrstuvwxyz"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="activate"
+                  checked={formData.activateImmediately}
+                  onChange={(e) => setFormData({ ...formData, activateImmediately: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="activate" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Ativar API imediatamente
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAddApi}
+                disabled={!formData.name.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Adicionar API
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar API */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Editar API
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nome da API *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Client ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientId}
+                  onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Client Secret
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientSecret}
+                  onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  API Key
+                </label>
+                <input
+                  type="text"
+                  value={formData.apiKey}
+                  onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                  placeholder="Ex: AlzaSyB123456789abcdefghijklmnopqrstuvwxyz"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEditApi}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
