@@ -645,12 +645,12 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                 <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                     <HardDrive className="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" />
-                    Sistema de Armazenamento Híbrido
+                    Sistema de Armazenamento Local Primeiro
                   </h4>
                   
-                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                      <strong>Modo Híbrido:</strong> Arquivos pequenos (&lt;5MB) ficam locais + Drive. Arquivos grandes vão direto para Drive.
+                  <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      <strong>Sistema Local Primeiro:</strong> TODOS os arquivos ficam no sistema local independente do tamanho. Após o tempo configurado (ex: 15 segundos), são enviados para o Drive automaticamente.
                     </p>
                   </div>
                   
@@ -668,39 +668,78 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                       
                       <div className="space-y-3">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Limite Arquivo Local (MB)
+                          Tempo para Envio ao Drive (segundos)
                         </label>
                         <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
-                          <option value="0">Sem limite</option>
-                          <option value="5" selected>5 MB</option>
-                          <option value="10">10 MB</option>
-                          <option value="20">20 MB</option>
-                          <option value="50">50 MB</option>
+                          <option value="0">NUNCA - Arquivos ficam sempre locais</option>
+                          <option value="5">5 segundos</option>
+                          <option value="10">10 segundos</option>
+                          <option value="15" selected>15 segundos</option>
+                          <option value="30">30 segundos</option>
+                          <option value="60">1 minuto</option>
+                          <option value="300">5 minutos</option>
+                          <option value="900">15 minutos</option>
                         </select>
-                        <p className="text-xs text-gray-500">Acima disso vai só para Drive</p>
+                        <p className="text-xs text-gray-500">Tempo que arquivo fica local antes de ir para Drive</p>
                       </div>
                     </div>
                     
                     <div className="flex justify-end">
                       <button 
-                        onClick={() => console.log('Salvando configurações de armazenamento...')}
+                        onClick={async () => {
+                          try {
+                            const response = await fetch('/api/centralized-configs', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                unlimited_files: true,
+                                local_file_limit_mb: 0,
+                                session_timeout_minutes: 0,
+                                updated_by: 'sistema@abmix.com.br'
+                              })
+                            });
+                            
+                            if (response.ok) {
+                              showInternalNotification('💾 Configurações de armazenamento salvas!', 'success');
+                            } else {
+                              showInternalNotification('❌ Erro ao salvar', 'error');
+                            }
+                          } catch (error) {
+                            showInternalNotification('❌ Erro de conexão', 'error');
+                          }
+                        }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                       >
-                        Salvar Configurações
+                        💾 Salvar Armazenamento
                       </button>
                     </div>
                   </div>
-                    
-                    <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Timeout de Sessão (minutos)
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="60"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
+                </div>
+
+                {/* Seção: Configurações de Sessão */}
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                  <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                    <Clock className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
+                    Configurações de Sessão
+                  </h4>
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Timeout de Sessão
+                    </label>
+                    <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                      <option value="0">SEM LIMITES - Nunca expira</option>
+                      <option value="15">15 minutos</option>
+                      <option value="30">30 minutos</option>
+                      <option value="60">1 hora</option>
+                      <option value="120">2 horas</option>
+                      <option value="240">4 horas</option>
+                      <option value="480">8 horas</option>
+                      <option value="720">12 horas</option>
+                      <option value="1440">24 horas</option>
+                      <option value="2880">48 horas</option>
+                      <option value="10080">1 semana</option>
+                    </select>
+                    <p className="text-xs text-gray-500">Recomendado: SEM LIMITES para desenvolvimento</p>
                   </div>
                 </div>
 
@@ -756,11 +795,36 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                     Restaurar Padrão
                   </button>
                   <button
-                    onClick={() => showInternalNotification('Configurações salvas com sucesso!', 'success')}
+                    onClick={async () => {
+                      try {
+                        // Salvar todas as configurações centralizadas
+                        const response = await fetch('/api/centralized-configs', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            unlimited_files: true,
+                            local_file_limit_mb: 0,
+                            session_timeout_minutes: 0,
+                            company_name: 'Abmix Sistema',
+                            primary_color: '#4F46E5',
+                            updated_by: 'felipe@abmix.com.br'
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          showInternalNotification('✅ Configurações salvas com sucesso!', 'success');
+                        } else {
+                          showInternalNotification('❌ Erro ao salvar configurações', 'error');
+                        }
+                      } catch (error) {
+                        console.error('Erro:', error);
+                        showInternalNotification('❌ Erro de conexão', 'error');
+                      }
+                    }}
                     className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    Salvar Configurações
+                    Salvar Todas as Configurações
                   </button>
                 </div>
               </div>

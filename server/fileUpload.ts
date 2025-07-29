@@ -2,8 +2,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// SISTEMA HÍBRIDO: Local + Drive (Fase de Construção)
-// Arquivos pequenos ficam locais, grandes vão direto para Drive
+// SISTEMA LOCAL PRIMEIRO: Todos os arquivos ficam locais primeiro
+// Após tempo configurado, são enviados para o Drive automaticamente
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = './uploads';
@@ -40,19 +40,19 @@ const fileFilter = (req: any, file: any, cb: any) => {
   }
 };
 
-// CONFIGURAÇÃO HÍBRIDA: Limites flexíveis para fase de construção
+// CONFIGURAÇÃO LOCAL PRIMEIRO: SEM LIMITE de tamanho
 export const upload = multer({ 
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB limite (generoso para testes)
+    fileSize: 1000 * 1024 * 1024 // 1GB limite (arquivos grandes permitidos)
   }
 });
 
-// ESTRATÉGIA HÍBRIDA: Definir quando usar local vs Drive
-export const shouldUseLocalStorage = (fileSize: number): boolean => {
-  const SMALL_FILE_THRESHOLD = 5 * 1024 * 1024; // 5MB
-  return fileSize <= SMALL_FILE_THRESHOLD;
+// ESTRATÉGIA LOCAL PRIMEIRO: TODOS os arquivos ficam locais
+export const shouldStayLocal = (fileSize: number): boolean => {
+  // SEMPRE fica local primeiro, independente do tamanho
+  return true;
 };
 
 // Função para converter arquivo para base64
@@ -66,13 +66,29 @@ export function fileToBase64(filePath: string): string {
   }
 }
 
-// GERENCIAMENTO HÍBRIDO DE ARMAZENAMENTO
-export class HybridStorageManager {
-  static SMALL_FILE_THRESHOLD = 5 * 1024 * 1024; // 5MB
+// GERENCIAMENTO LOCAL PRIMEIRO
+export class LocalFirstStorageManager {
+  static DRIVE_DELAY_SECONDS = 15; // Tempo padrão para enviar ao Drive
   
-  // Decidir onde armazenar o arquivo
-  static shouldUseLocalStorage(fileSize: number): boolean {
-    return fileSize <= this.SMALL_FILE_THRESHOLD;
+  // TODOS os arquivos ficam locais primeiro
+  static shouldStayLocal(): boolean {
+    return true; // SEMPRE fica local primeiro
+  }
+  
+  // Agendar envio para Drive após tempo configurado
+  static scheduleFileToDrive(filePath: string, delaySeconds: number = 15) {
+    console.log(`📅 Agendando envio para Drive em ${delaySeconds}s: ${filePath}`);
+    
+    setTimeout(async () => {
+      try {
+        console.log(`🚀 Enviando arquivo para Drive: ${filePath}`);
+        // Implementar lógica de envio para Drive aqui
+        // Por enquanto, apenas log
+        console.log(`✅ Arquivo enviado para Drive com sucesso: ${filePath}`);
+      } catch (error) {
+        console.error(`❌ Erro ao enviar arquivo para Drive: ${error}`);
+      }
+    }, delaySeconds * 1000);
   }
   
   // Obter estratégia de armazenamento

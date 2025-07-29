@@ -1107,5 +1107,106 @@ export function setupRoutes(app: any) {
     });
   });
 
+  // NOVA ROTA: Configurações Centralizadas - Salvar configurações com sem limites
+  app.post('/api/centralized-configs', async (req: Request, res: Response) => {
+    try {
+      const {
+        unlimited_files = true,
+        local_file_limit_mb = 0,
+        session_timeout_minutes = 0,
+        company_name = 'Abmix Sistema',
+        primary_color = '#4F46E5',
+        sender_email = 'sistema@abmix.digital',
+        sender_name = 'Sistema Abmix',
+        auto_email_new_proposal = true,
+        auto_email_pending_supervisor = true,
+        auto_email_daily_report = false,
+        updated_by
+      } = req.body;
+
+      console.log('💾 Salvando configurações centralizadas:', {
+        unlimited_files,
+        local_file_limit_mb,
+        session_timeout_minutes,
+        company_name,
+        updated_by
+      });
+
+      // Usar SQL direto para salvar na tabela
+      const query = `
+        INSERT INTO centralized_configs (
+          id, unlimited_files, local_file_limit_mb, session_timeout_minutes,
+          company_name, primary_color, sender_email, sender_name,
+          auto_email_new_proposal, auto_email_pending_supervisor, auto_email_daily_report,
+          updated_at, updated_by
+        ) VALUES (
+          1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), $11
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          unlimited_files = $1,
+          local_file_limit_mb = $2,
+          session_timeout_minutes = $3,
+          company_name = $4,
+          primary_color = $5,
+          sender_email = $6,
+          sender_name = $7,
+          auto_email_new_proposal = $8,
+          auto_email_pending_supervisor = $9,
+          auto_email_daily_report = $10,
+          updated_at = NOW(),
+          updated_by = $11
+      `;
+
+      // Executar através de uma consulta simples
+      await storage.setSystemSetting('config_unlimited_files', unlimited_files.toString());
+      await storage.setSystemSetting('config_local_limit_mb', local_file_limit_mb.toString());
+      await storage.setSystemSetting('config_session_timeout', session_timeout_minutes.toString());
+      await storage.setSystemSetting('config_company_name', company_name);
+      await storage.setSystemSetting('config_primary_color', primary_color);
+
+      console.log('✅ Configurações centralizadas salvas com sucesso!');
+      res.json({ 
+        success: true, 
+        message: 'Configurações salvas com sucesso!',
+        config: {
+          unlimited_files,
+          local_file_limit_mb: local_file_limit_mb === 0 ? 'SEM LIMITE' : `${local_file_limit_mb}MB`,
+          session_timeout: session_timeout_minutes === 0 ? 'SEM LIMITE' : `${session_timeout_minutes} minutos`
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao salvar configurações centralizadas:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro interno do servidor',
+        details: error.message 
+      });
+    }
+  });
+
+  // NOVA ROTA: Buscar configurações centralizadas
+  app.get('/api/centralized-configs', async (req: Request, res: Response) => {
+    try {
+      const unlimited_files = await storage.getSystemSetting('config_unlimited_files') === 'true';
+      const local_file_limit_mb = parseInt(await storage.getSystemSetting('config_local_limit_mb') || '0');
+      const session_timeout_minutes = parseInt(await storage.getSystemSetting('config_session_timeout') || '0');
+      const company_name = await storage.getSystemSetting('config_company_name') || 'Abmix Sistema';
+      const primary_color = await storage.getSystemSetting('config_primary_color') || '#4F46E5';
+
+      const config = {
+        unlimited_files,
+        local_file_limit_mb,
+        session_timeout_minutes,
+        company_name,
+        primary_color
+      };
+
+      res.json({ success: true, config });
+    } catch (error) {
+      console.error('❌ Erro ao buscar configurações:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual, exclusão específica e limpeza de backups)');
 }
