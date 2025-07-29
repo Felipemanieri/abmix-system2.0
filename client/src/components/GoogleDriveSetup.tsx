@@ -1,8 +1,18 @@
-import { useState } from 'react';
-import { FolderOpen, Settings, CheckCircle, Plus, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw } from 'lucide-react';
 
 export default function GoogleDriveSetup() {
   const [showAddDriveModal, setShowAddDriveModal] = useState(false);
+  const [driveData, setDriveData] = useState({
+    capacidade: '0 GB',
+    totalCapacidade: '15 GB',
+    arquivos: 0,
+    pastas: 0,
+    ultimaModificacao: 'Carregando...',
+    ultimaSync: 'Carregando...',
+    status: 'loading'
+  });
+  const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     url: '',
@@ -34,6 +44,54 @@ export default function GoogleDriveSetup() {
     console.log('Dados do novo drive:', formData);
     handleCancel();
   };
+
+  // Função para buscar dados reais do Google Drive
+  const fetchDriveData = async () => {
+    setIsLoadingDriveData(true);
+    try {
+      // Buscar dados reais do Google Drive
+      const response = await fetch('/api/google/drive-info');
+      const data = await response.json();
+      
+      if (data.success) {
+        setDriveData({
+          capacidade: data.usedStorage || '0 GB',
+          totalCapacidade: data.totalStorage || '15 GB',
+          arquivos: data.filesCount || 0,
+          pastas: data.foldersCount || 0,
+          ultimaModificacao: data.lastModified || 'Agora',
+          ultimaSync: new Date().toLocaleString('pt-BR'),
+          status: 'connected'
+        });
+      } else {
+        setDriveData(prev => ({
+          ...prev,
+          status: 'error',
+          ultimaModificacao: 'Erro ao carregar',
+          ultimaSync: 'Erro ao sincronizar'
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados do Drive:', error);
+      setDriveData(prev => ({
+        ...prev,
+        status: 'error',
+        ultimaModificacao: 'Erro ao carregar',
+        ultimaSync: 'Erro ao sincronizar'
+      }));
+    } finally {
+      setIsLoadingDriveData(false);
+    }
+  };
+
+  // Carregar dados do Drive ao montar o componente
+  useEffect(() => {
+    fetchDriveData();
+    
+    // Atualizar dados a cada 30 segundos
+    const interval = setInterval(fetchDriveData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -94,9 +152,15 @@ export default function GoogleDriveSetup() {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                <div className={`w-3 h-3 rounded-sm ${
+                  driveData.status === 'connected' ? 'bg-green-500' :
+                  driveData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+                }`}></div>
                 <span className="font-medium text-gray-900 dark:text-white">Drive Principal</span>
                 <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium">Sistema</span>
+                {isLoadingDriveData && (
+                  <RefreshCw className="w-3 h-3 animate-spin text-blue-500" />
+                )}
               </div>
               
               <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
@@ -107,17 +171,17 @@ export default function GoogleDriveSetup() {
                 <div className="flex items-center gap-4">
                   <span><span className="font-medium">👤 Proprietário:</span> Admin</span>
                   <span>
-                    <span className="font-medium">📁 Capacidade:</span> 8.2 GB / 15 GB
+                    <span className="font-medium">📁 Capacidade:</span> {driveData.capacidade} / {driveData.totalCapacidade}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span><span className="font-medium">📄 Arquivos:</span> 1,834</span>
-                  <span><span className="font-medium">📂 Pastas:</span> 247</span>
+                  <span><span className="font-medium">📄 Arquivos:</span> {driveData.arquivos.toLocaleString()}</span>
+                  <span><span className="font-medium">📂 Pastas:</span> {driveData.pastas.toLocaleString()}</span>
                   <span><span className="font-medium">🔄 Backup:</span> 5 minutos</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span><span className="font-medium">⏰ Última modificação:</span> Agora</span>
-                  <span><span className="font-medium">🔄 Última sync:</span> Agora</span>
+                  <span><span className="font-medium">⏰ Última modificação:</span> {driveData.ultimaModificacao}</span>
+                  <span><span className="font-medium">🔄 Última sync:</span> {driveData.ultimaSync}</span>
                 </div>
               </div>
             </div>
@@ -136,6 +200,36 @@ export default function GoogleDriveSetup() {
                 <Settings className="w-4 h-4" />
               </button>
             </div>
+          </div>
+          
+          {/* Botões de Ação - Baseados na aba Visualizar Planilha */}
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={() => setShowAddDriveModal(true)}
+              className="flex-1 px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-sm font-medium"
+            >
+              Adicionar Drive
+            </button>
+            <button
+              onClick={fetchDriveData}
+              disabled={isLoadingDriveData}
+              className="flex-1 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoadingDriveData ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  Sincronizando...
+                </>
+              ) : (
+                'Sincronizar'
+              )}
+            </button>
+            <button
+              onClick={() => console.log('Configurar Drive')}
+              className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+            >
+              Configurar
+            </button>
           </div>
         </div>
       </div>
