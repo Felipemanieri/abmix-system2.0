@@ -165,3 +165,70 @@ export const formatarCEP = (cep: string): string => {
   
   return `${cepLimpo.slice(0, 5)}-${cepLimpo.slice(5, 8)}`;
 };
+
+/**
+ * Interface para dados da empresa retornados pela API Brasil API
+ */
+interface EmpresaData {
+  razao_social: string;
+  nome_fantasia: string;
+  ddd_telefone_1: string;
+  email: string;
+  logradouro: string;
+  numero: string;
+  bairro: string;
+  municipio: string;
+  uf: string;
+  cep: string;
+}
+
+/**
+ * Busca dados da empresa via API Brasil API
+ * @param cnpj - CNPJ a ser consultado
+ * @returns Promise com dados da empresa ou null
+ */
+export const buscarCNPJ = async (cnpj: string): Promise<EmpresaData | null> => {
+  const cnpjLimpo = cnpj.replace(/\D/g, '');
+  
+  if (cnpjLimpo.length !== 14) {
+    return null;
+  }
+  
+  try {
+    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
+    const data = await response.json();
+    
+    if (data.message) {
+      console.log('CNPJ não encontrado na API Brasil API');
+      return null;
+    }
+    
+    console.log('CNPJ encontrado via API Brasil API:', data.razao_social);
+    return data;
+    
+  } catch (error) {
+    console.log('Erro na API Brasil API:', error);
+    return null;
+  }
+};
+
+/**
+ * Formata CNPJ com máscara
+ * @param cnpj - CNPJ sem formatação
+ * @returns CNPJ formatado (00.000.000/0000-00)
+ */
+export const formatarCNPJ = (cnpj: string): string => {
+  const cnpjLimpo = cnpj.replace(/\D/g, '');
+  
+  if (cnpjLimpo.length <= 2) {
+    return cnpjLimpo;
+  } else if (cnpjLimpo.length <= 5) {
+    return `${cnpjLimpo.slice(0, 2)}.${cnpjLimpo.slice(2)}`;
+  } else if (cnpjLimpo.length <= 8) {
+    return `${cnpjLimpo.slice(0, 2)}.${cnpjLimpo.slice(2, 5)}.${cnpjLimpo.slice(5)}`;
+  } else if (cnpjLimpo.length <= 12) {
+    return `${cnpjLimpo.slice(0, 2)}.${cnpjLimpo.slice(2, 5)}.${cnpjLimpo.slice(5, 8)}/${cnpjLimpo.slice(8)}`;
+  } else {
+    return `${cnpjLimpo.slice(0, 2)}.${cnpjLimpo.slice(2, 5)}.${cnpjLimpo.slice(5, 8)}/${cnpjLimpo.slice(8, 12)}-${cnpjLimpo.slice(12, 14)}`;
+  }
+};

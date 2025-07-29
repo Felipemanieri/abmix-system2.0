@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Building, FileText, DollarSign, Check, Copy, Plus, Trash2, Upload, Camera, User, Eye, EyeOff, Settings, Save, Send, Users, Phone, Mail, MapPin, Calendar, Calculator, CheckCircle, Download, Info, Lock } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
 import { useRealTimeNotifications } from '../utils/realTimeSync';
-import { buscarCEP, buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
+import { buscarCEP, buscarCEPLocal, formatarCEP, buscarCNPJ, formatarCNPJ } from '../utils/cepHandler';
 import ProposalProgressTracker from './ProposalProgressTracker';
 import ProfessionalLinkShare from './ProfessionalLinkShare';
 import { useQuery } from '@tanstack/react-query';
@@ -1367,7 +1367,34 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 <input
                   type="text"
                   value={contractData.cnpj}
-                  onChange={(e) => setContractData(prev => ({ ...prev, cnpj: e.target.value }))}
+                  onChange={(e) => {
+                    const formattedCnpj = formatarCNPJ(e.target.value);
+                    setContractData(prev => ({ ...prev, cnpj: formattedCnpj }));
+                  }}
+                  onBlur={async (e) => {
+                    if (!contractFieldsReadOnly) {
+                      const cnpjValue = e.target.value;
+                      const cnpjLimpo = cnpjValue.replace(/\D/g, '');
+                      
+                      if (cnpjLimpo.length === 14) {
+                        try {
+                          const empresa = await buscarCNPJ(cnpjValue);
+                          if (empresa) {
+                            setContractData(prev => ({ 
+                              ...prev, 
+                              nomeEmpresa: empresa.razao_social || empresa.nome_fantasia || prev.nomeEmpresa
+                            }));
+                            showNotification('CNPJ encontrado! Dados da empresa preenchidos automaticamente.', 'success');
+                          } else {
+                            showNotification('CNPJ não encontrado. Preencha os dados manualmente.', 'warning');
+                          }
+                        } catch (error) {
+                          console.error('Erro ao buscar CNPJ:', error);
+                          showNotification('Erro ao buscar CNPJ. Preencha os dados manualmente.', 'warning');
+                        }
+                      }
+                    }
+                  }}
                   readOnly={contractFieldsReadOnly}
                   className={`w-full p-3 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-lg ${
                     contractFieldsReadOnly 
@@ -1375,6 +1402,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent'
                   }`}
                   placeholder="00.000.000/0000-00"
+                  maxLength={18}
                 />
               </div>
 
