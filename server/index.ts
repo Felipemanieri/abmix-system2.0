@@ -1279,8 +1279,8 @@ async function startServer() {
 
     console.log("🚀 Servidor com Vite iniciado");
   } else {
-    // Production mode - mas usando estrutura de desenvolvimento
-    console.log("📦 Modo produção - usando estrutura de desenvolvimento");
+    // MODO PRODUÇÃO - Servir arquivos estáticos do build
+    console.log("🚀 Modo produção - servindo arquivos estáticos");
 
     // INSTÂNCIAS DOS SERVIÇOS GOOGLE
     const driveService = GoogleDriveService.getInstance();
@@ -1295,14 +1295,14 @@ async function startServer() {
     console.log("📎 Registrando rotas completas para produção...");
     setupRoutes(app);
 
-    // Servir arquivos estáticos do client (desenvolvimento)
-    const clientPath = path.resolve(__dirname, "..", "client");
-    console.log(`📦 Servindo arquivos estáticos de: ${clientPath}`);
-    app.use(express.static(clientPath));
+    // Servir arquivos estáticos do BUILD (produção)
+    const distPath = path.resolve(__dirname, "public");
+    console.log(`📦 Servindo arquivos estáticos de: ${distPath}`);
+    app.use(express.static(distPath));
 
     // Fallback para SPA
-    app.use("*", (_req: Request, res: Response) => {
-      const indexPath = path.resolve(clientPath, "index.html");
+    app.get("*", (_req: Request, res: Response) => {
+      const indexPath = path.join(distPath, "index.html");
       console.log(`📄 Enviando index.html de: ${indexPath}`);
       
       // Verificar se arquivo existe antes de enviar
@@ -1314,7 +1314,7 @@ async function startServer() {
       }
     });
 
-    console.log("✅ Servidor configurado com estrutura de desenvolvimento");
+    console.log("✅ Servidor configurado para PRODUÇÃO com arquivos do build");
   }
 
   // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
