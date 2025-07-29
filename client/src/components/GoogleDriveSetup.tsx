@@ -409,25 +409,98 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
 
-          {/* Ações da Pasta de Backup */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
-                className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                title="Abrir pasta de backup no Google Drive"
-              >
-                <FolderOpen className="w-4 h-4" />
-                Abrir no Google Drive
-              </button>
+          {/* Controles de Sincronização */}
+          <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between mb-3">
+              <h6 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Sincronização</h6>
+              <div className="relative">
+                <button
+                  onClick={() => setShowSyncOptions(!showSyncOptions)}
+                  className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                >
+                  <Clock className="w-4 h-4" />
+                  {syncInterval}
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {showSyncOptions && (
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                    {['1 segundo', '5 segundos', '15 segundos', '30 segundos', '1 minuto', '5 minutos', '15 minutos', '30 minutos', '1 hora', '2 horas', '6 horas', '12 horas', '24 horas', 'Manual'].map(interval => (
+                      <button
+                        key={interval}
+                        onClick={() => handleSyncIntervalChange(interval)}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+                          interval === 'Manual' ? 'bg-blue-600 text-white font-medium' : 
+                          interval === syncInterval ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 
+                          'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {interval}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             
-            <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+            {isManualSync && (
+              <button
+                onClick={handleManualBackup}
+                className="w-full px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Sincronizar Manualmente
+              </button>
+            )}
+          </div>
+
+          {/* Ações do Drive */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu', '_blank')}
+              className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Abrir no Google Drive"
+            >
+              <FolderOpen className="w-4 h-4" />
+              Abrir no Google Drive
+            </button>
+            
+            <button
+              onClick={handleEditDrive}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Editar configurações"
+            >
+              <Pencil className="w-4 h-4" />
+              Editar
+            </button>
+            
+            <button
+              onClick={handleManualBackup}
+              className="px-4 py-2 bg-green-100 hover:bg-green-200 dark:bg-green-700 dark:hover:bg-green-600 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Fazer backup manual"
+            >
+              <Upload className="w-4 h-4" />
+              Backup Manual
+            </button>
+            
+            <button
+              onClick={handleClearDrive}
+              className="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-700 dark:hover:bg-yellow-600 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              title="Limpar todas as informações do drive"
+            >
+              <Trash className="w-4 h-4" />
+              Limpar Drive
+            </button>
+          </div>
+          
+          {/* Status de Conexão */}
+          <div className="flex items-center justify-center">
+            <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
               backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
               backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
               'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
             }`}>
-              {backupData.status === 'connected' ? 'Sincronizado' : 
+              {backupData.status === 'connected' ? 'Conectado' : 
                backupData.status === 'loading' ? 'Sincronizando...' : 'Erro de Conexão'}
             </div>
           </div>
