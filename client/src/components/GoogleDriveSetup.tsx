@@ -141,8 +141,8 @@ export default function GoogleDriveSetup() {
         const data = await response.json();
         setDriveData({
           status: 'connected',
-          arquivos: data.fileCount || 0,
-          pastas: data.folderCount || 0,
+          arquivos: data.filesCount || 0,
+          pastas: data.foldersCount || 0,
           capacidade: data.usedStorage || '0 GB',
           totalCapacidade: data.totalStorage || '15 GB',
           ultimaModificacao: data.lastModified || 'Nunca',
@@ -168,8 +168,8 @@ export default function GoogleDriveSetup() {
         const data = await response.json();
         const newBackupData = {
           status: 'connected' as const,
-          arquivos: data.fileCount || 0,
-          pastas: data.folderCount || 0,
+          arquivos: data.filesCount || 0,
+          pastas: data.foldersCount || 0,
           capacidade: data.usedStorage || '0 GB',
           totalCapacidade: data.totalStorage || '15 GB',
           ultimaModificacao: data.lastModified || 'Nunca',
@@ -533,74 +533,39 @@ export default function GoogleDriveSetup() {
             </div>
             
             <div className="space-y-2 max-h-32 overflow-y-auto">
-              {/* Lista mockada de pastas baseada nos dados reais do sistema */}
               {isBackupTab ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
-                  Pasta de backup vazia
-                </div>
+                currentTabData.status === 'connected' ? (
+                  currentTabData.arquivos === 0 && currentTabData.pastas === 0 ? (
+                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
+                      📁 Pasta de backup vazia - Nenhum arquivo encontrado
+                    </div>
+                  ) : (
+                    <div className="text-center text-orange-600 dark:text-orange-400 text-sm py-4">
+                      ⚠️ Estrutura de pastas não disponível via API - Use "Abrir no Google Drive" para visualizar
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
+                    {currentTabData.status === 'loading' ? '🔄 Carregando dados...' : '❌ Erro ao carregar dados'}
+                  </div>
+                )
               ) : (
-                <>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Propostas_2025</span>
-                    <span className="ml-auto text-xs text-gray-500">124 itens</span>
+                currentTabData.status === 'connected' ? (
+                  currentTabData.arquivos === 0 && currentTabData.pastas === 0 ? (
+                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
+                      📁 Drive vazio - Nenhum arquivo encontrado
+                    </div>
+                  ) : (
+                    <div className="text-center text-orange-600 dark:text-orange-400 text-sm py-4">
+                      ⚠️ Estrutura de pastas não disponível via API<br/>
+                      <span className="text-xs">Use "Abrir no Google Drive" para visualizar as {currentTabData.pastas} pastas</span>
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-4">
+                    {currentTabData.status === 'loading' ? '🔄 Carregando dados...' : '❌ Erro ao carregar dados'}
                   </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Documentos_Sistema</span>
-                    <span className="ml-auto text-xs text-gray-500">45 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Backups_Automaticos</span>
-                    <span className="ml-auto text-xs text-gray-500">67 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Planilhas_Controle</span>
-                    <span className="ml-auto text-xs text-gray-500">23 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Logs_Sistema</span>
-                    <span className="ml-auto text-xs text-gray-500">89 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Configuracoes</span>
-                    <span className="ml-auto text-xs text-gray-500">12 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Templates</span>
-                    <span className="ml-auto text-xs text-gray-500">15 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Vendedores_Dados</span>
-                    <span className="ml-auto text-xs text-gray-500">34 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Relatorios</span>
-                    <span className="ml-auto text-xs text-gray-500">56 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Integracao_APIs</span>
-                    <span className="ml-auto text-xs text-gray-500">28 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Atualizacoes_Sistema</span>
-                    <span className="ml-auto text-xs text-gray-500">19 itens</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 p-2 rounded">
-                    <FolderOpen className="w-4 h-4 mr-2 text-blue-500" />
-                    <span>📁 Arquivos_Temporarios</span>
-                    <span className="ml-auto text-xs text-gray-500">7 itens</span>
-                  </div>
-                </>
+                )
               )}
             </div>
           </div>
