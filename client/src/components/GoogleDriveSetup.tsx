@@ -69,12 +69,18 @@ export default function GoogleDriveSetup() {
     url: '',
     observacao: ''
   });
-  const [syncInterval, setSyncInterval] = useState<string>(() => {
-    // Recuperar valor salvo do localStorage
-    const saved = localStorage.getItem('google_drive_sync_interval');
-    return saved || '5 minutos';
+  // Estados separados para cada aba
+  const [syncIntervals, setSyncIntervals] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('google_drive_sync_intervals');
+    return saved ? JSON.parse(saved) : {
+      principal: '5 minutos',
+      backup: '10 minutos'
+    };
   });
-  const [isManualSync, setIsManualSync] = useState(false);
+  const [isManualSync, setIsManualSync] = useState<Record<string, boolean>>({
+    principal: false,
+    backup: false
+  });
   const [showSyncOptions, setShowSyncOptions] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [tabs, setTabs] = useState<DriveTab[]>([
@@ -261,17 +267,18 @@ export default function GoogleDriveSetup() {
   };
 
   const handleSyncIntervalChange = (interval: string) => {
-    setSyncInterval(interval);
+    const newIntervals = { ...syncIntervals, [activeTab]: interval };
+    setSyncIntervals(newIntervals);
     setShowSyncOptions(false);
     
     // Salvar no localStorage para persistir
-    localStorage.setItem('google_drive_sync_interval', interval);
+    localStorage.setItem('google_drive_sync_intervals', JSON.stringify(newIntervals));
     
     if (interval === 'Manual') {
-      setIsManualSync(true);
+      setIsManualSync(prev => ({ ...prev, [activeTab]: true }));
       console.log('⏱️ Sincronização definida para manual');
     } else {
-      setIsManualSync(false);
+      setIsManualSync(prev => ({ ...prev, [activeTab]: false }));
       console.log('⏱️ Sincronização automática definida para:', interval);
     }
   };
@@ -347,7 +354,7 @@ export default function GoogleDriveSetup() {
                   Informações da Pasta de Backup
                 </h5>
                 <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                  Proprietário: Felipe Manieri | Auto: {syncInterval}
+                  Proprietário: Felipe Manieri | Auto: {syncIntervals[activeTab] || '10 minutos'}
                 </p>
                 <p className="text-xs text-orange-600 dark:text-orange-400">
                   Sincronização automática com Google Drive
@@ -419,7 +426,7 @@ export default function GoogleDriveSetup() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-orange-700 dark:text-orange-300">Sincronização Automática</span>
-                <span className="text-sm text-orange-800 dark:text-orange-200">{syncInterval}</span>
+                <span className="text-sm text-orange-800 dark:text-orange-200">{syncIntervals[activeTab] || '10 minutos'}</span>
               </div>
             </div>
           </div>
@@ -431,10 +438,10 @@ export default function GoogleDriveSetup() {
               <div className="relative">
                 <button
                   onClick={() => setShowSyncOptions(!showSyncOptions)}
-                  className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  className="px-3 py-1.5 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
                   <Clock className="w-4 h-4" />
-                  {syncInterval}
+                  {syncIntervals[activeTab] || '10 minutos'}
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 
@@ -444,9 +451,9 @@ export default function GoogleDriveSetup() {
                       <button
                         key={interval}
                         onClick={() => handleSyncIntervalChange(interval)}
-                        className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
-                          interval === 'Manual' ? 'bg-blue-600 text-white font-medium' : 
-                          interval === syncInterval ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-orange-100 dark:hover:bg-orange-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+                          interval === 'Manual' ? 'bg-orange-600 text-white font-medium' : 
+                          interval === syncIntervals[activeTab] ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 font-medium' : 
                           'text-gray-700 dark:text-gray-300'
                         }`}
                       >
@@ -458,7 +465,7 @@ export default function GoogleDriveSetup() {
               </div>
             </div>
             
-            {isManualSync && (
+            {isManualSync[activeTab] && (
               <button
                 onClick={handleManualBackup}
                 className="w-full px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
@@ -545,7 +552,7 @@ export default function GoogleDriveSetup() {
                 Conectado: {driveUrl}
               </p>
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                Proprietário: Felipe Manieri | Auto: {syncInterval}
+                Proprietário: Felipe Manieri | Auto: {syncIntervals[activeTab] || '5 minutos'}
               </p>
             </div>
             <button
@@ -614,7 +621,7 @@ export default function GoogleDriveSetup() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">Sincronização Automática</span>
-              <span className="text-sm text-blue-800 dark:text-blue-200">{syncInterval}</span>
+              <span className="text-sm text-blue-800 dark:text-blue-200">{syncIntervals[activeTab] || '5 minutos'}</span>
             </div>
           </div>
           
@@ -631,7 +638,7 @@ export default function GoogleDriveSetup() {
                 className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <Clock className="w-4 h-4" />
-                {syncInterval}
+                {syncIntervals[activeTab] || '5 minutos'}
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -643,7 +650,7 @@ export default function GoogleDriveSetup() {
                       onClick={() => handleSyncIntervalChange(interval)}
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-700 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
                         interval === 'Manual' ? 'bg-blue-600 text-white font-medium' : 
-                        interval === syncInterval ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 
+                        interval === syncIntervals[activeTab] ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium' : 
                         'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -655,10 +662,14 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
           
-          {isManualSync && (
+          {isManualSync[activeTab] && (
             <button
-              onClick={handleManualBackup}
-              className="w-full px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              onClick={activeTab === 'backup' ? handleManualBackup : handleManualSync}
+              className={`w-full px-4 py-2 ${
+                activeTab === 'backup' 
+                  ? 'bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600'
+                  : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600'
+              } rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2`}
             >
               <RefreshCw className="w-4 h-4" />
               Sincronizar Manualmente
