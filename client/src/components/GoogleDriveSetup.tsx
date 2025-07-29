@@ -21,14 +21,10 @@ export default function GoogleDriveSetup() {
     linkCompartilhamento: '',
     observacao: ''
   });
-  const [folderStructure, setFolderStructure] = useState([
-    { id: 1, name: 'Propostas 2025', type: 'folder', files: 89, size: '1.2 GB', lastModified: '2025-01-29' },
-    { id: 2, name: 'Documentos Clientes', type: 'folder', files: 234, size: '876 MB', lastModified: '2025-01-28' },
-    { id: 3, name: 'Contratos', type: 'folder', files: 156, size: '423 MB', lastModified: '2025-01-27' },
-    { id: 4, name: 'Backup Sistema', type: 'folder', files: 67, size: '345 MB', lastModified: '2025-01-26' },
-    { id: 5, name: 'Relatórios', type: 'folder', files: 123, size: '289 MB', lastModified: '2025-01-25' }
-  ]);
+  const [folderStructure, setFolderStructure] = useState([]);
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const [folderContents, setFolderContents] = useState({});
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -121,12 +117,53 @@ export default function GoogleDriveSetup() {
     }
   };
 
+  // Função para buscar pastas reais do Google Drive
+  const fetchFolderStructure = async () => {
+    setIsLoadingFolders(true);
+    try {
+      const response = await fetch('/api/google/drive-folders');
+      const data = await response.json();
+      
+      if (data.success && data.folders) {
+        setFolderStructure(data.folders);
+      } else {
+        setFolderStructure([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar pastas do Drive:', error);
+      setFolderStructure([]);
+    } finally {
+      setIsLoadingFolders(false);
+    }
+  };
+
+  // Função para buscar conteúdo de uma pasta específica
+  const fetchFolderContents = async (folderId: string) => {
+    try {
+      const response = await fetch(`/api/google/drive-folder-contents/${folderId}`);
+      const data = await response.json();
+      
+      if (data.success && data.files) {
+        setFolderContents(prev => ({
+          ...prev,
+          [folderId]: data.files
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar conteúdo da pasta:', error);
+    }
+  };
+
   // Carregar dados do Drive ao montar o componente
   useEffect(() => {
     fetchDriveData();
+    fetchFolderStructure();
     
     // Atualizar dados a cada 30 segundos
-    const interval = setInterval(fetchDriveData, 30000);
+    const interval = setInterval(() => {
+      fetchDriveData();
+      fetchFolderStructure();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
