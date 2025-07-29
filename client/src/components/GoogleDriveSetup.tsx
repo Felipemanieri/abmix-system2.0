@@ -4,7 +4,6 @@ import { FolderOpen, Settings, CheckCircle, Plus, X, RefreshCw, Pencil } from 'l
 export default function GoogleDriveSetup() {
   const [showAddDriveModal, setShowAddDriveModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [activeTab, setActiveTab] = useState('drive'); // 'drive' ou 'backup'
   const [driveData, setDriveData] = useState({
     capacidade: '0 GB',
     totalCapacidade: '15 GB',
@@ -16,31 +15,15 @@ export default function GoogleDriveSetup() {
   });
   const [isLoadingDriveData, setIsLoadingDriveData] = useState(false);
   
-  // Estado para o sistema Backup & Restore
+  // Estado para a pasta de Backup do sistema
   const [backupData, setBackupData] = useState({
-    // Sistema de backup local (Replit)
-    localBackups: {
-      count: 0,
-      lastBackup: 'Nunca',
-      size: '0 MB',
-      status: 'loading' as 'loading' | 'active' | 'error'
-    },
-    // Sistema de backup no Drive (suporte)
-    driveBackups: {
-      folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
-      count: 0,
-      lastSync: 'Nunca',
-      size: '0 MB',
-      status: 'loading' as 'loading' | 'synced' | 'error'
-    },
-    // Dados gerais
-    capacidade: '0 MB',
-    totalCapacidade: '500 MB',
+    capacidade: '0 GB',
+    totalCapacidade: '15 GB',
     arquivos: 0,
     pastas: 0,
-    ultimaModificacao: 'Nunca',
-    ultimaSync: 'Nunca',
-    status: 'loading' as 'loading' | 'connected' | 'error'
+    ultimaModificacao: 'Carregando...',
+    ultimaSync: 'Carregando...',
+    status: 'loading'
   });
   const [isLoadingBackupData, setIsLoadingBackupData] = useState(false);
   
@@ -144,7 +127,7 @@ export default function GoogleDriveSetup() {
     }
   };
 
-  // Função para buscar dados do sistema Backup & Restore
+  // Função para buscar dados da pasta de Backup do sistema
   const fetchBackupData = async () => {
     setIsLoadingBackupData(true);
     try {
@@ -153,21 +136,8 @@ export default function GoogleDriveSetup() {
       
       if (data.success) {
         setBackupData({
-          localBackups: data.localBackups || {
-            count: 0,
-            lastBackup: 'Nunca',
-            size: '0 MB',
-            status: 'error'
-          },
-          driveBackups: data.driveBackups || {
-            folderId: '1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu',
-            count: 0,
-            lastSync: 'Nunca',
-            size: '0 MB',
-            status: 'error'
-          },
-          capacidade: data.usedStorage || '0 MB',
-          totalCapacidade: data.totalStorage || '500 MB',
+          capacidade: data.usedStorage || '0 GB',
+          totalCapacidade: data.totalStorage || '15 GB',
           arquivos: data.filesCount || 0,
           pastas: data.foldersCount || 0,
           ultimaModificacao: data.lastModified || 'Nunca',
@@ -183,7 +153,7 @@ export default function GoogleDriveSetup() {
         }));
       }
     } catch (error) {
-      console.error('Erro ao buscar dados do sistema Backup & Restore:', error);
+      console.error('Erro ao buscar dados da pasta Backup:', error);
       setBackupData(prev => ({
         ...prev,
         status: 'error',
@@ -211,7 +181,6 @@ export default function GoogleDriveSetup() {
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        {/* Header com abas */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <FolderOpen className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3" />
@@ -219,71 +188,26 @@ export default function GoogleDriveSetup() {
               Configuração Google Drive
             </h3>
           </div>
-          
-          {/* Navegação por abas */}
-          <div className="flex items-center gap-4">
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-              <button
-                onClick={() => setActiveTab('drive')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'drive'
-                    ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                Drive Principal
-              </button>
-              <button
-                onClick={() => setActiveTab('backup')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'backup'
-                    ? 'bg-white dark:bg-gray-600 text-orange-600 dark:text-orange-400 shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                Backup & Restore
-              </button>
-            </div>
-            
-            {/* Botões específicos para cada aba */}
-            {activeTab === 'drive' ? (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={fetchDriveData}
-                  disabled={isLoadingDriveData}
-                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
-                  title="Atualizar dados do Google Drive"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isLoadingDriveData ? 'animate-spin' : ''}`} />
-                </button>
-                <button
-                  onClick={() => setShowAddDriveModal(true)}
-                  className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Novo Drive
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={fetchBackupData}
-                  disabled={isLoadingBackupData}
-                  className="px-3 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
-                  title="Atualizar dados da pasta de backup"
-                >
-                  <RefreshCw className={`w-4 h-4 ${isLoadingBackupData ? 'animate-spin' : ''}`} />
-                </button>
-              </div>
-            )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchDriveData}
+              disabled={isLoadingDriveData}
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+              title="Atualizar dados do Google Drive"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingDriveData ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => setShowAddDriveModal(true)}
+              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Novo Drive
+            </button>
           </div>
         </div>
         
-        {/* Conteúdo das abas */}
-        {activeTab === 'drive' ? (
-          <div>
-            {/* Aba Drive Principal */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{driveData.pastas}</div>
             <div className="text-sm text-blue-500 dark:text-blue-400">Pastas</div>
@@ -324,9 +248,12 @@ export default function GoogleDriveSetup() {
             <span className="text-sm text-gray-900 dark:text-white">Sistema Abmix</span>
           </div>
         </div>
+      </div>
 
-            {/* Seção Drive Conectado */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+
+      {/* Seção Drive Conectado - Baseada na aba Visualizar Planilha */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
           <h4 className="text-base font-semibold text-gray-900 dark:text-white">Drive conectado</h4>
           <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Fonte: Sistema Abmix</p>
@@ -431,161 +358,88 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
           
-          </div>
-        ) : (
-          <div>
-            {/* Aba Backup & Restore */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{backupData.localBackups.count}</div>
-                <div className="text-sm text-blue-500 dark:text-blue-400">Backups Replit</div>
-              </div>
-              <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{backupData.driveBackups.count}</div>
-                <div className="text-sm text-orange-500 dark:text-orange-400">Backups Drive</div>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{backupData.capacidade}</div>
-                <div className="text-sm text-green-500 dark:text-green-400">Espaço Total</div>
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Status do Sistema</span>
-                <div className="flex items-center">
-                  <CheckCircle className={`w-4 h-4 mr-1 ${
-                    backupData.status === 'connected' ? 'text-green-500' : 
-                    backupData.status === 'loading' ? 'text-yellow-500' : 'text-red-500'
-                  }`} />
-                  <span className={`text-sm ${
-                    backupData.status === 'connected' ? 'text-green-600 dark:text-green-400' : 
-                    backupData.status === 'loading' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {backupData.status === 'connected' ? 'Operacional' : 
-                     backupData.status === 'loading' ? 'Carregando...' : 'Erro'}
+        </div>
+      </div>
+
+      {/* Seção Pasta de Backup do Sistema */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b bg-orange-50 dark:bg-orange-900/20">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-base font-semibold text-gray-900 dark:text-white">Pasta de Backup do Sistema</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Backups automáticos sincronizados com Google Drive</p>
+            </div>
+            <button
+              onClick={fetchBackupData}
+              disabled={isLoadingBackupData}
+              className="px-3 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+              title="Atualizar dados da pasta de backup"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingBackupData ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-3 h-3 rounded-sm ${
+                  backupData.status === 'connected' ? 'bg-green-500' :
+                  backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
+                }`}></div>
+                <span className="font-medium text-gray-900 dark:text-white">Backup Drive</span>
+                <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded text-xs font-medium">Backup</span>
+                {isLoadingBackupData && (
+                  <RefreshCw className="w-3 h-3 animate-spin text-orange-500" />
+                )}
+              </div>
+              
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <div>
+                  <span className="font-medium">URL:</span>
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">👤 Proprietário:</span> Sistema Abmix</span>
+                  <span>
+                    <span className="font-medium">📁 Capacidade:</span> {backupData.capacidade} / {backupData.totalCapacidade}
                   </span>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Último Backup Local</span>
-                <span className="text-sm text-gray-900 dark:text-white">{backupData.localBackups.lastBackup}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Última Sync Drive</span>
-                <span className="text-sm text-gray-900 dark:text-white">{backupData.driveBackups.lastSync}</span>
-              </div>
-            </div>
-
-            {/* Seção Backup Drive conectado */}
-            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700 overflow-hidden mt-6">
-              <div className="p-4 border-b bg-orange-100 dark:bg-orange-800/30">
-                <h4 className="text-base font-semibold text-gray-900 dark:text-white">Backup Drive</h4>
-              </div>
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`w-3 h-3 rounded-sm ${
-                        backupData.status === 'connected' ? 'bg-green-500' :
-                        backupData.status === 'loading' ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}></div>
-                      <span className="font-medium text-gray-900 dark:text-white">Backup Sistema Abmix</span>
-                      <span className="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded text-xs font-medium">Backup</span>
-                      {isLoadingBackupData && (
-                        <RefreshCw className="w-3 h-3 animate-spin text-orange-500" />
-                      )}
-                    </div>
-                    
-                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <div>
-                        <span className="font-medium">URL:</span>
-                        <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu...</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span><span className="font-medium">👤 Proprietário:</span> Sistema Abmix</span>
-                        <span>
-                          <span className="font-medium">📁 Capacidade:</span> {backupData.capacidade} / {backupData.totalCapacidade}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span><span className="font-medium">💾 Backups Replit:</span> {backupData.localBackups.count}</span>
-                        <span><span className="font-medium">☁️ Backups Drive:</span> {backupData.driveBackups.count}</span>
-                        <span><span className="font-medium">🔄 Modo:</span> Automático</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span><span className="font-medium">📦 Local:</span> {backupData.localBackups.size}</span>
-                        <span><span className="font-medium">☁️ Drive:</span> {backupData.driveBackups.size}</span>
-                        <span><span className="font-medium">📊 Total:</span> {backupData.capacidade}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {/* Botão Abrir */}
-                    <button
-                      onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
-                      className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                      title="Abrir pasta de backup"
-                    >
-                      <FolderOpen className="w-3 h-3" />
-                      Abrir
-                    </button>
-                    
-                    {/* Botão Remover */}
-                    <button
-                      onClick={() => console.log('Remover Backup')}
-                      className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-red-600 dark:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs flex items-center gap-1"
-                      title="Remover Backup"
-                    >
-                      <X className="w-3 h-3" />
-                      Remover
-                    </button>
-                    
-                    {/* Botão Editar */}
-                    <button
-                      onClick={() => console.log('Editar Backup')}
-                      className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
-                      title="Editar Backup"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      Editar
-                    </button>
-                    
-                    {/* Botão Backup Manual */}
-                    <button
-                      onClick={() => console.log('Backup Manual')}
-                      className="px-2 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-xs flex items-center gap-1"
-                      title="Backup Manual"
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      Backup Manual
-                    </button>
-                    
-                    {/* Dropdown de Tempo */}
-                    <select
-                      className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      defaultValue="5 minutos"
-                    >
-                      <option value="1 segundo">1 segundo</option>
-                      <option value="5 segundos">5 segundos</option>
-                      <option value="10 segundos">10 segundos</option>
-                      <option value="30 segundos">30 segundos</option>
-                      <option value="1 minuto">1 minuto</option>
-                      <option value="5 minutos">5 minutos</option>
-                      <option value="10 minutos">10 minutos</option>
-                      <option value="15 minutos">15 minutos</option>
-                      <option value="1 hora">1 hora</option>
-                      <option value="5 horas">5 horas</option>
-                      <option value="10 horas">10 horas</option>
-                      <option value="24 horas">24 horas</option>
-                      <option value="Manual">Manual</option>
-                    </select>
-                  </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">📄 Arquivos:</span> {backupData.arquivos.toLocaleString()}</span>
+                  <span><span className="font-medium">📂 Pastas:</span> {backupData.pastas.toLocaleString()}</span>
+                  <span><span className="font-medium">🔄 Backup:</span> Automático</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">⏰ Última modificação:</span> {backupData.ultimaModificacao}</span>
+                  <span><span className="font-medium">🔄 Última sync:</span> {backupData.ultimaSync}</span>
                 </div>
               </div>
             </div>
+            <div className="flex items-center space-x-2">
+              {/* Botão Abrir */}
+              <button
+                onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu?usp=drive_link', '_blank')}
+                className="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs flex items-center gap-1"
+                title="Abrir pasta de backup"
+              >
+                <FolderOpen className="w-3 h-3" />
+                Abrir
+              </button>
+              
+              {/* Status de sincronização */}
+              <div className={`px-2 py-1 rounded text-xs font-medium ${
+                backupData.status === 'connected' ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' :
+                backupData.status === 'loading' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400' :
+                'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+              }`}>
+                {backupData.status === 'connected' ? 'Sincronizado' : 
+                 backupData.status === 'loading' ? 'Sincronizando...' : 'Erro'}
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modal Adicionar Novo Drive */}
