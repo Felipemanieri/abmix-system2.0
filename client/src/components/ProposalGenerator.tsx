@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Building, FileText, DollarSign, Check, Copy, Plus, Trash2, Upload, Camera, User, Eye, EyeOff, Settings, Save, Send, Users, Phone, Mail, MapPin, Calendar, Calculator, CheckCircle, Download, Info, Lock } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
 import { useRealTimeNotifications } from '../utils/realTimeSync';
-import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
+import { buscarCEP, buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
 import ProposalProgressTracker from './ProposalProgressTracker';
 import ProfessionalLinkShare from './ProfessionalLinkShare';
 import { useQuery } from '@tanstack/react-query';
@@ -1213,23 +1213,28 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 updateDependente(index, 'cep', formattedCep);
               }
             }}
-            onBlur={(e) => {
-              // Handler melhorado que não gera erro
+            onBlur={async (e) => {
+              // Handler com API ViaCEP
               const cepValue = e.target.value;
               const cepLimpo = cepValue.replace(/\D/g, '');
               
               // Só executa se CEP tem 8 dígitos
               if (cepLimpo.length === 8) {
-                const endereco = buscarCEPLocal(cepValue);
-                if (endereco && endereco.enderecoCompleto) {
-                  if (type === 'titular') {
-                    updateTitular(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                try {
+                  const endereco = await buscarCEP(cepValue);
+                  if (endereco && endereco.enderecoCompleto) {
+                    if (type === 'titular') {
+                      updateTitular(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                    } else {
+                      updateDependente(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                    }
+                    showNotification('CEP encontrado! Endereço preenchido automaticamente.', 'success');
                   } else {
-                    updateDependente(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                    showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'warning');
                   }
-                  showNotification('CEP encontrado! Endereço preenchido automaticamente.', 'success');
-                } else {
-                  showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'warning');
+                } catch (error) {
+                  console.error('Erro ao buscar CEP:', error);
+                  showNotification('Erro ao buscar CEP. Preencha o endereço manualmente.', 'warning');
                 }
               }
             }}

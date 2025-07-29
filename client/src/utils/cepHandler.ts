@@ -84,7 +84,52 @@ const cepDatabase: { [key: string]: EnderecoData } = {
 };
 
 /**
- * Busca CEP de forma simples e confiável
+ * Busca CEP via API ViaCEP com fallback para dados locais
+ * @param cep - CEP a ser consultado
+ * @returns Promise com dados do endereço ou null
+ */
+export const buscarCEP = async (cep: string): Promise<EnderecoData | null> => {
+  const cepLimpo = cep.replace(/\D/g, '');
+  
+  if (cepLimpo.length !== 8) {
+    return null;
+  }
+  
+  try {
+    // Buscar via API ViaCEP
+    const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const data = await response.json();
+    
+    if (data && !data.erro) {
+      const enderecoData: EnderecoData = {
+        enderecoCompleto: `${data.logradouro}, ${data.bairro}, ${data.localidade}, ${data.uf}`,
+        endereco: data.logradouro || '',
+        bairro: data.bairro || '',
+        cidade: data.localidade || '',
+        estado: data.uf || ''
+      };
+      
+      console.log('CEP encontrado via API:', enderecoData.enderecoCompleto);
+      return enderecoData;
+    }
+  } catch (error) {
+    console.log('Erro na API ViaCEP, usando dados locais:', error);
+  }
+  
+  // Fallback para dados locais
+  const dados = cepDatabase[cepLimpo];
+  
+  if (dados) {
+    console.log('CEP encontrado na base local:', dados.enderecoCompleto);
+    return dados;
+  }
+  
+  console.log('CEP não encontrado:', cepLimpo);
+  return null;
+};
+
+/**
+ * Busca CEP de forma simples e confiável (mantida para compatibilidade)
  * @param cep - CEP a ser consultado
  * @returns Dados do endereço ou null
  */

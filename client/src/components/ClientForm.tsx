@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Users, Shield, Check, Plus, Upload, Camera, FileText } from 'lucide-react';
 import { useGoogleDrive } from '../hooks/useGoogleDrive';
+import { buscarCEP, formatarCEP } from '../utils/cepHandler';
 
 interface PersonData {
   id: string;
@@ -383,6 +384,49 @@ const ClientForm: React.FC = () => {
             value={person.telefonePessoal}
             onChange={(e) => updatePerson(type, person.id, 'telefonePessoal', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">CEP *</label>
+          <input
+            type="text"
+            required
+            value={person.cep}
+            onChange={(e) => {
+              const formattedCep = formatarCEP(e.target.value);
+              updatePerson(type, person.id, 'cep', formattedCep);
+            }}
+            onBlur={async (e) => {
+              const cepValue = e.target.value;
+              const cepLimpo = cepValue.replace(/\D/g, '');
+              
+              if (cepLimpo.length === 8) {
+                try {
+                  const endereco = await buscarCEP(cepValue);
+                  if (endereco && endereco.enderecoCompleto) {
+                    updatePerson(type, person.id, 'endereco', endereco.enderecoCompleto);
+                  }
+                } catch (error) {
+                  console.error('Erro ao buscar CEP:', error);
+                }
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            placeholder="00000-000"
+            maxLength={9}
+          />
+        </div>
+        
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Endereço Completo *</label>
+          <input
+            type="text"
+            required
+            value={person.endereco}
+            onChange={(e) => updatePerson(type, person.id, 'endereco', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            placeholder="Rua, número, complemento, bairro, cidade, estado"
           />
         </div>
       </div>
