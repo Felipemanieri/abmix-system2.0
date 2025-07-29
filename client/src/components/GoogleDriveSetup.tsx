@@ -84,6 +84,62 @@ export default function GoogleDriveSetup() {
         </div>
       </div>
 
+      {/* Seção Drive Conectado - Baseada na aba Visualizar Planilha */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="p-4 border-b bg-gray-50 dark:bg-gray-700">
+          <h4 className="text-base font-semibold text-gray-900 dark:text-white">Drive conectado</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">Fonte: Sistema Abmix</p>
+        </div>
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                <span className="font-medium text-gray-900 dark:text-white">Drive Principal</span>
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded text-xs font-medium">Sistema</span>
+              </div>
+              
+              <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                <div>
+                  <span className="font-medium">URL:</span>
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb...</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">👤 Proprietário:</span> Admin</span>
+                  <span>
+                    <span className="font-medium">📁 Capacidade:</span> 8.2 GB / 15 GB
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">📄 Arquivos:</span> 1,834</span>
+                  <span><span className="font-medium">📂 Pastas:</span> 247</span>
+                  <span><span className="font-medium">🔄 Backup:</span> 5 minutos</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span><span className="font-medium">⏰ Última modificação:</span> Agora</span>
+                  <span><span className="font-medium">🔄 Última sync:</span> Agora</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex space-x-1">
+              <button
+                onClick={() => window.open('https://drive.google.com/drive/folders/1BqjM56SANgA9RvNVPxRZTHmi2uOgyqeb?usp=drive_link', '_blank')}
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                title="Abrir Drive"
+              >
+                <FolderOpen className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                title="Configurações"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Modal Adicionar Novo Drive */}
       {showAddDriveModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
