@@ -473,7 +473,7 @@ export default function GoogleDriveSetup() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               onClick={() => window.open('https://drive.google.com/drive/folders/1dnCgM8L4Qd9Fpkq-Xwdbd4X0-S7Mqhnu', '_blank')}
-              className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-700 dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-2 bg-orange-100 hover:bg-orange-200 dark:bg-orange-700 dark:hover:bg-orange-600 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-600 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
               title="Abrir no Google Drive"
             >
               <FolderOpen className="w-4 h-4" />
