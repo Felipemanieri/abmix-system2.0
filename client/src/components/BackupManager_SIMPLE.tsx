@@ -166,17 +166,17 @@ export default function BackupManager() {
             <button
               onClick={() => handleManualBackup('incremental')}
               disabled={isBackingUp}
-              className="flex items-center px-3 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors"
+              className="flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              <Archive className="w-4 h-4 mr-2" />
+              <Archive className="w-3 h-3 mr-1.5" />
               {isBackingUp ? 'Processando...' : 'Backup Incremental'}
             </button>
             <button
               onClick={() => handleManualBackup('complete')}
               disabled={isBackingUp}
-              className="flex items-center px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="flex items-center px-3 py-1.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-800/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              <Database className="w-4 h-4 mr-2" />
+              <Database className="w-3 h-3 mr-1.5" />
               {isBackingUp ? 'Processando...' : 'Backup Completo'}
             </button>
           </div>

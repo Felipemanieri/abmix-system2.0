@@ -128,66 +128,66 @@ export default function BackupManager() {
               <p className="text-gray-600">Gerenciamento completo de backups do sistema</p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <button
               onClick={() => executeBackup('incremental')}
               disabled={isBackingUp || isRestoring}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-800/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {isBackingUp ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Archive className="w-4 h-4 mr-2" />}
+              {isBackingUp ? <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" /> : <Archive className="w-3 h-3 mr-1.5" />}
               Backup Incremental
             </button>
             <button
               onClick={() => executeBackup('complete')}
               disabled={isBackingUp || isRestoring}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center px-3 py-1.5 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-800/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-600 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {isBackingUp ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Database className="w-4 h-4 mr-2" />}
+              {isBackingUp ? <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" /> : <Database className="w-3 h-3 mr-1.5" />}
               Backup Completo
             </button>
           </div>
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+          <div className="bg-slate-50 dark:bg-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-lg p-3">
             <div className="flex items-center">
-              <Archive className="w-5 h-5 text-blue-600 mr-2" />
+              <Archive className="w-4 h-4 text-slate-600 dark:text-slate-400 mr-2" />
               <div>
-                <p className="text-sm text-blue-700">Total Backups</p>
-                <p className="text-2xl font-bold text-blue-900">{backupHistory.length}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Total Backups</p>
+                <p className="text-xl font-bold text-slate-800 dark:text-slate-200">{backupHistory.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-600 rounded-lg p-3">
             <div className="flex items-center">
-              <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-2" />
               <div>
-                <p className="text-sm text-green-700">Últimos 30 dias</p>
-                <p className="text-2xl font-bold text-green-900">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">Últimos 30 dias</p>
+                <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
                   {backupHistory.filter(b => b.status === 'sucesso').length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-600 rounded-lg p-3">
             <div className="flex items-center">
-              <HardDrive className="w-5 h-5 text-purple-600 mr-2" />
+              <HardDrive className="w-4 h-4 text-violet-600 dark:text-violet-400 mr-2" />
               <div>
-                <p className="text-sm text-purple-700">Espaço Total</p>
-                <p className="text-2xl font-bold text-purple-900">89.7 MB</p>
+                <p className="text-xs text-violet-600 dark:text-violet-400">Espaço Total</p>
+                <p className="text-xl font-bold text-violet-700 dark:text-violet-300">89.7 MB</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-600 rounded-lg p-3">
             <div className="flex items-center">
-              <Clock className="w-5 h-5 text-orange-600 mr-2" />
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 mr-2" />
               <div>
-                <p className="text-sm text-orange-700">Último Backup</p>
-                <p className="text-lg font-bold text-orange-900">
+                <p className="text-xs text-amber-600 dark:text-amber-400">Último Backup</p>
+                <p className="text-lg font-bold text-amber-700 dark:text-amber-300">
                   {backupHistory[0]?.date.toLocaleDateString('pt-BR')}
                 </p>
               </div>
