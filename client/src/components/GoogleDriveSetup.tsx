@@ -135,13 +135,23 @@ export default function GoogleDriveSetup() {
               Configuração Google Drive
             </h3>
           </div>
-          <button
-            onClick={() => setShowAddDriveModal(true)}
-            className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Novo Drive
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchDriveData}
+              disabled={isLoadingDriveData}
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center disabled:opacity-50"
+              title="Atualizar dados do Google Drive"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoadingDriveData ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => setShowAddDriveModal(true)}
+              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium transition-colors flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Novo Drive
+            </button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -295,35 +305,7 @@ export default function GoogleDriveSetup() {
             </div>
           </div>
           
-          {/* Botões de Ação - Baseados na aba Visualizar Planilha */}
-          <div className="mt-4 flex gap-3">
-            <button
-              onClick={() => setShowAddDriveModal(true)}
-              className="flex-1 px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-sm font-medium"
-            >
-              Adicionar Drive
-            </button>
-            <button
-              onClick={fetchDriveData}
-              disabled={isLoadingDriveData}
-              className="flex-1 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isLoadingDriveData ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Sincronizando...
-                </>
-              ) : (
-                'Sincronizar'
-              )}
-            </button>
-            <button
-              onClick={() => console.log('Configurar Drive')}
-              className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-            >
-              Configurar
-            </button>
-          </div>
+
         </div>
       </div>
 
