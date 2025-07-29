@@ -224,8 +224,7 @@ export default function LogsViewer() {
         message.includes('HMR') ||
         message.includes('workflow') ||
         message.includes('portal-visibility')
-      ) && !message.includes('📡 Usando captura local')
-      ) {
+      ) && !message.includes('📡 Usando captura local') {
         const realLog = captureConsoleLog(message, 'info', 'Sistema');
         setLogs(prevLogs => [...prevLogs, realLog].slice(-1000));
       }
