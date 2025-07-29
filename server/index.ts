@@ -767,33 +767,47 @@ async function startServer() {
     app.post('/api/auth/login', async (req: Request, res: Response) => {
       try {
         const { email, password } = req.body;
+        console.log(`🔐 Tentativa de login: ${email}`);
+
+        const bcrypt = await import('bcrypt');
 
         // Primeiro tentar vendedor
         const vendor = await storage.getVendorByEmail(email);
-        if (vendor && vendor.password === password) {
-          // 🔧 ATUALIZAR ÚLTIMO LOGIN DO VENDEDOR
-          await storage.updateVendorLastLogin(vendor.id);
-          console.log(`🔍 LOGIN VENDEDOR: ${vendor.name} (${vendor.email}) - último login atualizado`);
+        if (vendor) {
+          const passwordMatch = await bcrypt.compare(password, vendor.password);
+          console.log(`🔍 Vendor ${email}: senha ${passwordMatch ? 'correta' : 'incorreta'}`);
+          
+          if (passwordMatch) {
+            // 🔧 ATUALIZAR ÚLTIMO LOGIN DO VENDEDOR
+            await storage.updateVendorLastLogin(vendor.id);
+            console.log(`✅ LOGIN VENDEDOR: ${vendor.name} (${vendor.email}) - último login atualizado`);
 
-          return res.json({
-            success: true,
-            user: { ...vendor, type: 'vendor', role: 'vendor' }
-          });
+            return res.json({
+              success: true,
+              user: { ...vendor, type: 'vendor', role: 'vendor' }
+            });
+          }
         }
 
         // Depois tentar usuário do sistema
         const systemUser = await storage.getSystemUserByEmail(email);
-        if (systemUser && systemUser.password === password) {
-          // 🔧 ATUALIZAR ÚLTIMO LOGIN DO USUÁRIO DO SISTEMA
-          await storage.updateSystemUserLastLogin(systemUser.id);
-          console.log(`🔍 LOGIN SISTEMA: ${systemUser.name} (${systemUser.email}) - último login atualizado`);
+        if (systemUser) {
+          const passwordMatch = await bcrypt.compare(password, systemUser.password);
+          console.log(`🔍 System user ${email}: senha ${passwordMatch ? 'correta' : 'incorreta'}`);
+          
+          if (passwordMatch) {
+            // 🔧 ATUALIZAR ÚLTIMO LOGIN DO USUÁRIO DO SISTEMA
+            await storage.updateSystemUserLastLogin(systemUser.id);
+            console.log(`✅ LOGIN SISTEMA: ${systemUser.name} (${systemUser.email}) - último login atualizado`);
 
-          return res.json({
-            success: true,
-            user: { ...systemUser, type: 'system' }
-          });
+            return res.json({
+              success: true,
+              user: { ...systemUser, type: 'system' }
+            });
+          }
         }
 
+        console.log(`❌ Login falhou para ${email}`);
         res.status(401).json({ success: false, message: 'Credenciais inválidas' });
       } catch (error) {
         console.error('❌ Erro no login:', error);
