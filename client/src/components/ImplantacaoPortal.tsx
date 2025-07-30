@@ -121,10 +121,16 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
   // Funções para o editor de imagem e PDF
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     const file = event.target.files?.[0];
     if (file) {
       handleFile(file);
     }
+    
+    // Limpar input para permitir recarregar o mesmo arquivo
+    event.target.value = '';
   };
 
   // Função para processar arquivo (imagem ou PDF)
@@ -151,11 +157,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       setFileType('pdf');
       
       try {
-        // Criar URL do objeto para o PDF
-        const fileUrl = URL.createObjectURL(file);
-        console.log('📄 URL do PDF criada:', fileUrl);
-        setPdfUrl(fileUrl);
-        setSelectedImage(fileUrl); // Manter para compatibilidade com botões
+        // Não criar URL object para evitar abertura em nova aba
+        console.log('📄 Processando PDF sem criar URL object');
+        setSelectedImage('pdf-loaded'); // Valor placeholder para mostrar que PDF foi carregado
         setIsEditorOpen(false);
         
         // Renderizar PDF usando PDF.js nativo
@@ -175,16 +179,19 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // Funções de drag and drop
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(false);
     
     const files = Array.from(e.dataTransfer.files);
@@ -1290,6 +1297,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           accept="application/pdf,image/jpeg,image/jpg,image/png"
                           onChange={handleFileUpload}
                           className="hidden"
+                          onClick={(e) => e.stopPropagation()}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => e.preventDefault()}
                         />
                         <button
                           onClick={() => fileInputRef.current?.click()}
