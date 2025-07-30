@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🟩 Editor de PDF e Imagem - Abmix System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/4.8.1/filerobot-image-editor.min.js"></script>
+    <link rel="stylesheet" href="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/4.8.1/filerobot-image-editor.min.css">
+    <style>
+        .sfx-image-editor-container {
+            width: 100% !important;
+            height: calc(100vh - 120px) !important;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .upload-area {
+            border: 2px dashed #10b981;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #059669;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #047857;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            transform: scale(1.02);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-6">
+        <!-- Header -->
+        <div class="glass-effect rounded-xl shadow-xl p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold">🟩</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Editor de PDF e Imagem</h1>
+                        <p class="text-gray-600">Sistema Abmix - Portal de Implantação</p>
+                    </div>
+                </div>
+                <button onclick="window.close()" class="btn-secondary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Fechar
+                </button>
+            </div>
+        </div>
+
+        <!-- Upload Area -->
+        <div id="uploadArea" class="glass-effect rounded-xl shadow-xl p-6 mb-6">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 mx-auto text-emerald-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Carregar Imagem</h3>
+                <p class="text-gray-500 mb-4">Clique aqui ou arraste arquivos JPG, PNG para editar</p>
+                <div class="flex justify-center space-x-4">
+                    <button class="btn-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Selecionar Arquivo
+                    </button>
+                    <button onclick="openSampleImage()" class="btn-secondary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Usar Imagem de Exemplo
+                    </button>
+                </div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="loadImage(event)">
+        </div>
+
+        <!-- Editor Container -->
+        <div id="editorContainer" class="glass-effect rounded-xl shadow-xl p-6" style="display: none;">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-700">Editor de Imagem</h2>
+                <div class="flex space-x-3">
+                    <button onclick="downloadImage()" class="btn-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m5-3V9a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h5"></path>
+                        </svg>
+                        Baixar Imagem
+                    </button>
+                    <button onclick="newImage()" class="btn-secondary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Nova Imagem
+                    </button>
+                </div>
+            </div>
+            <div id="imageEditor"></div>
+        </div>
+    </div>
+
+    <script>
+        let imageEditor = null;
+        
+        // Configuração do editor
+        const editorConfig = {
+            source: '',
+            onSave: (editedImageObject, designState) => {
+                console.log('Imagem salva:', editedImageObject);
+            },
+            annotationsCommon: {
+                fill: '#10b981'
+            },
+            Text: {
+                text: 'Adicione texto aqui...',
+                fontSize: 16,
+                fontFamily: 'Arial',
+                fill: '#000000'
+            },
+            Rotate: {
+                angle: 90,
+                componentType: 'slider'
+            },
+            Crop: {
+                presetsItems: [
+                    {
+                        titleKey: 'original',
+                        descriptionKey: 'originalFormat',
+                        ratio: 0
+                    },
+                    {
+                        titleKey: 'square',
+                        descriptionKey: 'squareFormat',
+                        ratio: 1
+                    },
+                    {
+                        titleKey: 'A4',
+                        descriptionKey: 'A4Format',
+                        ratio: 1.414
+                    }
+                ]
+            },
+            theme: {
+                palette: {
+                    'bg-secondary': '#f9fafb',
+                    'bg-primary': '#ffffff',
+                    'accent-primary': '#10b981',
+                    'accent-primary-active': '#059669'
+                }
+            },
+            defaultSavedImageName: 'imagem-editada-abmix',
+            defaultSavedImageType: 'png',
+            defaultSavedImageQuality: 0.9,
+            useBackendTranslations: false,
+            translations: {
+                'pt': {
+                    'common.save': 'Salvar',
+                    'common.apply': 'Aplicar',
+                    'common.cancel': 'Cancelar',
+                    'common.back': 'Voltar',
+                    'common.loading': 'Carregando...',
+                    'toolbar.download': 'Baixar',
+                    'toolbar.undo': 'Desfazer',
+                    'toolbar.redo': 'Refazer',
+                    'toolbar.reset': 'Resetar',
+                    'annotationsTabs.text': 'Texto',
+                    'annotationsTabs.pen': 'Caneta',
+                    'annotationsTabs.arrow': 'Seta',
+                    'annotationsTabs.rect': 'Retângulo',
+                    'annotationsTabs.ellipse': 'Círculo',
+                    'annotationsTabs.polygon': 'Polígono',
+                    'annotationsTabs.image': 'Imagem',
+                    'tabsBar.filters': 'Filtros',
+                    'tabsBar.adjustments': 'Ajustes',
+                    'tabsBar.watermark': 'Marca d\'água',
+                    'tabsBar.annotate': 'Anotar',
+                    'tabsBar.crop': 'Cortar',
+                    'tabsBar.resize': 'Redimensionar',
+                    'tabsBar.rotate': 'Girar'
+                }
+            },
+            language: 'pt'
+        };
+
+        // Função para carregar imagem
+        function loadImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showEditor(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Função para mostrar o editor
+        function showEditor(imageUrl) {
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('editorContainer').style.display = 'block';
+            
+            // Destruir editor anterior se existir
+            if (imageEditor) {
+                imageEditor.terminate();
+            }
+            
+            // Configurar nova imagem
+            editorConfig.source = imageUrl;
+            
+            // Inicializar novo editor
+            const container = document.getElementById('imageEditor');
+            container.innerHTML = ''; // Limpar container
+            
+            imageEditor = new FilerobotImageEditor(container, editorConfig);
+            imageEditor.render();
+        }
+
+        // Função para abrir imagem de exemplo
+        function openSampleImage() {
+            // Criar uma imagem de exemplo simples
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+            
+            // Fundo branco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Texto de exemplo
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Abmix System', 400, 200);
+            
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '24px Arial';
+            ctx.fillText('Editor de Imagem', 400, 250);
+            ctx.fillText('Comece editando esta imagem de exemplo', 400, 350);
+            
+            // Desenhar um retângulo decorativo
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(100, 100, 600, 400);
+            
+            const imageUrl = canvas.toDataURL('image/png');
+            showEditor(imageUrl);
+        }
+
+        // Função para baixar imagem
+        function downloadImage() {
+            if (imageEditor) {
+                imageEditor.getCurrentImgData(1, 'png').then((imageData) => {
+                    const link = document.createElement('a');
+                    link.download = `imagem-editada-abmix-${Date.now()}.png`;
+                    link.href = imageData.imageBase64;
+                    link.click();
+                });
+            }
+        }
+
+        // Função para nova imagem
+        function newImage() {
+            document.getElementById('editorContainer').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+            
+            if (imageEditor) {
+                imageEditor.terminate();
+                imageEditor = null;
+            }
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea').querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showEditor(e.target.result);
+                };
+                reader.readAsDataURL(files[0]);
+            }
+        });
+
+        // Prevenir comportamento padrão de arrastar
+        document.addEventListener('dragover', (e) => e.preventDefault());
+        document.addEventListener('drop', (e) => e.preventDefault());
+    </script>
+</body>
+</html>
