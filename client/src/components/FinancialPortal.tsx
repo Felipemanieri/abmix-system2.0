@@ -86,9 +86,10 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     };
   }, []);
   
-  // Ativar sincronização em tempo real
+  // SINCRONIZAÇÃO TEMPORARIAMENTE DESABILITADA - causando unhandled rejections  
   useEffect(() => {
-    realTimeSync.enableAggressivePolling();
+    // realTimeSync.enableAggressivePolling(); // DISABLED
+    console.log('⚠️ Financial Portal aggressive polling DISABLED to prevent unhandled rejections');
   }, []);
   // Usar propostas reais da API
   const { proposals: realProposals, isLoading: proposalsLoading, rejectProposal } = useProposals();

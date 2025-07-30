@@ -93,7 +93,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
     queryKey: ['/api/proposals'],
     queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: 1000, // 1 segundo - resposta imediata
+    refetchInterval: false, // DESABILITADO - causando unhandled rejections a cada segundo
     retry: false, // Sem retry para evitar erros
   });
 
@@ -101,7 +101,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
     queryKey: ['/api/vendors'],
     queryFn: () => apiRequest('/api/vendors'),
-    refetchInterval: 1000, // 1 segundo - resposta imediata
+    refetchInterval: false, // DESABILITADO - causando unhandled rejections a cada segundo
     retry: false, // Sem retry para evitar erros
   });
   

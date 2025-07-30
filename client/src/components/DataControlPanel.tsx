@@ -32,7 +32,7 @@ export default function DataControlPanel() {
         return { totalProposals: 0, proposalsToday: 0, lastSync: new Date().toISOString() };
       }
     },
-    refetchInterval: 30000
+    refetchInterval: false // DESABILITADO - causando unhandled rejections
   });
 
   // Mutation para zerar propostas

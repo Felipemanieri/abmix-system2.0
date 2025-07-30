@@ -51,7 +51,7 @@ const MessageButton: React.FC<{ onClick: () => void; userRole?: string }> = ({ o
     checkUnreadMessages();
     
     // Verificar a cada 2 segundos
-    const interval = setInterval(checkUnreadMessages, 2000);
+    // const interval = setInterval(checkUnreadMessages, 2000); // DESABILITADO - causando unhandled rejections
     
     return () => clearInterval(interval);
   }, [userRole]);

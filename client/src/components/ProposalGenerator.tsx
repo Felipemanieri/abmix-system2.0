@@ -95,7 +95,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       if (!response.ok) throw new Error('Failed to fetch vendors');
       return response.json();
     },
-    refetchInterval: 3000 // Atualiza a cada 3 segundos
+    refetchInterval: false // DESABILITADO - causando unhandled rejections
   });
   
   const [contractData, setContractData] = useState<ContractData>({

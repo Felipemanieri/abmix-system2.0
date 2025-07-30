@@ -37,7 +37,7 @@ export default function MessageNotificationBadge({ userEmail, onMessagesView }: 
     checkUnreadMessages();
     
     // Polling a cada 1 segundo para notificações em tempo real
-    const interval = setInterval(checkUnreadMessages, 1000);
+    // const interval = setInterval(checkUnreadMessages, 1000); // DESABILITADO - causando unhandled rejections
     
     return () => clearInterval(interval);
   }, [userEmail]);

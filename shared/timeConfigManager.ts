@@ -213,16 +213,16 @@ class TimeConfigManager {
     }
   }
 
-  // Iniciar intervalo para um módulo
+  // INTERVALOS TEMPORARIAMENTE DESABILITADOS - causando unhandled rejections
   private startInterval(id: string): void {
     const config = this.timeConfigs.get(id);
     if (!config || !config.enabled) return;
 
-    const interval = setInterval(() => {
-      this.executeModuleSync(id);
-    }, config.currentValue * 1000);
-
-    this.intervalMap.set(id, interval);
+    console.log(`⚠️ Interval for ${config.name} DISABLED to prevent unhandled rejections`);
+    // const interval = setInterval(() => {
+    //   this.executeModuleSync(id);
+    // }, config.currentValue * 1000);
+    // this.intervalMap.set(id, interval);
     
     // Atualizar próximo sync
     const connection = this.googleConnections.get(config.module);

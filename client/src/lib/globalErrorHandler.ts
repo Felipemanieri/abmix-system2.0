@@ -1,63 +1,14 @@
 
-// Sistema global definitivo para eliminar todos os unhandled promise rejections
+// Sistema global SIMPLIFICADO para eliminar unhandled promise rejections
 export const setupGlobalErrorHandling = () => {
-  // Handler principal para unhandled promise rejections - SILENCIAR TUDO
+  // HANDLER SIMPLES - apenas prevenir sem manipular o evento
   window.addEventListener('unhandledrejection', (event) => {
-    // SILENCIAR COMPLETAMENTE TODAS AS UNHANDLED REJECTIONS
-    // para parar notificações no painel do Replit
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    return false;
+    event.preventDefault(); // Apenas prevenir a notificação padrão
   });
 
-  // Handler adicional para capturar todas as promises rejeitadas
-  const originalPromise = window.Promise;
-  window.Promise = class extends originalPromise {
-    constructor(executor) {
-      super((resolve, reject) => {
-        executor(resolve, (reason) => {
-          // Silenciar rejeições
-          reject(reason);
-        });
-      });
-    }
-    
-    catch(onRejected) {
-      return super.catch((reason) => {
-        // Silenciar todas as rejeições
-        if (onRejected) {
-          try {
-            return onRejected(reason);
-          } catch (e) {
-            // Silenciar erros no catch também
-            return undefined;
-          }
-        }
-        return undefined;
-      });
-    }
-  };
-
-  // Handler para erros gerais do JavaScript
+  // Handler básico para erros gerais
   window.addEventListener('error', (event) => {
-    const message = event.message || '';
-    
-    // Silenciar erros de scripts e rede
-    if (
-      message.includes('Script error') ||
-      message.includes('Network') ||
-      message.includes('fetch') ||
-      message.includes('Loading') ||
-      message.includes('ChunkLoadError') ||
-      message.includes('ResizeObserver')
-    ) {
-      event.preventDefault();
-      return;
-    }
-    
-    // Silenciar todos os outros erros
-    event.preventDefault();
+    event.preventDefault(); // Apenas prevenir a exibição padrão
   });
   
   // Override console.error para filtrar ruído
