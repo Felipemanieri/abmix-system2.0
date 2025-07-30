@@ -1114,17 +1114,8 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
               )}
               {activeTab === 'imageEditor' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="mb-6">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Editor de PDF e Imagem</h2>
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => window.open('/editor.html', '_blank')}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Editor PDF Completo
-                      </button>
-                    </div>
                   </div>
 
                   {/* Card do Editor de Imagem */}
