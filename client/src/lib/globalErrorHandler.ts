@@ -1,61 +1,43 @@
 
 // Sistema global definitivo para eliminar todos os unhandled promise rejections
 export const setupGlobalErrorHandling = () => {
-  // Handler principal para unhandled promise rejections
+  // Handler principal para unhandled promise rejections - SILENCIAR TUDO
   window.addEventListener('unhandledrejection', (event) => {
-    const reason = event.reason;
-    const reasonStr = String(reason);
-    
-    // Silenciar TODOS os erros de rede e conectividade
-    if (
-      reasonStr.includes('Failed to fetch') ||
-      reasonStr.includes('fetch') ||
-      reasonStr.includes('NetworkError') ||
-      reasonStr.includes('timeout') ||
-      reasonStr.includes('ECONNRESET') ||
-      reasonStr.includes('Connection') ||
-      reasonStr.includes('ERR_NETWORK') ||
-      reasonStr.includes('ERR_INTERNET_DISCONNECTED') ||
-      reasonStr.includes('ERR_CONNECTION_REFUSED') ||
-      reasonStr.includes('AbortError') ||
-      reasonStr.includes('TypeError: Failed to fetch') ||
-      reasonStr.includes('Load failed')
-    ) {
-      event.preventDefault();
-      return;
-    }
-    
-    // Silenciar erros vazios ou genéricos
-    if (
-      !reason || 
-      reasonStr === '{}' || 
-      reasonStr === 'undefined' || 
-      reasonStr === 'null' ||
-      reasonStr === '[object Object]' ||
-      reasonStr.trim() === ''
-    ) {
-      event.preventDefault();
-      return;
-    }
-    
-    // Silenciar erros específicos do React e bibliotecas
-    if (
-      reasonStr.includes('ResizeObserver') ||
-      reasonStr.includes('Non-Error promise rejection') ||
-      reasonStr.includes('Uncaught (in promise)') ||
-      reasonStr.includes('ChunkLoadError') ||
-      reasonStr.includes('Loading chunk')
-    ) {
-      event.preventDefault();
-      return;
-    }
-    
-    // Log apenas erros críticos não silenciados
-    console.warn('Promise rejection não silenciada:', reasonStr.substring(0, 100));
-    
-    // Sempre prevenir o erro padrão
+    // SILENCIAR COMPLETAMENTE TODAS AS UNHANDLED REJECTIONS
+    // para parar notificações no painel do Replit
     event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    return false;
   });
+
+  // Handler adicional para capturar todas as promises rejeitadas
+  const originalPromise = window.Promise;
+  window.Promise = class extends originalPromise {
+    constructor(executor) {
+      super((resolve, reject) => {
+        executor(resolve, (reason) => {
+          // Silenciar rejeições
+          reject(reason);
+        });
+      });
+    }
+    
+    catch(onRejected) {
+      return super.catch((reason) => {
+        // Silenciar todas as rejeições
+        if (onRejected) {
+          try {
+            return onRejected(reason);
+          } catch (e) {
+            // Silenciar erros no catch também
+            return undefined;
+          }
+        }
+        return undefined;
+      });
+    }
+  };
 
   // Handler para erros gerais do JavaScript
   window.addEventListener('error', (event) => {

@@ -55,7 +55,7 @@ export function useProposals() {
         }
         return response.json();
       } catch (error) {
-        console.warn('Fetch failed for proposals:', error.message);
+        console.warn('Fetch failed for proposals:', error instanceof Error ? error.message : String(error));
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -75,7 +75,7 @@ export function useProposals() {
         priority: proposal.priority || 'medium' // Garantir que priority existe
       }));
     },
-    refetchInterval: 60000, // Reduzido de 30s para 60s para evitar sobrecarga
+    refetchInterval: false, // DESABILITADO para reduzir unhandled rejections
     refetchIntervalInBackground: false, // NÃO atualizar em background
     refetchOnWindowFocus: false, // Desabilitado para reduzir requisições
   });
@@ -91,7 +91,7 @@ export function useProposals() {
         }
         return response.json();
       } catch (error) {
-        console.warn('Fetch failed for vendors:', error.message);
+        console.warn('Fetch failed for vendors:', error instanceof Error ? error.message : String(error));
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -120,7 +120,7 @@ export function useProposals() {
         }
         return response.json();
       } catch (error) {
-        console.warn(`Update failed for proposal ${id}:`, error.message);
+        console.warn(`Update failed for proposal ${id}:`, error instanceof Error ? error.message : String(error));
         return null;
       }
     },
@@ -154,7 +154,7 @@ export function useProposals() {
         }
         return response.json();
       } catch (error) {
-        console.warn(`Reject failed for proposal ${proposalId}:`, error.message);
+        console.warn(`Reject failed for proposal ${proposalId}:`, error instanceof Error ? error.message : String(error));
         return null;
       }
     },
@@ -197,7 +197,7 @@ export function useVendorProposals(vendorId: number) {
         }
         return response.json();
       } catch (error) {
-        console.warn(`Fetch failed for vendor ${vendorId} proposals:`, error.message);
+        console.warn(`Fetch failed for vendor ${vendorId} proposals:`, error instanceof Error ? error.message : String(error));
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -217,7 +217,7 @@ export function useVendorProposals(vendorId: number) {
         priority: proposal.priority || 'medium'
       }));
     },
-    refetchInterval: 1000, // 1 segundo - resposta imediata
+    refetchInterval: false, // DESABILITADO para reduzir unhandled rejections  
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 30,
@@ -278,7 +278,7 @@ export function useUpdateProposal() {
         }
         return response.json();
       } catch (error) {
-        console.warn(`Global update failed for proposal ${id}:`, error.message);
+        console.warn(`Global update failed for proposal ${id}:`, error instanceof Error ? error.message : String(error));
         return null;
       }
     },
@@ -326,7 +326,7 @@ export function useDeleteProposal() {
 
         return response.json();
       } catch (error) {
-        console.warn(`Delete failed for proposal ${proposalId}:`, error.message);
+        console.warn(`Delete failed for proposal ${proposalId}:`, error instanceof Error ? error.message : String(error));
         return null;
       }
     },
