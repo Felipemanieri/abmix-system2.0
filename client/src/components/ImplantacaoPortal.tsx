@@ -24,10 +24,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // Configuração do worker do PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface ImplantacaoPortalProps {
   user: any;
@@ -248,8 +245,14 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       message: error.message,
       name: error.name,
       stack: error.stack,
-      pdfUrl: pdfUrl
+      pdfUrl: pdfUrl,
+      fileType: fileType,
+      selectedFile: selectedFile
     });
+    
+    // Logs adicionais para debug
+    console.error('❌ Worker configurado para:', pdfjs.GlobalWorkerOptions.workerSrc);
+    console.error('❌ Versão do PDF.js:', pdfjs.version);
     
     if (error.message.includes('Loading task cancelled')) {
       showInternalNotification('Upload do PDF cancelado. Tente novamente.', 'error');
@@ -257,8 +260,10 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       showInternalNotification('Arquivo PDF inválido ou corrompido.', 'error');
     } else if (error.message.includes('worker')) {
       showInternalNotification('Erro no worker PDF. Recarregue a página.', 'error');
+    } else if (error.message.includes('Setting up fake worker')) {
+      showInternalNotification('Worker do PDF não carregou. Verificando conexão...', 'error');
     } else {
-      showInternalNotification(`Erro ao carregar PDF: ${error.message}`, 'error');
+      showInternalNotification(`Erro ao carregar PDF: ${error.message.substring(0, 100)}`, 'error');
     }
   };
 
@@ -1313,53 +1318,53 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                 {/* Container para o PDF */}
                                 <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg">
                                   {pdfUrl ? (
-                                    <Document
-                                      file={pdfUrl}
-                                      onLoadSuccess={onDocumentLoadSuccess}
-                                      onLoadError={onDocumentLoadError}
-                                      loading={
-                                        <div className="flex items-center justify-center p-8">
-                                          <div className="text-center">
-                                            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                            <p className="text-gray-600 dark:text-gray-400">Carregando PDF...</p>
-                                            <div className="mt-2 w-16 h-1 bg-emerald-200 rounded-full overflow-hidden">
-                                              <div className="h-full bg-emerald-600 rounded-full animate-pulse"></div>
+                                    <div className="relative">
+                                      <Document
+                                        file={pdfUrl}
+                                        onLoadSuccess={onDocumentLoadSuccess}
+                                        onLoadError={onDocumentLoadError}
+                                        loading={
+                                          <div className="flex items-center justify-center p-8">
+                                            <div className="text-center">
+                                              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                              <p className="text-gray-600 dark:text-gray-400">Carregando PDF...</p>
+                                              <div className="mt-2 w-16 h-1 bg-emerald-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-emerald-600 rounded-full animate-pulse"></div>
+                                              </div>
                                             </div>
                                           </div>
-                                        </div>
-                                      }
-                                      error={
-                                        <div className="flex items-center justify-center p-8">
-                                          <div className="text-center">
-                                            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-2" />
-                                            <p className="text-red-600 dark:text-red-400 font-medium">Erro ao carregar PDF</p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                              Verifique se o arquivo é um PDF válido
-                                            </p>
-                                            <button
-                                              onClick={() => {
-                                                clearFile();
-                                                showInternalNotification('Arquivo removido. Tente fazer upload novamente.', 'success');
-                                              }}
-                                              className="mt-3 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                                            >
-                                              Tentar Novamente
-                                            </button>
+                                        }
+                                        error={
+                                          <div className="p-4">
+                                            <div className="text-center mb-4">
+                                              <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+                                              <p className="text-yellow-600 dark:text-yellow-400 font-medium">
+                                                Modo de visualização alternativo
+                                              </p>
+                                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                Usando viewer nativo do navegador
+                                              </p>
+                                            </div>
+                                            <iframe
+                                              src={pdfUrl}
+                                              className="w-full h-80 border border-gray-300 dark:border-gray-600 rounded"
+                                              title="Visualizador de PDF"
+                                            />
                                           </div>
-                                        </div>
-                                      }
-                                    >
-                                      {numPages && Array.from(new Array(numPages), (el, index) => (
-                                        <Page
-                                          key={`page_${index + 1}`}
-                                          pageNumber={index + 1}
-                                          width={Math.min(window.innerWidth * 0.6, 600)}
-                                          className="mb-4 shadow-sm"
-                                          renderTextLayer={false}
-                                          renderAnnotationLayer={false}
-                                        />
-                                      ))}
-                                    </Document>
+                                        }
+                                      >
+                                        {numPages && Array.from(new Array(numPages), (el, index) => (
+                                          <Page
+                                            key={`page_${index + 1}`}
+                                            pageNumber={index + 1}
+                                            width={Math.min(window.innerWidth * 0.6, 600)}
+                                            className="mb-4 shadow-sm"
+                                            renderTextLayer={false}
+                                            renderAnnotationLayer={false}
+                                          />
+                                        ))}
+                                      </Document>
+                                    </div>
                                   ) : (
                                     <div className="flex items-center justify-center p-8">
                                       <div className="text-center">
