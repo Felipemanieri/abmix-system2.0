@@ -25,6 +25,7 @@ No Google Cloud Console - Limpar URLs antigas:
 **ADICIONAR apenas a URL correta:**
 - ✅ `https://abmixsystem.replit.app`
 - ✅ `https://abmixsystem.replit.app/auth/google/callback`
+- ✅ `https://abmixsystem.replit.app/oauth/callback`
 
 ### 3. VERIFICAR FUNCIONAMENTO
 Após deploy e configuração OAuth:
