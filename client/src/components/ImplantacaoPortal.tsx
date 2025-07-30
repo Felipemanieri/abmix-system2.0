@@ -92,11 +92,13 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // Adicionar estado para notificações internas
   const [internalNotifications, setInternalNotifications] = useState<{id: string, message: string, type: 'success' | 'error'}[]>([]);
   
-  // Estados para o editor de imagem
+  // Estados para o editor de imagem e PDF
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileType, setFileType] = useState<'image' | 'pdf' | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Função para mostrar notificação interna no painel
   const showInternalNotification = (message: string, type: 'success' | 'error') => {
@@ -108,47 +110,88 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     }, 5000);
   };
 
-  // Funções para o editor de imagem
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Funções para o editor de imagem e PDF
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg')) {
-      setImageFile(file);
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  // Função para processar arquivo (imagem ou PDF)
+  const handleFile = (file: File) => {
+    if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg') {
+      setSelectedFile(file);
+      setFileType('image');
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-        setIsEditorOpen(false); // Inicialmente fechado, será aberto quando clicar em "Abrir Editor"
+        setIsEditorOpen(false);
       };
       reader.readAsDataURL(file);
       showInternalNotification('Imagem carregada com sucesso!', 'success');
+    } else if (file.type === 'application/pdf') {
+      setSelectedFile(file);
+      setFileType('pdf');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+        setIsEditorOpen(false);
+      };
+      reader.readAsDataURL(file);
+      showInternalNotification('PDF carregado com sucesso!', 'success');
     } else {
-      showInternalNotification('Por favor, selecione apenas imagens JPG ou PNG.', 'error');
+      showInternalNotification('Por favor, selecione apenas imagens (JPG, PNG) ou arquivos PDF.', 'error');
     }
   };
 
-  const openImageEditor = () => {
+  // Funções de drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  };
+
+  const openEditor = () => {
     if (selectedImage) {
       setIsEditorOpen(true);
-      showInternalNotification('Editor de imagem aberto!', 'success');
+      showInternalNotification(`Editor de ${fileType} aberto!`, 'success');
     } else {
-      showInternalNotification('Por favor, carregue uma imagem primeiro.', 'error');
+      showInternalNotification('Por favor, carregue um arquivo primeiro.', 'error');
     }
   };
 
-  const downloadEditedImage = () => {
-    if (selectedImage) {
+  const downloadEditedFile = () => {
+    if (selectedImage && selectedFile) {
       const link = document.createElement('a');
-      link.download = `imagem-editada-abmix-${Date.now()}.png`;
+      const fileExtension = fileType === 'pdf' ? 'pdf' : 'png';
+      link.download = `arquivo-editado-abmix-${Date.now()}.${fileExtension}`;
       link.href = selectedImage;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showInternalNotification('Imagem baixada com sucesso!', 'success');
+      showInternalNotification(`${fileType === 'pdf' ? 'PDF' : 'Imagem'} baixado com sucesso!`, 'success');
     }
   };
 
-  const clearImage = () => {
+  const clearFile = () => {
     setSelectedImage(null);
-    setImageFile(null);
+    setSelectedFile(null);
+    setFileType(null);
     setIsEditorOpen(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -1113,21 +1156,41 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                   {/* Card do Editor de Imagem */}
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-6">
                     <div className="flex items-center mb-4">
-                      <Image className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Editor de Imagem Simples</h3>
+                      {fileType === 'pdf' ? (
+                        <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+                      ) : (
+                        <Image className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+                      )}
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        Editor de {selectedImage ? (fileType === 'pdf' ? 'PDF' : 'Imagem') : 'PDF e Imagem'}
+                      </h3>
                     </div>
 
-                    {/* Upload de Imagem */}
+                    {/* Upload de PDF e Imagem com Drag & Drop */}
                     {!selectedImage && (
-                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg p-8 text-center">
+                      <div 
+                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                          isDragOver 
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-500' 
+                            : 'border-gray-300 dark:border-gray-500'
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                      >
                         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload de Imagem</h4>
-                        <p className="text-gray-600 dark:text-gray-300 mb-4">Selecione uma imagem JPG ou PNG para editar</p>
+                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload de PDF ou Imagem</h4>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4">
+                          {isDragOver 
+                            ? 'Solte o arquivo aqui...' 
+                            : 'Arraste e solte ou clique para selecionar um arquivo PDF, JPG ou PNG'
+                          }
+                        </p>
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept="image/jpeg,image/jpg,image/png"
-                          onChange={handleImageUpload}
+                          accept="application/pdf,image/jpeg,image/jpg,image/png"
+                          onChange={handleFileUpload}
                           className="hidden"
                         />
                         <button
@@ -1135,7 +1198,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                         >
                           <Upload className="w-4 h-4 mr-2" />
-                          Selecionar Imagem
+                          Selecionar Arquivo
                         </button>
                       </div>
                     )}
@@ -1145,8 +1208,13 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       <div className="space-y-4">
                         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
                           <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-md font-medium text-gray-900 dark:text-white">Imagem Carregada</h4>
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
+                              {fileType === 'pdf' ? 'PDF Carregado' : 'Imagem Carregada'}
+                            </h4>
                             <div className="flex items-center space-x-2">
+                              <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+                                {fileType?.toUpperCase()}
+                              </span>
                               <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
@@ -1155,7 +1223,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                 Trocar
                               </button>
                               <button
-                                onClick={clearImage}
+                                onClick={clearFile}
                                 className="inline-flex items-center px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
                               >
                                 <Trash2 className="w-3 h-3 mr-1" />
@@ -1164,13 +1232,28 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                             </div>
                           </div>
                           
-                          {/* Preview da Imagem */}
+                          {/* Preview do Arquivo */}
                           <div className="flex justify-center mb-4">
-                            <img 
-                              src={selectedImage} 
-                              alt="Imagem carregada" 
-                              className="max-w-full max-h-96 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
-                            />
+                            {fileType === 'pdf' ? (
+                              <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-8 text-center">
+                                <FileText className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                  PDF Carregado
+                                </h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                  Nome: {selectedFile?.name}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Use o editor para visualizar e editar o PDF
+                                </p>
+                              </div>
+                            ) : (
+                              <img 
+                                src={selectedImage} 
+                                alt="Imagem carregada" 
+                                className="max-w-full max-h-96 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                              />
+                            )}
                           </div>
 
                           {/* Ferramentas de Edição */}
@@ -1178,7 +1261,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                             <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Ferramentas de Edição</h5>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                               <button
-                                onClick={openImageEditor}
+                                onClick={openEditor}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Type className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
@@ -1186,7 +1269,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openImageEditor}
+                                onClick={openEditor}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Highlighter className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mb-1" />
@@ -1194,7 +1277,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openImageEditor}
+                                onClick={openEditor}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Crop className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
@@ -1202,7 +1285,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openImageEditor}
+                                onClick={openEditor}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Eraser className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
@@ -1214,7 +1297,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           {/* Botões de Ação */}
                           <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
                             <button
-                              onClick={openImageEditor}
+                              onClick={openEditor}
                               className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                             >
                               <Edit className="w-4 h-4 mr-2" />
@@ -1222,11 +1305,11 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                             </button>
                             
                             <button
-                              onClick={downloadEditedImage}
+                              onClick={downloadEditedFile}
                               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                               <Download className="w-4 h-4 mr-2" />
-                              Baixar Imagem
+                              Baixar {fileType === 'pdf' ? 'PDF' : 'Imagem'}
                             </button>
                           </div>
                         </div>
