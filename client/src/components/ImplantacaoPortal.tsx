@@ -20,9 +20,14 @@ import { realTimeSync } from '../utils/realTimeSync';
 import statusManager, { ProposalStatus, STATUS_CONFIG } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
 import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
 // Configuração do worker do PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 interface ImplantacaoPortalProps {
   user: any;
@@ -126,6 +131,12 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
   // Função para processar arquivo (imagem ou PDF)
   const handleFile = (file: File) => {
+    console.log('📄 Processando arquivo:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
+
     if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg') {
       setSelectedFile(file);
       setFileType('image');
@@ -137,17 +148,26 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       reader.readAsDataURL(file);
       showInternalNotification('Imagem carregada com sucesso!', 'success');
     } else if (file.type === 'application/pdf') {
+      console.log('📄 Iniciando processamento do PDF...');
       setSelectedFile(file);
       setFileType('pdf');
       
-      // Criar URL do objeto para o PDF
-      const fileUrl = URL.createObjectURL(file);
-      setPdfUrl(fileUrl);
-      setSelectedImage(fileUrl); // Manter para compatibilidade com botões
-      setIsEditorOpen(false);
-      
-      showInternalNotification('PDF carregado com sucesso!', 'success');
+      try {
+        // Criar URL do objeto para o PDF
+        const fileUrl = URL.createObjectURL(file);
+        console.log('📄 URL do PDF criada:', fileUrl);
+        setPdfUrl(fileUrl);
+        setSelectedImage(fileUrl); // Manter para compatibilidade com botões
+        setIsEditorOpen(false);
+        
+        showInternalNotification('PDF carregado com sucesso!', 'success');
+        console.log('📄 PDF processado com sucesso');
+      } catch (error) {
+        console.error('❌ Erro ao processar PDF:', error);
+        showInternalNotification('Erro ao processar PDF', 'error');
+      }
     } else {
+      console.log('❌ Tipo de arquivo não suportado:', file.type);
       showInternalNotification('Por favor, selecione apenas imagens (JPG, PNG) ou arquivos PDF.', 'error');
     }
   };
@@ -217,14 +237,29 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
   // Callback para quando o PDF é carregado com sucesso
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    console.log('✅ PDF carregado com sucesso:', numPages, 'páginas');
     setNumPages(numPages);
     showInternalNotification(`PDF carregado com ${numPages} páginas!`, 'success');
   };
 
   // Callback para quando há erro ao carregar o PDF
   const onDocumentLoadError = (error: Error) => {
-    console.error('Erro ao carregar PDF:', error);
-    showInternalNotification('Erro ao carregar PDF. Verifique se o arquivo está válido.', 'error');
+    console.error('❌ Erro detalhado ao carregar PDF:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      pdfUrl: pdfUrl
+    });
+    
+    if (error.message.includes('Loading task cancelled')) {
+      showInternalNotification('Upload do PDF cancelado. Tente novamente.', 'error');
+    } else if (error.message.includes('Invalid PDF')) {
+      showInternalNotification('Arquivo PDF inválido ou corrompido.', 'error');
+    } else if (error.message.includes('worker')) {
+      showInternalNotification('Erro no worker PDF. Recarregue a página.', 'error');
+    } else {
+      showInternalNotification(`Erro ao carregar PDF: ${error.message}`, 'error');
+    }
   };
 
   // Função para excluir proposta diretamente (sem confirmação do navegador)
@@ -1277,7 +1312,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                 
                                 {/* Container para o PDF */}
                                 <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg">
-                                  {pdfUrl && (
+                                  {pdfUrl ? (
                                     <Document
                                       file={pdfUrl}
                                       onLoadSuccess={onDocumentLoadSuccess}
@@ -1287,19 +1322,51 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                           <div className="text-center">
                                             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                                             <p className="text-gray-600 dark:text-gray-400">Carregando PDF...</p>
+                                            <div className="mt-2 w-16 h-1 bg-emerald-200 rounded-full overflow-hidden">
+                                              <div className="h-full bg-emerald-600 rounded-full animate-pulse"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      }
+                                      error={
+                                        <div className="flex items-center justify-center p-8">
+                                          <div className="text-center">
+                                            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-2" />
+                                            <p className="text-red-600 dark:text-red-400 font-medium">Erro ao carregar PDF</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                              Verifique se o arquivo é um PDF válido
+                                            </p>
+                                            <button
+                                              onClick={() => {
+                                                clearFile();
+                                                showInternalNotification('Arquivo removido. Tente fazer upload novamente.', 'success');
+                                              }}
+                                              className="mt-3 px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                                            >
+                                              Tentar Novamente
+                                            </button>
                                           </div>
                                         </div>
                                       }
                                     >
-                                      {Array.from(new Array(numPages), (el, index) => (
+                                      {numPages && Array.from(new Array(numPages), (el, index) => (
                                         <Page
                                           key={`page_${index + 1}`}
                                           pageNumber={index + 1}
                                           width={Math.min(window.innerWidth * 0.6, 600)}
                                           className="mb-4 shadow-sm"
+                                          renderTextLayer={false}
+                                          renderAnnotationLayer={false}
                                         />
                                       ))}
                                     </Document>
+                                  ) : (
+                                    <div className="flex items-center justify-center p-8">
+                                      <div className="text-center">
+                                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                        <p className="text-gray-600 dark:text-gray-400">Nenhum PDF carregado</p>
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
                                 
