@@ -55,7 +55,7 @@ export function useProposals() {
         }
         return response.json();
       } catch (error) {
-        console.warn('Fetch failed for proposals:', error.message);
+        console.warn('Fetch failed for proposals:', error instanceof Error ? error.message : String(error));
         return []; // Retornar array vazio em caso de erro
       }
     },
