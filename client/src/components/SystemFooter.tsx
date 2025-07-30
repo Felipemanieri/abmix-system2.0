@@ -81,7 +81,7 @@ const SystemFooter: React.FC = () => {
     
     return () => {
       clearInterval(timer);
-      // clearInterval(proposalsTimer); // Comentado junto com proposalsTimer
+      clearInterval(proposalsTimer);
       if (websocket && websocket.readyState === WebSocket.OPEN) {
         websocket.close();
       }
