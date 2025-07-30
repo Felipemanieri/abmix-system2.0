@@ -1041,14 +1041,6 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                 <Database className="w-4 h-4 mr-2" />
                 <span>Google Sheets</span>
               </button>
-              
-              <button
-                onClick={() => setActiveTab('imageEditor')}
-                className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-200 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors duration-200 shadow-sm border border-emerald-200 dark:border-emerald-700"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                <span>🟩 Editor de PDF e Imagem</span>
-              </button>
             </div>
           </div>
 
