@@ -61,13 +61,7 @@ export default function LogsViewer() {
     const originalConsoleError = console.error;
     const originalConsoleWarn = console.warn;
 
-    // Capturar unhandled rejections
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      const errorLog = generateLog(`Promise rejeitada: ${event.reason}`, 'error', 'Sistema');
-      setLogs(prevLogs => [...prevLogs, errorLog].slice(-100));
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    // Handler de unhandled rejections removido - já tratado no globalErrorHandler
 
     // Interceptar console.log
     console.log = (...args) => {
@@ -104,7 +98,6 @@ export default function LogsViewer() {
       console.log = originalConsoleLog;
       console.error = originalConsoleError;
       console.warn = originalConsoleWarn;
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
 
     // Buscar estatísticas do sistema com tratamento correto de promises

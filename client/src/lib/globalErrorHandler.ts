@@ -50,7 +50,10 @@ export const setupGlobalErrorHandling = () => {
       return;
     }
     
-    // Silenciar TODOS os outros erros para logs limpos
+    // Log apenas erros críticos não silenciados
+    console.warn('Promise rejection não silenciada:', reasonStr.substring(0, 100));
+    
+    // Sempre prevenir o erro padrão
     event.preventDefault();
   });
 

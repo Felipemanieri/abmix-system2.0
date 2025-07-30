@@ -12,7 +12,7 @@ import RestrictedAreaPortalSimple from './components/RestrictedAreaPortalSimple'
 import ClientProposalView from './components/ClientProposalView';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
-import { BrowserRouter as Router } from 'react-router-dom';
+
 
 // Handler único para unhandled promise rejections
 // Sistema global de tratamento de erros já configurado em main.tsx
@@ -210,8 +210,6 @@ function App() {
     console.log('🔄 Portal visibility:', portalVisibility);
 
     return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
       window.removeEventListener('portalVisibilityChanged', handlePortalVisibilityChanged);
     };
   }, []); // Removido portalVisibility das dependências para evitar loop infinito
