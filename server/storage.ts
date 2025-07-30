@@ -6,7 +6,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Vendor operations
   getVendor(id: number): Promise<Vendor | undefined>;
   getVendorByEmail(email: string): Promise<Vendor | undefined>;
@@ -14,7 +14,7 @@ export interface IStorage {
   createVendor(vendor: InsertVendor): Promise<Vendor>;
   updateVendor(id: number, vendor: Partial<InsertVendor>): Promise<Vendor>;
   deleteVendor(id: number): Promise<void>;
-  
+
   // Proposal operations
   createProposal(proposal: any): Promise<any>;
   getProposal(id: string): Promise<any>;
@@ -25,7 +25,7 @@ export interface IStorage {
   getAllProposals(): Promise<any[]>;
   getProposalCount(): Promise<number>;
   approveProposal(id: string): Promise<any>;
-  
+
   // Vendor Target operations
   createVendorTarget(target: InsertVendorTarget): Promise<VendorTarget>;
   getVendorTarget(vendorId: number, month: number, year: number): Promise<VendorTarget | undefined>;
@@ -33,25 +33,25 @@ export interface IStorage {
   getAllVendorTargets(): Promise<VendorTarget[]>;
   updateVendorTarget(id: number, target: Partial<InsertVendorTarget>): Promise<VendorTarget>;
   deleteVendorTarget(id: number): Promise<void>;
-  
+
   // Team Target operations
   createTeamTarget(target: InsertTeamTarget): Promise<TeamTarget>;
   getTeamTarget(month: number, year: number): Promise<TeamTarget | undefined>;
   getAllTeamTargets(): Promise<TeamTarget[]>;
   updateTeamTarget(id: number, target: Partial<InsertTeamTarget>): Promise<TeamTarget>;
   deleteTeamTarget(id: number): Promise<void>;
-  
+
   // Award operations
   createAward(award: InsertAward): Promise<Award>;
   getVendorAwards(vendorId: number): Promise<Award[]>;
   getAllAwards(): Promise<Award[]>;
   updateAward(id: number, award: Partial<InsertAward>): Promise<Award>;
   deleteAward(id: number): Promise<void>;
-  
+
   // Analytics operations
   getVendorStats(vendorId: number, month?: number, year?: number): Promise<any>;
   getTeamStats(month?: number, year?: number): Promise<any>;
-  
+
   // System Users operations
   getAllSystemUsers(): Promise<SystemUser[]>;
   getSystemUser(id: number): Promise<SystemUser | undefined>;
@@ -60,7 +60,7 @@ export interface IStorage {
   updateSystemUser(id: number, user: Partial<InsertSystemUser>): Promise<SystemUser>;
   deleteSystemUser(id: number): Promise<void>;
   updateLastLogin(id: number): Promise<void>;
-  
+
   // Attachment operations
   getAllAttachments(): Promise<Attachment[]>;
   getAttachment(id: number): Promise<Attachment | undefined>;
@@ -68,24 +68,24 @@ export interface IStorage {
   createAttachment(attachment: InsertAttachment): Promise<Attachment>;
   updateAttachmentStatus(id: number, status: string, approvedBy?: string): Promise<Attachment>;
   deleteAttachment(id: number): Promise<void>;
-  
+
   // Drive Config operations
   getAllDriveConfigs(): Promise<DriveConfig[]>;
   getDriveConfig(id: number): Promise<DriveConfig | undefined>;
   createDriveConfig(config: InsertDriveConfig): Promise<DriveConfig>;
   updateDriveConfig(id: number, config: Partial<InsertDriveConfig>): Promise<DriveConfig>;
-  
+
   // System Settings operations for persistent configurations
   getSystemSetting(key: string): Promise<string | null>;
   setSystemSetting(key: string, value: string, description?: string): Promise<void>;
   deleteSystemSetting(key: string): Promise<void>;
   getAllSystemSettings(): Promise<SystemSetting[]>;
-  
+
   // System Settings operations
   getSystemSetting(key: string): Promise<string | null>;
   setSystemSetting(key: string, value: string): Promise<void>;
   deleteDriveConfig(id: number): Promise<void>;
-  
+
   // Internal Messages operations - APENAS RECEBIDAS
   getInboxMessages(userEmail: string): Promise<InternalMessage[]>;
   getSentMessages(userEmail: string): Promise<InternalMessage[]>;
@@ -153,12 +153,12 @@ export class DatabaseStorage implements IStorage {
   async createProposal(proposalData: any): Promise<any> {
     try {
       console.log('💾 STORAGE: Inserindo proposta no banco:', proposalData);
-      
+
       const [proposal] = await db
         .insert(proposals)
         .values(proposalData)
         .returning();
-      
+
       console.log('✅ STORAGE: Proposta inserida com sucesso:', proposal.id);
       return proposal;
     } catch (error) {
@@ -398,7 +398,7 @@ export class DatabaseStorage implements IStorage {
 
     // Para faturamento total: considerar apenas propostas IMPLANTADAS
     const implantedProposals = filteredProposals.filter((p: any) => p.status === 'implantado');
-    
+
     const totalProposals = filteredProposals.length;
     const totalValue = implantedProposals.reduce((sum: number, p: any) => {
       const contractData = p.contractData as any;
@@ -411,7 +411,7 @@ export class DatabaseStorage implements IStorage {
 
     // Ticket médio baseado apenas em propostas implantadas
     const averageValue = implantedProposals.length > 0 ? totalValue / implantedProposals.length : 0;
-    
+
     // Vendedores ativos: vendedores que têm pelo menos uma proposta
     const totalVendors = new Set(filteredProposals.filter((p: any) => p.vendorId).map((p: any) => p.vendorId)).size;
 
@@ -573,7 +573,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // Upsert: tentar atualizar primeiro, se não existir, inserir
       const existing = await this.getSystemSetting(key);
-      
+
       if (existing !== null) {
         // Atualizar existente
         await db
@@ -637,7 +637,7 @@ export class DatabaseStorage implements IStorage {
   async getInboxMessages(userEmail: string): Promise<InternalMessage[]> {
     try {
       console.log(`📬 STORAGE: Buscando mensagens recebidas para ${userEmail}`);
-      
+
       // Buscar usando LIKE para encontrar o email dentro do JSON (escapando a palavra reservada "to")
       const searchPattern = `%${userEmail}%`;
       const messages = await db
@@ -645,7 +645,7 @@ export class DatabaseStorage implements IStorage {
         .from(internalMessages)
         .where(sql`"to" LIKE ${searchPattern}`)
         .orderBy(desc(internalMessages.createdAt));
-      
+
       console.log(`📬 STORAGE: Encontradas ${messages.length} mensagens para ${userEmail}`);
       return messages;
     } catch (error) {
@@ -722,7 +722,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMessage(messageId: string): Promise<void> {
     console.log(`🗑️ STORAGE: Deletando mensagem ${messageId} do PostgreSQL`);
-    
+
     try {
       const id = parseInt(messageId);
       await db.delete(internalMessages).where(eq(internalMessages.id, id));
@@ -735,7 +735,7 @@ export class DatabaseStorage implements IStorage {
 
   async rejectProposal(proposalId: string): Promise<void> {
     console.log(`❌ STORAGE: Rejeitando proposta ${proposalId}`);
-    
+
     try {
       await db
         .update(proposals)
@@ -746,7 +746,7 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .where(eq(proposals.id, proposalId));
-      
+
       console.log(`✅ STORAGE: Proposta ${proposalId} rejeitada com sucesso`);
     } catch (error) {
       console.error(`❌ STORAGE: Erro ao rejeitar proposta ${proposalId}:`, error);
@@ -765,7 +765,7 @@ export class DatabaseStorage implements IStorage {
   }>> {
     try {
       console.log('📊 STORAGE: Buscando configurações do Drive/Sheets');
-      
+
       // Configuração da planilha principal com ID correto
       const configs = [
         {
@@ -777,7 +777,7 @@ export class DatabaseStorage implements IStorage {
           status: 'active' as const
         }
       ];
-      
+
       console.log(`✅ STORAGE: ${configs.length} configurações encontradas`);
       return configs;
     } catch (error) {
