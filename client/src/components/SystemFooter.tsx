@@ -77,7 +77,7 @@ const SystemFooter: React.FC = () => {
     };
     
     // Atualizar propostas a cada 2 minutos como backup
-    // const proposalsTimer = setInterval(fetchProposalsToday, 120000); // DESABILITADO - causando unhandled rejections
+    const proposalsTimer = setInterval(fetchProposalsToday, 120000);
     
     return () => {
       clearInterval(timer);

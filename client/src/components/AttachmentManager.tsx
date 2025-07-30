@@ -70,7 +70,7 @@ export default function AttachmentManager() {
       if (!response.ok) throw new Error('Failed to fetch attachments');
       return response.json();
     },
-    refetchInterval: false // DESABILITADO - causando unhandled rejections
+    refetchInterval: 60000 // 60 segundos - otimizado
   });
 
   // Fetch proposals for filter

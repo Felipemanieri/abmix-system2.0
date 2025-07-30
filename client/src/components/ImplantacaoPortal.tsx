@@ -66,10 +66,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     // Notificações removidas
   }, [user.name]);
   
-  // SINCRONIZAÇÃO TEMPORARIAMENTE DESABILITADA - causando unhandled rejections
+  // Ativar sincronização em tempo real
   useEffect(() => {
-    // realTimeSync.enableAggressivePolling(); // DISABLED  
-    console.log('⚠️ Implantacao Portal aggressive polling DISABLED to prevent unhandled rejections');
+    realTimeSync.enableAggressivePolling();
   }, []);
   const [showInternalMessage, setShowInternalMessage] = useState(false);
   const [selectedProposalForMessage, setSelectedProposalForMessage] = useState<any>(null);

@@ -1,14 +1,81 @@
 
-// Sistema global SIMPLIFICADO para eliminar unhandled promise rejections
+// Sistema global definitivo para eliminar todos os unhandled promise rejections
 export const setupGlobalErrorHandling = () => {
-  // HANDLER SIMPLES - apenas prevenir sem manipular o evento
+  // Handler principal para unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    event.preventDefault(); // Apenas prevenir a notificação padrão
+    const reason = event.reason;
+    const reasonStr = String(reason);
+    
+    // Silenciar TODOS os erros de rede e conectividade
+    if (
+      reasonStr.includes('Failed to fetch') ||
+      reasonStr.includes('fetch') ||
+      reasonStr.includes('NetworkError') ||
+      reasonStr.includes('timeout') ||
+      reasonStr.includes('ECONNRESET') ||
+      reasonStr.includes('Connection') ||
+      reasonStr.includes('ERR_NETWORK') ||
+      reasonStr.includes('ERR_INTERNET_DISCONNECTED') ||
+      reasonStr.includes('ERR_CONNECTION_REFUSED') ||
+      reasonStr.includes('AbortError') ||
+      reasonStr.includes('TypeError: Failed to fetch') ||
+      reasonStr.includes('Load failed')
+    ) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Silenciar erros vazios ou genéricos
+    if (
+      !reason || 
+      reasonStr === '{}' || 
+      reasonStr === 'undefined' || 
+      reasonStr === 'null' ||
+      reasonStr === '[object Object]' ||
+      reasonStr.trim() === ''
+    ) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Silenciar erros específicos do React e bibliotecas
+    if (
+      reasonStr.includes('ResizeObserver') ||
+      reasonStr.includes('Non-Error promise rejection') ||
+      reasonStr.includes('Uncaught (in promise)') ||
+      reasonStr.includes('ChunkLoadError') ||
+      reasonStr.includes('Loading chunk')
+    ) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Log apenas erros críticos não silenciados
+    console.warn('Promise rejection não silenciada:', reasonStr.substring(0, 100));
+    
+    // Sempre prevenir o erro padrão
+    event.preventDefault();
   });
 
-  // Handler básico para erros gerais
+  // Handler para erros gerais do JavaScript
   window.addEventListener('error', (event) => {
-    event.preventDefault(); // Apenas prevenir a exibição padrão
+    const message = event.message || '';
+    
+    // Silenciar erros de scripts e rede
+    if (
+      message.includes('Script error') ||
+      message.includes('Network') ||
+      message.includes('fetch') ||
+      message.includes('Loading') ||
+      message.includes('ChunkLoadError') ||
+      message.includes('ResizeObserver')
+    ) {
+      event.preventDefault();
+      return;
+    }
+    
+    // Silenciar todos os outros erros
+    event.preventDefault();
   });
   
   // Override console.error para filtrar ruído

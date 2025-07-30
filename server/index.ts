@@ -1360,12 +1360,12 @@ async function startServer() {
     console.log("✅ Servidor configurado para PRODUÇÃO com arquivos do build");
   }
 
-  // WEBSOCKET REATIVADO - para resolver notificações do painel
-  const realTimeManager = new RealTimeManager(server);
-  (global as any).realTimeManager = realTimeManager;
-  app.set('wss', realTimeManager.wss);
+  // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
+  // const realTimeManager = new RealTimeManager(server);
+  // (global as any).realTimeManager = realTimeManager;
+  // app.set('wss', realTimeManager.wss);
   
-  console.log('✅ WebSocket reativado e funcionando');
+  console.log('⚠️ WebSocket temporariamente desabilitado para correção');
 
   // Try to start server with proper error handling
   server.listen(Number(PORT), "0.0.0.0", () => {

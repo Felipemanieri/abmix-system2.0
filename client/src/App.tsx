@@ -74,37 +74,36 @@ function FooterStats() {
     // Buscar propostas imediatamente
     fetchProposalsToday();
     
-    // WEBSOCKET TEMPORARIAMENTE DESABILITADO NO FOOTERSTATS - isolando fonte das unhandled rejections
-    // const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // const wsUrl = `${protocol}//${window.location.host}/ws`;
-    // const websocket = new WebSocket(wsUrl);
-    // 
-    // websocket.onopen = () => {
-    //   console.log('🔌 WebSocket conectado no FooterStats');
-    // };
-    // 
-    // websocket.onmessage = (event) => {
-    //   try {
-    //     const message = JSON.parse(event.data);
-    //     if (message.type === 'proposal_created' || message.type === 'proposal_updated') {
-    //       console.log('🔄 Atualizando contador FooterStats após evento:', message.type);
-    //       setTimeout(fetchProposalsToday, 500);
-    //     }
-    //   } catch (error) {
-    //     console.error('Erro ao processar mensagem WebSocket:', error);
-    //   }
-    // };
+    // Configurar WebSocket para atualizações em tempo real
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const websocket = new WebSocket(wsUrl);
     
-    // BACKUP TEMPORARIAMENTE DESABILITADO - estava causando unhandled rejections no painel Replit
-    // const proposalsTimer = setInterval(fetchProposalsToday, 120000);
+    websocket.onopen = () => {
+      console.log('🔌 WebSocket conectado no FooterStats');
+    };
+    
+    websocket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        if (message.type === 'proposal_created' || message.type === 'proposal_updated') {
+          console.log('🔄 Atualizando contador FooterStats após evento:', message.type);
+          setTimeout(fetchProposalsToday, 500);
+        }
+      } catch (error) {
+        console.error('Erro ao processar mensagem WebSocket:', error);
+      }
+    };
+    
+    // Atualizar a cada 2 minutos como backup
+    const proposalsTimer = setInterval(fetchProposalsToday, 120000);
     
     return () => {
       clearInterval(timer);
-      // clearInterval(proposalsTimer); // DESABILITADO junto com backup
-      // WebSocket cleanup desabilitado também
-      // if (websocket && websocket.readyState === WebSocket.OPEN) {
-      //   websocket.close();
-      // }
+      clearInterval(proposalsTimer);
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.close();
+      }
     };
   }, []);
 

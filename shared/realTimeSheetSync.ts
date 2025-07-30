@@ -58,20 +58,20 @@ export class RealTimeSheetSync {
     }
   }
 
-  // SINCRONIZAÇÃO TEMPORARIAMENTE DESABILITADA - causando unhandled rejections
+  // Sincronizar com Google Sheets (placeholder para futura implementação)
   private async syncWithGoogleSheets(): Promise<void> {
-    console.log('⚠️ Google Sheets sync DISABLED to prevent unhandled rejections');
-    // try {
-    //   const response = await fetch('/api/sync/sheet', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       trigger: 'realtime_sync',
-    //       timestamp: new Date().toISOString()
-    //     })
-    //   });
+    try {
+      // Fazer requisição para endpoint de sincronização
+      const response = await fetch('/api/sync/sheet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trigger: 'realtime_sync',
+          timestamp: new Date().toISOString()
+        })
+      });
 
       if (response.ok) {
         const result = await response.json();

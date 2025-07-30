@@ -196,14 +196,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }
   }, []);
 
-  // PING TEMPORARIAMENTE DESABILITADO - pode estar causando unhandled rejections
+  // Ping periódico para manter conexão ativa
   useEffect(() => {
-    // if (!isConnected) return;
-    // const pingInterval = setInterval(() => {
-    //   sendMessage({ type: 'ping' });
-    // }, 30000);
-    // return () => clearInterval(pingInterval);
-    console.log('⚠️ WebSocket ping DISABLED to prevent unhandled rejections');
+    if (!isConnected) return;
+
+    const pingInterval = setInterval(() => {
+      sendMessage({ type: 'ping' });
+    }, 30000); // Ping a cada 30 segundos
+
+    return () => clearInterval(pingInterval);
   }, [isConnected, sendMessage]);
 
   // DESABILITADO TEMPORARIAMENTE - múltiplas conexões causando problemas

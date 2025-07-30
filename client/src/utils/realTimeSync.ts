@@ -57,25 +57,24 @@ class RealTimeSync {
     console.log(`✅ Vendor ${vendorId} proposals updated immediately`);
   }
   
-  // WEBHOOK TEMPORARIAMENTE DESABILITADO - pode estar causando unhandled rejections
+  // Notifica Make.com via webhook
   private async notifyMakeWebhook(type: string, data: any): Promise<void> {
-    // try {
-    //   await fetch('/api/webhook/notify', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       type,
-    //       data,
-    //       timestamp: new Date().toISOString()
-    //     })
-    //   });
-    //   console.log(`🔗 Make.com notified: ${type}`);
-    // } catch (error) {
-    //   console.error('Erro ao notificar Make.com:', error);
-    // }
-    console.log(`⚠️ Make.com webhook DISABLED for ${type} to prevent unhandled rejections`);
+    try {
+      await fetch('/api/webhook/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type,
+          data,
+          timestamp: new Date().toISOString()
+        })
+      });
+      console.log(`🔗 Make.com notified: ${type}`);
+    } catch (error) {
+      console.error('Erro ao notificar Make.com:', error);
+    }
   }
   
   // Força atualização quando status de proposta muda
@@ -114,12 +113,14 @@ class RealTimeSync {
     this.forceUpdateAllProposals();
   }
   
-  // POLLING AGRESSIVO TEMPORARIAMENTE DESABILITADO - causando unhandled rejections
+  // Configurar polling agressivo para tempo real
   public enableAggressivePolling(): void {
-    console.log('⚠️ Aggressive polling DISABLED to prevent unhandled rejections');
-    // setInterval(() => {
-    //   queryClient.invalidateQueries({ queryKey: ['/api/proposals'] }, { refetchType: 'none' });
-    // }, 500);
+    console.log('⚡ Enabling aggressive polling for real-time updates');
+    
+    setInterval(() => {
+      // Invalidar queries sem fazer refetch completo
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] }, { refetchType: 'none' });
+    }, 500); // A cada 500ms
   }
 }
 
