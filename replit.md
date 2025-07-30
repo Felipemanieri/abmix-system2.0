@@ -23,7 +23,8 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Vite dev server with HMR on port 5173
 - **Production**: Built static assets served by Express
 - **Database**: Neon PostgreSQL serverless instance
-- **Hosting**: Replit with custom domain (abmix.digital)
+- **Hosting**: Replit with native domain (abmixsystem.replit.app)
+- **Legacy domains**: abmix.digital (descartado), abmix.replit.app (não é mais nosso)
 
 ## Key Components
 

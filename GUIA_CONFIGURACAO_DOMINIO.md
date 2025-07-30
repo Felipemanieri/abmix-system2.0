@@ -1,9 +1,10 @@
-# Guia Completo - Configuração Domínio abmix.digital
+# Configuração Domínio Correto - Sistema Limpo
 
-## PROBLEMA IDENTIFICADO
-- ✅ Sistema funcionando localmente (porta 5000)
-- ❌ Domínio abmix.digital retorna 404 (não configurado)
-- ❌ Workflow falha por porta em uso (normal)
+## SITUAÇÃO ATUAL
+- ✅ Sistema funcionando perfeitamente (porta 5000)
+- ❌ abmix.digital com erro (não queremos reaproveitar)
+- ❌ abmix.replit.app não é mais nosso domínio
+- ✅ Projeto atual: abmixsystem.replit.app
 
 ## SOLUÇÃO COMPLETA
 
@@ -14,16 +15,16 @@
 3. Aguarde o build automático
 4. Anote a URL gerada (.replit.app)
 
-### 2. CONFIGURAR DOMÍNIO PERSONALIZADO
-**No painel Deploy do Replit:**
-1. Vá em **"Custom domains"**
-2. Adicione: `abmix.digital`
-3. Copie os registros DNS fornecidos
+### 2. DOMÍNIO ATUAL FUNCIONANDO
+**URL do projeto atual:**
+- Desenvolvimento: `abmixsystem.replit.app` (após deploy)
+- Esta é a URL que funciona e deve ser usada
 
-### 3. CONFIGURAR DNS DO SEU DOMÍNIO
-**No painel do seu provedor de domínio:**
-- **Tipo A**: `@` → IP fornecido pelo Replit
-- **CNAME**: `www` → `your-app.replit.app`
+### 3. CONFIGURAR GOOGLE OAUTH
+**Limpar URLs antigas no Google Cloud Console:**
+- ❌ REMOVER: `abmix.replit.app` (não é mais nosso)
+- ❌ REMOVER: `abmix.digital` (com erro)
+- ✅ ADICIONAR: `abmixsystem.replit.app` (domínio correto)
 
 ### 4. AGUARDAR PROPAGAÇÃO
 - DNS pode levar 24-48h para propagar
