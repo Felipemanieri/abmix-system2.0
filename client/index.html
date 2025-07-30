@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Abmix System</title>
+    
+    <!-- PDF.js CDN para renderização nativa de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
+    <script>
+      // Configurar PDF.js worker via CDN
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.pdfjsLib) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+          console.log('✅ PDF.js carregado via CDN:', window.pdfjsLib.version);
+        }
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -19,12 +19,12 @@ import { useProposals, useRealTimeProposals, useDeleteProposal, useUpdateProposa
 import { realTimeSync } from '../utils/realTimeSync';
 import statusManager, { ProposalStatus, STATUS_CONFIG } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
-
-// Configuração do worker do PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// PDF.js nativo será carregado via CDN no HTML
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
 
 interface ImplantacaoPortalProps {
   user: any;
@@ -105,6 +105,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -145,7 +146,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       reader.readAsDataURL(file);
       showInternalNotification('Imagem carregada com sucesso!', 'success');
     } else if (file.type === 'application/pdf') {
-      console.log('📄 Iniciando processamento do PDF...');
+      console.log('📄 Iniciando processamento do PDF com PDF.js nativo...');
       setSelectedFile(file);
       setFileType('pdf');
       
@@ -157,7 +158,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         setSelectedImage(fileUrl); // Manter para compatibilidade com botões
         setIsEditorOpen(false);
         
-        showInternalNotification('PDF carregado com sucesso!', 'success');
+        // Renderizar PDF usando PDF.js nativo
+        renderPDFToCanvas(file);
+        
         console.log('📄 PDF processado com sucesso');
       } catch (error) {
         console.error('❌ Erro ao processar PDF:', error);
@@ -232,40 +235,67 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     showInternalNotification('Arquivo removido!', 'success');
   };
 
-  // Callback para quando o PDF é carregado com sucesso
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    console.log('✅ PDF carregado com sucesso:', numPages, 'páginas');
-    setNumPages(numPages);
-    showInternalNotification(`PDF carregado com ${numPages} páginas!`, 'success');
-  };
+  // Função para renderizar PDF usando PDF.js nativo
+  const renderPDFToCanvas = async (file: File) => {
+    console.log('🔄 Iniciando renderização PDF com PDF.js nativo...');
+    
+    // Aguardar carregamento do PDF.js se necessário
+    let attempts = 0;
+    while (attempts < 50 && (!window.pdfjsLib)) {
+      console.log(`⏳ Aguardando PDF.js carregar... (tentativa ${attempts + 1})`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    if (!window.pdfjsLib) {
+      console.error('❌ PDF.js não carregado após aguardar');
+      showInternalNotification('PDF.js não carregado. Recarregue a página.', 'error');
+      return;
+    }
 
-  // Callback para quando há erro ao carregar o PDF
-  const onDocumentLoadError = (error: Error) => {
-    console.error('❌ Erro detalhado ao carregar PDF:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      pdfUrl: pdfUrl,
-      fileType: fileType,
-      selectedFile: selectedFile
-    });
-    
-    // Logs adicionais para debug
-    console.error('❌ Worker configurado para:', pdfjs.GlobalWorkerOptions.workerSrc);
-    console.error('❌ Versão do PDF.js:', pdfjs.version);
-    
-    if (error.message.includes('Loading task cancelled')) {
-      showInternalNotification('Upload do PDF cancelado. Tente novamente.', 'error');
-    } else if (error.message.includes('Invalid PDF')) {
-      showInternalNotification('Arquivo PDF inválido ou corrompido.', 'error');
-    } else if (error.message.includes('worker')) {
-      showInternalNotification('Erro no worker PDF. Recarregue a página.', 'error');
-    } else if (error.message.includes('Setting up fake worker')) {
-      showInternalNotification('Worker do PDF não carregou. Verificando conexão...', 'error');
-    } else {
-      showInternalNotification(`Erro ao carregar PDF: ${error.message.substring(0, 100)}`, 'error');
+    try {
+      console.log('✅ PDF.js encontrado:', window.pdfjsLib.version);
+      
+      const reader = new FileReader();
+      reader.onload = function () {
+        const typedarray = new Uint8Array(this.result as ArrayBuffer);
+        
+        window.pdfjsLib.getDocument(typedarray).promise.then((pdf: any) => {
+          console.log('✅ PDF carregado com sucesso:', pdf.numPages, 'páginas');
+          setNumPages(pdf.numPages);
+          
+          pdf.getPage(1).then((page: any) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+              console.error('❌ Canvas não encontrado');
+              return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const viewport = page.getViewport({ scale: 1.5 });
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
+              console.log('✅ PDF renderizado no canvas');
+              showInternalNotification('PDF carregado e visualizado com sucesso!', 'success');
+            });
+          });
+        }).catch((error: any) => {
+          console.error('❌ Erro ao carregar PDF:', error);
+          showInternalNotification('Erro ao processar PDF. Verifique se o arquivo é válido.', 'error');
+        });
+      };
+      
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error('❌ Erro geral na renderização PDF:', error);
+      showInternalNotification('Erro ao processar arquivo PDF.', 'error');
     }
   };
+
+
 
   // Função para excluir proposta diretamente (sem confirmação do navegador)
   const handleDeleteProposal = async (proposalId: string, cliente: string) => {
@@ -1315,55 +1345,30 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                   )}
                                 </div>
                                 
-                                {/* Container para o PDF */}
+                                {/* Container para o PDF usando Canvas nativo */}
                                 <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg">
-                                  {pdfUrl ? (
-                                    <div className="relative">
-                                      <Document
-                                        file={pdfUrl}
-                                        onLoadSuccess={onDocumentLoadSuccess}
-                                        onLoadError={onDocumentLoadError}
-                                        loading={
-                                          <div className="flex items-center justify-center p-8">
-                                            <div className="text-center">
-                                              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                              <p className="text-gray-600 dark:text-gray-400">Carregando PDF...</p>
-                                              <div className="mt-2 w-16 h-1 bg-emerald-200 rounded-full overflow-hidden">
-                                                <div className="h-full bg-emerald-600 rounded-full animate-pulse"></div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        }
-                                        error={
-                                          <div className="p-4">
-                                            <div className="text-center mb-4">
-                                              <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                                              <p className="text-yellow-600 dark:text-yellow-400 font-medium">
-                                                Modo de visualização alternativo
-                                              </p>
-                                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                Usando viewer nativo do navegador
-                                              </p>
-                                            </div>
-                                            <iframe
-                                              src={pdfUrl}
-                                              className="w-full h-80 border border-gray-300 dark:border-gray-600 rounded"
-                                              title="Visualizador de PDF"
-                                            />
-                                          </div>
-                                        }
-                                      >
-                                        {numPages && Array.from(new Array(numPages), (el, index) => (
-                                          <Page
-                                            key={`page_${index + 1}`}
-                                            pageNumber={index + 1}
-                                            width={Math.min(window.innerWidth * 0.6, 600)}
-                                            className="mb-4 shadow-sm"
-                                            renderTextLayer={false}
-                                            renderAnnotationLayer={false}
-                                          />
-                                        ))}
-                                      </Document>
+                                  {selectedFile && fileType === 'pdf' ? (
+                                    <div className="relative p-4">
+                                      <div className="text-center mb-4">
+                                        <FileText className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
+                                        <p className="text-emerald-700 dark:text-emerald-300 font-medium">
+                                          PDF renderizado com PDF.js nativo
+                                        </p>
+                                        {numPages && (
+                                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            {numPages} página{numPages > 1 ? 's' : ''} • Primeira página exibida
+                                          </p>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Canvas para renderização do PDF */}
+                                      <div className="flex justify-center">
+                                        <canvas 
+                                          ref={canvasRef}
+                                          className="max-w-full border border-gray-300 dark:border-gray-600 rounded shadow-sm"
+                                          style={{ maxHeight: '400px' }}
+                                        />
+                                      </div>
                                     </div>
                                   ) : (
                                     <div className="flex items-center justify-center p-8">
