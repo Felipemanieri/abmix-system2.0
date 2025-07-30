@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { LogOut, Settings, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Send, Calendar, FileText, User, Bell, MessageCircle, MessageSquare, Bot, X, Send as SendIcon, Zap, Filter, Search, Download, Upload, Trash2, Edit, Plus, ArrowLeft, RefreshCw, Link, Copy, Mail, Share2, ExternalLink, Phone, Database } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { LogOut, Settings, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Send, Calendar, FileText, User, Bell, MessageCircle, MessageSquare, Bot, X, Send as SendIcon, Zap, Filter, Search, Download, Upload, Trash2, Edit, Plus, ArrowLeft, RefreshCw, Link, Copy, Mail, Share2, ExternalLink, Phone, Database, Image, Crop, Highlighter, Type, Eraser } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import SystemFooter from './SystemFooter';
 import ThemeToggle from './ThemeToggle';
@@ -72,7 +72,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   }, []);
   const [showInternalMessage, setShowInternalMessage] = useState(false);
   const [selectedProposalForMessage, setSelectedProposalForMessage] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'proposals' | 'automation' | 'editor'>('proposals');
+  const [activeTab, setActiveTab] = useState<'proposals' | 'automation' | 'editor' | 'imageEditor'>('proposals');
   const [showProposalSelector, setShowProposalSelector] = useState(false);
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,6 +91,12 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
   // Adicionar estado para notificações internas
   const [internalNotifications, setInternalNotifications] = useState<{id: string, message: string, type: 'success' | 'error'}[]>([]);
+  
+  // Estados para o editor de imagem
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   // Função para mostrar notificação interna no painel
   const showInternalNotification = (message: string, type: 'success' | 'error') => {
@@ -100,6 +106,54 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     setTimeout(() => {
       setInternalNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
+  };
+
+  // Funções para o editor de imagem
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg')) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target?.result as string);
+        setIsEditorOpen(false); // Inicialmente fechado, será aberto quando clicar em "Abrir Editor"
+      };
+      reader.readAsDataURL(file);
+      showInternalNotification('Imagem carregada com sucesso!', 'success');
+    } else {
+      showInternalNotification('Por favor, selecione apenas imagens JPG ou PNG.', 'error');
+    }
+  };
+
+  const openImageEditor = () => {
+    if (selectedImage) {
+      setIsEditorOpen(true);
+      showInternalNotification('Editor de imagem aberto!', 'success');
+    } else {
+      showInternalNotification('Por favor, carregue uma imagem primeiro.', 'error');
+    }
+  };
+
+  const downloadEditedImage = () => {
+    if (selectedImage) {
+      const link = document.createElement('a');
+      link.download = `imagem-editada-abmix-${Date.now()}.png`;
+      link.href = selectedImage;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showInternalNotification('Imagem baixada com sucesso!', 'success');
+    }
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+    setImageFile(null);
+    setIsEditorOpen(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    showInternalNotification('Imagem removida!', 'success');
   };
 
   // Função para excluir proposta diretamente (sem confirmação do navegador)
@@ -989,7 +1043,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
               </button>
               
               <button
-                onClick={() => window.open('/editor.html', '_blank')}
+                onClick={() => setActiveTab('imageEditor')}
                 className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-emerald-100 dark:bg-emerald-900 dark:text-emerald-200 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors duration-200 shadow-sm border border-emerald-200 dark:border-emerald-700"
               >
                 <Edit className="w-4 h-4 mr-2" />
@@ -1004,7 +1058,8 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
               <nav className="flex space-x-8 px-6">
                 {[
                   { id: 'proposals', label: 'Propostas', icon: FileText },
-                  { id: 'automation', label: 'Automação', icon: Zap }
+                  { id: 'automation', label: 'Automação', icon: Zap },
+                  { id: 'imageEditor', label: 'Editor de Imagem', icon: Image }
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -1055,6 +1110,177 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                   <FileText className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Nenhuma proposta selecionada</h3>
                   <p className="text-gray-600 dark:text-gray-300">Use o botão "Selecionar Proposta" para escolher uma proposta para edição.</p>
+                </div>
+              )}
+              {activeTab === 'imageEditor' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Editor de PDF e Imagem</h2>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => window.open('/editor.html', '_blank')}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 dark:bg-blue-900 dark:text-blue-200 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Editor PDF Completo
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card do Editor de Imagem */}
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-6">
+                    <div className="flex items-center mb-4">
+                      <Image className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Editor de Imagem Simples</h3>
+                    </div>
+
+                    {/* Upload de Imagem */}
+                    {!selectedImage && (
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg p-8 text-center">
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload de Imagem</h4>
+                        <p className="text-gray-600 dark:text-gray-300 mb-4">Selecione uma imagem JPG ou PNG para editar</p>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Selecionar Imagem
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Visualização e Controles */}
+                    {selectedImage && (
+                      <div className="space-y-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white">Imagem Carregada</h4>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                              >
+                                <Upload className="w-3 h-3 mr-1" />
+                                Trocar
+                              </button>
+                              <button
+                                onClick={clearImage}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Remover
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Preview da Imagem */}
+                          <div className="flex justify-center mb-4">
+                            <img 
+                              src={selectedImage} 
+                              alt="Imagem carregada" 
+                              className="max-w-full max-h-96 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+                            />
+                          </div>
+
+                          {/* Ferramentas de Edição */}
+                          <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+                            <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Ferramentas de Edição</h5>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <button
+                                onClick={openImageEditor}
+                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <Type className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+                                <span className="text-xs text-gray-700 dark:text-gray-300">Texto</span>
+                              </button>
+                              
+                              <button
+                                onClick={openImageEditor}
+                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <Highlighter className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mb-1" />
+                                <span className="text-xs text-gray-700 dark:text-gray-300">Destacar</span>
+                              </button>
+                              
+                              <button
+                                onClick={openImageEditor}
+                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <Crop className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+                                <span className="text-xs text-gray-700 dark:text-gray-300">Cortar</span>
+                              </button>
+                              
+                              <button
+                                onClick={openImageEditor}
+                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <Eraser className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
+                                <span className="text-xs text-gray-700 dark:text-gray-300">Apagar</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Botões de Ação */}
+                          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+                            <button
+                              onClick={openImageEditor}
+                              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Abrir Editor
+                            </button>
+                            
+                            <button
+                              onClick={downloadEditedImage}
+                              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Baixar Imagem
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Editor Integrado com Filerobot */}
+                        {isEditorOpen && (
+                          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-md font-medium text-gray-900 dark:text-white">Editor de Imagem Avançado</h4>
+                              <button
+                                onClick={() => setIsEditorOpen(false)}
+                                className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                              >
+                                <X className="w-3 h-3 mr-1" />
+                                Fechar Editor
+                              </button>
+                            </div>
+                            
+                            {/* Container para o editor Filerobot */}
+                            <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                              <iframe
+                                src="/editor.html"
+                                className="w-full h-96 border-0"
+                                title="Editor de Imagem Filerobot"
+                              />
+                            </div>
+                            
+                            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                              <p className="text-sm text-blue-800 dark:text-blue-200">
+                                💡 O editor completo está sendo carregado. Use as ferramentas avançadas para editar sua imagem com precisão.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
