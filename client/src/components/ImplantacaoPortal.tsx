@@ -245,6 +245,11 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // Função para renderizar PDF usando PDF.js nativo
   const renderPDFToCanvas = async (file: File) => {
     console.log('🔄 Iniciando renderização PDF com PDF.js nativo...');
+    console.log('📄 Arquivo:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
     
     // Aguardar carregamento do PDF.js se necessário
     let attempts = 0;
@@ -264,37 +269,80 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       console.log('✅ PDF.js encontrado:', window.pdfjsLib.version);
       
       const reader = new FileReader();
-      reader.onload = function () {
-        const typedarray = new Uint8Array(this.result as ArrayBuffer);
-        
-        window.pdfjsLib.getDocument(typedarray).promise.then((pdf: any) => {
-          console.log('✅ PDF carregado com sucesso:', pdf.numPages, 'páginas');
-          setNumPages(pdf.numPages);
-          
-          pdf.getPage(1).then((page: any) => {
-            const canvas = canvasRef.current;
-            if (!canvas) {
-              console.error('❌ Canvas não encontrado');
-              return;
-            }
-            
-            const ctx = canvas.getContext('2d');
-            const viewport = page.getViewport({ scale: 1.5 });
-            
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            
-            page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
-              console.log('✅ PDF renderizado no canvas');
-              showInternalNotification('PDF carregado e visualizado com sucesso!', 'success');
-            });
-          });
-        }).catch((error: any) => {
-          console.error('❌ Erro ao carregar PDF:', error);
-          showInternalNotification('Erro ao processar PDF. Verifique se o arquivo é válido.', 'error');
-        });
+      reader.onerror = (error) => {
+        console.error('❌ Erro no FileReader:', error);
+        showInternalNotification('Erro ao ler arquivo PDF.', 'error');
       };
       
+      reader.onload = function (event) {
+        console.log('📖 FileReader concluído');
+        
+        if (!event.target?.result) {
+          console.error('❌ Resultado do FileReader vazio');
+          showInternalNotification('Erro: arquivo não pôde ser lido.', 'error');
+          return;
+        }
+        
+        try {
+          const typedarray = new Uint8Array(event.target.result as ArrayBuffer);
+          console.log('📊 TypedArray criado, tamanho:', typedarray.length);
+          
+          // Configurar worker path para PDF.js
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
+          
+          window.pdfjsLib.getDocument({
+            data: typedarray,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/cmaps/',
+            cMapPacked: true
+          }).promise.then((pdf: any) => {
+            console.log('✅ PDF carregado com sucesso:', pdf.numPages, 'páginas');
+            setNumPages(pdf.numPages);
+            
+            pdf.getPage(1).then((page: any) => {
+              const canvas = canvasRef.current;
+              if (!canvas) {
+                console.error('❌ Canvas não encontrado');
+                showInternalNotification('Erro: canvas não encontrado.', 'error');
+                return;
+              }
+              
+              console.log('🎨 Canvas encontrado, iniciando renderização...');
+              const ctx = canvas.getContext('2d');
+              const viewport = page.getViewport({ scale: 1.5 });
+              
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+              
+              console.log('📐 Viewport configurado:', {
+                width: viewport.width,
+                height: viewport.height
+              });
+              
+              page.render({ 
+                canvasContext: ctx, 
+                viewport: viewport 
+              }).promise.then(() => {
+                console.log('✅ PDF renderizado no canvas com sucesso!');
+                showInternalNotification('PDF carregado e visualizado com sucesso!', 'success');
+              }).catch((renderError: any) => {
+                console.error('❌ Erro na renderização:', renderError);
+                showInternalNotification('Erro ao renderizar PDF no canvas.', 'error');
+              });
+            }).catch((pageError: any) => {
+              console.error('❌ Erro ao obter página:', pageError);
+              showInternalNotification('Erro ao acessar página do PDF.', 'error');
+            });
+          }).catch((pdfError: any) => {
+            console.error('❌ Erro ao carregar PDF:', pdfError);
+            showInternalNotification('Erro ao processar PDF. Verifique se o arquivo é válido.', 'error');
+          });
+        } catch (processingError) {
+          console.error('❌ Erro no processamento do PDF:', processingError);
+          showInternalNotification('Erro no processamento do arquivo PDF.', 'error');
+        }
+      };
+      
+      console.log('📂 Iniciando leitura do arquivo...');
       reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error('❌ Erro geral na renderização PDF:', error);
