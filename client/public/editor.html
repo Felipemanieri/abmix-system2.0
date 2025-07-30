@@ -10,7 +10,7 @@
     <style>
         .sfx-image-editor-container {
             width: 100% !important;
-            height: calc(100vh - 200px) !important;
+            height: 450px !important;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #e5e7eb;
@@ -19,7 +19,7 @@
         .upload-area {
             border: 2px dashed #d1d5db;
             border-radius: 8px;
-            padding: 60px 40px;
+            padding: 40px;
             text-align: center;
             background: #f9fafb;
             transition: all 0.2s ease;
@@ -81,17 +81,19 @@
     </style>
 </head>
 <body>
-    <div class="min-h-screen p-6">
+    <div class="max-w-5xl mx-auto p-4">
         <!-- Header -->
-        <div class="glass-effect rounded-xl shadow-xl p-6 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold">🟩</span>
+                    <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Editor de PDF e Imagem</h1>
-                        <p class="text-gray-600">Sistema Abmix - Portal de Implantação</p>
+                        <h1 class="text-lg font-semibold text-gray-900">Editor de PDF e Imagem</h1>
+                        <p class="text-sm text-gray-500">Sistema Abmix</p>
                     </div>
                 </div>
                 <button onclick="window.close()" class="btn-secondary">
@@ -104,27 +106,33 @@
         </div>
 
         <!-- Upload Area -->
-        <div id="uploadArea" class="glass-effect rounded-xl shadow-xl p-6 mb-6">
+        <div id="uploadArea" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <div class="mb-4">
-                    <svg class="w-16 h-16 mx-auto text-emerald-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mb-3">
+                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Carregar Imagem</h3>
-                <p class="text-gray-500 mb-4">Clique aqui ou arraste arquivos JPG, PNG para editar</p>
-                <div class="flex justify-center space-x-4">
-                    <button class="btn-primary">
+                <h3 class="text-base font-medium text-gray-700 mb-1">Arraste arquivos aqui ou escolha uma opção</h3>
+                <p class="text-sm text-gray-500 mb-4">Suporte para PDF, DOC, DOCX, JPG, PNG - Sem limite de quantidade</p>
+                <div class="flex justify-center space-x-3">
+                    <button class="btn-secondary">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        Selecionar Arquivo
+                        Escolher Arquivo
                     </button>
                     <button onclick="openSampleImage()" class="btn-secondary">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                         </svg>
-                        Usar Imagem de Exemplo
+                        Tirar Foto
+                    </button>
+                    <button onclick="openSampleImage()" class="btn-secondary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Da Galeria
                     </button>
                 </div>
             </div>
@@ -132,21 +140,21 @@
         </div>
 
         <!-- Editor Container -->
-        <div id="editorContainer" class="glass-effect rounded-xl shadow-xl p-6" style="display: none;">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-700">Editor de Imagem</h2>
-                <div class="flex space-x-3">
+        <div id="editorContainer" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4" style="display: none;">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-base font-medium text-gray-700">Editor de Imagem</h2>
+                <div class="flex space-x-2">
                     <button onclick="downloadImage()" class="btn-primary">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m5-3V9a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h5"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4"></path>
                         </svg>
-                        Baixar Imagem
+                        Baixar
                     </button>
                     <button onclick="newImage()" class="btn-secondary">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Nova Imagem
+                        Nova
                     </button>
                 </div>
             </div>
@@ -164,7 +172,7 @@
                 console.log('Imagem salva:', editedImageObject);
             },
             annotationsCommon: {
-                fill: '#10b981'
+                fill: '#374151'
             },
             Text: {
                 text: 'Adicione texto aqui...',
@@ -199,8 +207,8 @@
                 palette: {
                     'bg-secondary': '#f9fafb',
                     'bg-primary': '#ffffff',
-                    'accent-primary': '#10b981',
-                    'accent-primary-active': '#059669'
+                    'accent-primary': '#374151',
+                    'accent-primary-active': '#1f2937'
                 }
             },
             defaultSavedImageName: 'imagem-editada-abmix',
@@ -274,29 +282,29 @@
         function openSampleImage() {
             // Criar uma imagem de exemplo simples
             const canvas = document.createElement('canvas');
-            canvas.width = 800;
-            canvas.height = 600;
+            canvas.width = 600;
+            canvas.height = 400;
             const ctx = canvas.getContext('2d');
             
             // Fundo branco
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 800, 600);
+            ctx.fillRect(0, 0, 600, 400);
             
             // Texto de exemplo
-            ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 48px Arial';
+            ctx.fillStyle = '#374151';
+            ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('Abmix System', 400, 200);
+            ctx.fillText('Abmix System', 300, 150);
             
             ctx.fillStyle = '#6b7280';
-            ctx.font = '24px Arial';
-            ctx.fillText('Editor de Imagem', 400, 250);
-            ctx.fillText('Comece editando esta imagem de exemplo', 400, 350);
+            ctx.font = '18px Arial';
+            ctx.fillText('Editor de Imagem', 300, 180);
+            ctx.fillText('Comece editando esta imagem de exemplo', 300, 250);
             
             // Desenhar um retângulo decorativo
-            ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(100, 100, 600, 400);
+            ctx.strokeStyle = '#d1d5db';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 50, 500, 300);
             
             const imageUrl = canvas.toDataURL('image/png');
             showEditor(imageUrl);
