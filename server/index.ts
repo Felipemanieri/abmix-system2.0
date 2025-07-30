@@ -1316,8 +1316,31 @@ async function startServer() {
     setupRoutes(app);
 
     // Servir arquivos estáticos do BUILD (produção)
-    const distPath = path.resolve(__dirname, "public");
+    const distPath = path.resolve(__dirname, "..", "dist", "public");
     console.log(`📦 Servindo arquivos estáticos de: ${distPath}`);
+    
+    // Verificar se diretório de build existe
+    if (!fs.existsSync(distPath)) {
+      console.error(`❌ Diretório de build não encontrado: ${distPath}`);
+      console.log('📋 Conteúdo do diretório atual:', fs.readdirSync(__dirname));
+      console.log('📋 Conteúdo do diretório pai:', fs.readdirSync(path.resolve(__dirname, "..")));
+      
+      // Tentar localizar o diretório correto
+      const possiblePaths = [
+        path.resolve(__dirname, "public"),
+        path.resolve(__dirname, "..", "dist", "public"),
+        path.resolve(__dirname, "..", "public"),
+        path.resolve(process.cwd(), "dist", "public")
+      ];
+      
+      for (const testPath of possiblePaths) {
+        if (fs.existsSync(testPath)) {
+          console.log(`✅ Encontrado diretório de build em: ${testPath}`);
+          break;
+        }
+      }
+    }
+    
     app.use(express.static(distPath));
 
     // Fallback para SPA
