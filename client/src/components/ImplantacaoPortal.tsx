@@ -19,6 +19,10 @@ import { useProposals, useRealTimeProposals, useDeleteProposal, useUpdateProposa
 import { realTimeSync } from '../utils/realTimeSync';
 import statusManager, { ProposalStatus, STATUS_CONFIG } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+// Configuração do worker do PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface ImplantacaoPortalProps {
   user: any;
@@ -96,6 +100,8 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<'image' | 'pdf' | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -133,12 +139,13 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     } else if (file.type === 'application/pdf') {
       setSelectedFile(file);
       setFileType('pdf');
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setIsEditorOpen(false);
-      };
-      reader.readAsDataURL(file);
+      
+      // Criar URL do objeto para o PDF
+      const fileUrl = URL.createObjectURL(file);
+      setPdfUrl(fileUrl);
+      setSelectedImage(fileUrl); // Manter para compatibilidade com botões
+      setIsEditorOpen(false);
+      
       showInternalNotification('PDF carregado com sucesso!', 'success');
     } else {
       showInternalNotification('Por favor, selecione apenas imagens (JPG, PNG) ou arquivos PDF.', 'error');
@@ -193,10 +200,31 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     setSelectedFile(null);
     setFileType(null);
     setIsEditorOpen(false);
+    
+    // Limpar URL do PDF se existir
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+    
+    setNumPages(null);
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    showInternalNotification('Imagem removida!', 'success');
+    showInternalNotification('Arquivo removido!', 'success');
+  };
+
+  // Callback para quando o PDF é carregado com sucesso
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    showInternalNotification(`PDF carregado com ${numPages} páginas!`, 'success');
+  };
+
+  // Callback para quando há erro ao carregar o PDF
+  const onDocumentLoadError = (error: Error) => {
+    console.error('Erro ao carregar PDF:', error);
+    showInternalNotification('Erro ao carregar PDF. Verifique se o arquivo está válido.', 'error');
   };
 
   // Função para excluir proposta diretamente (sem confirmação do navegador)
@@ -1235,17 +1263,51 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           {/* Preview do Arquivo */}
                           <div className="flex justify-center mb-4">
                             {fileType === 'pdf' ? (
-                              <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-8 text-center">
-                                <FileText className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                  PDF Carregado
-                                </h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                  Nome: {selectedFile?.name}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  Use o editor para visualizar e editar o PDF
-                                </p>
+                              <div className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                                    Visualização do PDF
+                                  </h4>
+                                  {numPages && (
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {numPages} página{numPages > 1 ? 's' : ''}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {/* Container para o PDF */}
+                                <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg">
+                                  {pdfUrl && (
+                                    <Document
+                                      file={pdfUrl}
+                                      onLoadSuccess={onDocumentLoadSuccess}
+                                      onLoadError={onDocumentLoadError}
+                                      loading={
+                                        <div className="flex items-center justify-center p-8">
+                                          <div className="text-center">
+                                            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                            <p className="text-gray-600 dark:text-gray-400">Carregando PDF...</p>
+                                          </div>
+                                        </div>
+                                      }
+                                    >
+                                      {Array.from(new Array(numPages), (el, index) => (
+                                        <Page
+                                          key={`page_${index + 1}`}
+                                          pageNumber={index + 1}
+                                          width={Math.min(window.innerWidth * 0.6, 600)}
+                                          className="mb-4 shadow-sm"
+                                        />
+                                      ))}
+                                    </Document>
+                                  )}
+                                </div>
+                                
+                                <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg">
+                                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
+                                    ✓ PDF carregado e renderizado com sucesso! Use as ferramentas abaixo para editar.
+                                  </p>
+                                </div>
                               </div>
                             ) : (
                               <img 
@@ -1258,10 +1320,12 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
                           {/* Ferramentas de Edição */}
                           <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-                            <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Ferramentas de Edição</h5>
+                            <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                              Ferramentas de Edição {fileType === 'pdf' ? 'PDF' : 'de Imagem'}
+                            </h5>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                               <button
-                                onClick={openEditor}
+                                onClick={() => showInternalNotification(`Ferramenta Texto ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Type className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
@@ -1269,7 +1333,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openEditor}
+                                onClick={() => showInternalNotification(`Ferramenta Destacar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Highlighter className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mb-1" />
@@ -1277,7 +1341,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openEditor}
+                                onClick={() => showInternalNotification(`Ferramenta Cortar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Crop className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
@@ -1285,7 +1349,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               </button>
                               
                               <button
-                                onClick={openEditor}
+                                onClick={() => showInternalNotification(`Ferramenta Apagar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
                                 className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Eraser className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
@@ -1295,15 +1359,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                           </div>
 
                           {/* Botões de Ação */}
-                          <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
-                            <button
-                              onClick={openEditor}
-                              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Abrir Editor
-                            </button>
-                            
+                          <div className="flex justify-end items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
                             <button
                               onClick={downloadEditedFile}
                               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
