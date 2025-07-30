@@ -3,89 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🟩 Editor de PDF e Imagem - Abmix System</title>
+    <title>Editor de PDF e Imagem - Abmix System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/4.8.1/filerobot-image-editor.min.js"></script>
     <link rel="stylesheet" href="https://scaleflex.cloudimg.io/v7/plugins/filerobot-image-editor/4.8.1/filerobot-image-editor.min.css">
     <style>
         .sfx-image-editor-container {
             width: 100% !important;
-            height: calc(100vh - 120px) !important;
-            border-radius: 12px;
+            height: calc(100vh - 200px) !important;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e5e7eb;
         }
         
         .upload-area {
-            border: 2px dashed #10b981;
-            border-radius: 12px;
-            padding: 40px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 60px 40px;
             text-align: center;
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            transition: all 0.3s ease;
+            background: #f9fafb;
+            transition: all 0.2s ease;
             cursor: pointer;
         }
         
         .upload-area:hover {
-            border-color: #059669;
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            transform: translateY(-2px);
+            border-color: #9ca3af;
+            background: #f3f4f6;
         }
         
         .upload-area.dragover {
-            border-color: #047857;
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            transform: scale(1.02);
+            border-color: #6b7280;
+            background: #f3f4f6;
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: #374151;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+            background: #1f2937;
         }
         
         .btn-secondary {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+            background: #e5e7eb;
         }
     </style>
 </head>
