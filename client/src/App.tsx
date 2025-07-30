@@ -60,7 +60,8 @@ function FooterStats() {
         setProposalsToday(todayProposals.length);
       }
     } catch (error) {
-      console.error('Erro ao buscar propostas de hoje:', error);
+      // Silenciar erro sem gerar unhandled promise rejection
+      // console.error('Erro ao buscar propostas de hoje:', error);
     }
   };
 
