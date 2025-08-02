@@ -1388,118 +1388,33 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                             </div>
                           </div>
                           
-                          {/* Preview do Arquivo */}
-                          <div className="flex justify-center mb-4">
-                            {fileType === 'pdf' ? (
-                              <div className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    Editor de PDF Online
-                                  </h4>
-                                </div>
-                                
-                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                    <h5 className="font-medium text-blue-900 dark:text-blue-100">Editor PDF Direto</h5>
-                                  </div>
-                                  <p className="text-sm text-blue-700 dark:text-blue-200">
-                                    Faça upload do PDF, visualize e baixe. Para edição avançada, use o link externo abaixo.
-                                  </p>
-                                </div>
-                                
-                                {/* Botões de ação para o PDF */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                  <button
-                                    onClick={() => window.open('https://www.ilovepdf.com/edit-pdf', '_blank')}
-                                    className="flex items-center justify-center gap-2 p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                  >
-                                    <Edit className="w-5 h-5" />
-                                    <span>Editar PDF Completo (Nova Aba)</span>
-                                  </button>
-                                  
-                                  <button
-                                    onClick={() => window.open('https://www.pdfescape.com/open/', '_blank')}
-                                    className="flex items-center justify-center gap-2 p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                                  >
-                                    <FileText className="w-5 h-5" />
-                                    <span>Editor PDF Alternativo</span>
-                                  </button>
-                                </div>
-                                
-                                <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                                    💡 Para edição completa de PDF (adicionar texto, destacar, apagar), clique nos botões acima que abrem editores externos em nova aba.
-                                  </p>
-                                </div>
-                              </div>
-                            ) : (
-                              <img 
-                                src={selectedImage} 
-                                alt="Imagem carregada" 
-                                className="max-w-full max-h-96 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
-                              />
-                            )}
-                          </div>
-
-                          {/* Ferramentas de Edição */}
-                          <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-                            <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                              Ferramentas de Edição {fileType === 'pdf' ? 'PDF' : 'de Imagem'}
-                            </h5>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {/* Editores Externos - Interface Simples */}
+                          <div className="text-center mb-6">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                              Clique no botão desejado para editar imagens ou PDF. Edite no editor externo e faça o upload manual do arquivo editado, se necessário.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
                               <button
-                                onClick={() => showInternalNotification(`Ferramenta Texto ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
-                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                onClick={() => window.open('https://www.photopea.com/', '_blank')}
+                                className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                               >
-                                <Type className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
-                                <span className="text-xs text-gray-700 dark:text-gray-300">Texto</span>
+                                <Image className="w-4 h-4 mr-2" />
+                                Editor de Imagens
                               </button>
                               
                               <button
-                                onClick={() => showInternalNotification(`Ferramenta Destacar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
-                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                onClick={() => window.open('https://www.pdfescape.com/open/', '_blank')}
+                                className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                               >
-                                <Highlighter className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mb-1" />
-                                <span className="text-xs text-gray-700 dark:text-gray-300">Destacar</span>
-                              </button>
-                              
-                              <button
-                                onClick={() => showInternalNotification(`Ferramenta Cortar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
-                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <Crop className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
-                                <span className="text-xs text-gray-700 dark:text-gray-300">Cortar</span>
-                              </button>
-                              
-                              <button
-                                onClick={() => showInternalNotification(`Ferramenta Apagar ${fileType === 'pdf' ? 'PDF' : 'Imagem'} selecionada!`, 'success')}
-                                className="flex flex-col items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <Eraser className="w-5 h-5 text-red-600 dark:text-red-400 mb-1" />
-                                <span className="text-xs text-gray-700 dark:text-gray-300">Apagar</span>
+                                <FileText className="w-4 h-4 mr-2" />
+                                Editor de PDF
                               </button>
                             </div>
                           </div>
-
-                          {/* Botões de Ação */}
-                          <div className="flex justify-end items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
-                            <button
-                              onClick={downloadEditedFile}
-                              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              <Download className="w-4 h-4 mr-2" />
-                              Baixar {fileType === 'pdf' ? 'PDF' : 'Imagem'}
-                            </button>
-                          </div>
                         </div>
 
-                        {/* Status final do editor */}
-                        <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg">
-                          <p className="text-sm text-emerald-800 dark:text-emerald-200">
-                            ✅ Editor de PDF e Imagem carregado com PDF.js nativo. Use as ferramentas acima para editar seus arquivos.
-                          </p>
-                        </div>
+
                       </div>
                     )}
                   </div>
