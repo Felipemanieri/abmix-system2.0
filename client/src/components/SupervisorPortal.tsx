@@ -2240,10 +2240,44 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     </div>
   );
 
-  // Analytics Moderno e Visual - Reformulação Completa
+  // Analytics Reformulado com Dados Reais e Melhorias Avançadas
   const renderAnalytics = () => {
+    const [selectedPeriod, setSelectedPeriod] = useState('30d');
+    const [drilldownStatus, setDrilldownStatus] = useState<string | null>(null);
+    const [comparisonMode, setComparisonMode] = useState(false);
+    
+    // Filtros temporais específicos
+    const getDateFilter = (period: string) => {
+      const now = new Date();
+      const start = new Date();
+      
+      switch(period) {
+        case '24h':
+          start.setHours(start.getHours() - 24);
+          break;
+        case '7d':
+          start.setDate(start.getDate() - 7);
+          break;
+        case '30d':
+          start.setDate(start.getDate() - 30);
+          break;
+        case '90d':
+          start.setDate(start.getDate() - 90);
+          break;
+        case 'quarter':
+          start.setMonth(start.getMonth() - 3);
+          break;
+        case 'year':
+          start.setFullYear(start.getFullYear() - 1);
+          break;
+        default:
+          start.setDate(start.getDate() - 30);
+      }
+      
+      return { start, end: now };
+    };
 
-    // Lista de vendedores reais com cores únicas
+    // Lista de vendedores reais com cores claras para gráficos
     const realVendors = [
       'Ana Caroline Terto',
       'Bruna Garcia', 
@@ -2259,23 +2293,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       'Sara Mattos'
     ];
 
-    // Cores únicas para cada vendedor real
+    // Cores claras para gráficos (não escuras)
     const getVendorColor = (vendor: string) => {
       const vendorColors = {
-        'Ana Caroline Terto': '#3B82F6',
-        'Bruna Garcia': '#EF4444',
-        'Fabiana Ferreira': '#10B981',
-        'Fabiana Godinho Santos': '#F59E0B',
-        'Fernanda Batista': '#8B5CF6',
-        'Gabrielle Fernandes': '#EC4899',
-        'Isabela Velasquez': '#6366F1',
-        'Juliana Araujo': '#F97316',
-        'Lohainy Berlino': '#14B8A6',
-        'Luciana Velasquez': '#84CC16',
-        'Monique Silva': '#F43F5E',
-        'Sara Mattos': '#8B5A2B'
+        'Ana Caroline Terto': '#60A5FA',      // azul claro
+        'Bruna Garcia': '#F87171',           // vermelho claro
+        'Fabiana Ferreira': '#34D399',       // verde claro
+        'Fabiana Godinho Santos': '#FBBF24', // amarelo claro
+        'Fernanda Batista': '#A78BFA',       // roxo claro
+        'Gabrielle Fernandes': '#F472B6',    // rosa claro
+        'Isabela Velasquez': '#818CF8',      // índigo claro
+        'Juliana Araujo': '#FB923C',         // laranja claro
+        'Lohainy Berlino': '#2DD4BF',        // teal claro
+        'Luciana Velasquez': '#A3E635',      // lime claro
+        'Monique Silva': '#FB7185',          // rose claro
+        'Sara Mattos': '#D97706'             // amber
       };
-      return vendorColors[vendor as keyof typeof vendorColors] || '#6B7280';
+      return vendorColors[vendor as keyof typeof vendorColors] || '#9CA3AF';
     };
     
     // Lista de vendedores únicos (incluindo dados reais e do banco)
