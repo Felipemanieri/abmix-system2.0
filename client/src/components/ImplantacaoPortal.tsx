@@ -1334,7 +1334,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                         📄 Editor PDF completo carregado. Faça upload do seu PDF e use as ferramentas de edição disponíveis.
                       </p>
                     </div>
-                  </div></div_str>
+                  </div>
 
                   {/* Card do Editor de Imagem */}
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-6">
