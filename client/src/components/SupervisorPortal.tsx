@@ -2928,6 +2928,169 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Propostas por vendedor (dados reais do sistema)</p>
           </div>
           <div className="p-6">
+            {/* Gráfico de Barras - Performance Individual */}
+            {uniqueVendors.filter(vendor => {
+              const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
+              return hasProposals;
+            }).length > 0 ? (
+              <div className="mb-8">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                  <canvas
+                    ref={(canvas) => {
+                      if (!canvas) return;
+                      
+                      const ctx = canvas.getContext('2d');
+                      if (!ctx) return;
+
+                      // Destruir gráfico existente se houver
+                      if (canvas.chart) {
+                        canvas.chart.destroy();
+                      }
+
+                      // Preparar dados dos vendedores filtrados
+                      const vendorsWithData = uniqueVendors.filter(vendor => {
+                        const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
+                        return hasProposals;
+                      });
+
+                      const chartData = vendorsWithData.map(vendor => {
+                        const vendorProposals = finalAnalyticsData.filter(p => p.vendorName === vendor);
+                        const convertidas = vendorProposals.filter(p => p.status === 'implantado').length;
+                        const faturamento = vendorProposals
+                          .filter(p => p.status === 'implantado')
+                          .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0);
+                        
+                        return {
+                          vendor: vendor,
+                          total: vendorProposals.length,
+                          convertidas: convertidas,
+                          taxaConversao: vendorProposals.length > 0 ? (convertidas / vendorProposals.length) * 100 : 0,
+                          faturamento: faturamento / 1000, // Converter para milhares
+                          color: getVendorColor(vendor)
+                        };
+                      });
+
+                      // Criar gráfico de barras
+                      canvas.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                          labels: chartData.map(d => d.vendor.length > 15 ? d.vendor.substring(0, 15) + '...' : d.vendor),
+                          datasets: [
+                            {
+                              label: 'Total Propostas',
+                              data: chartData.map(d => d.total),
+                              backgroundColor: chartData.map(d => d.color + '80'),
+                              borderColor: chartData.map(d => d.color),
+                              borderWidth: 2,
+                              yAxisID: 'y'
+                            },
+                            {
+                              label: 'Convertidas',
+                              data: chartData.map(d => d.convertidas),
+                              backgroundColor: chartData.map(d => '#10b981' + '80'),
+                              borderColor: '#10b981',
+                              borderWidth: 2,
+                              yAxisID: 'y'
+                            },
+                            {
+                              label: 'Taxa Conversão (%)',
+                              data: chartData.map(d => d.taxaConversao),
+                              backgroundColor: '#3b82f6' + '60',
+                              borderColor: '#3b82f6',
+                              borderWidth: 2,
+                              type: 'line',
+                              yAxisID: 'y1',
+                              tension: 0.4
+                            }
+                          ]
+                        },
+                        options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                            title: {
+                              display: true,
+                              text: 'Performance Individual dos Vendedores - Dados Filtrados',
+                              font: { size: 16, weight: 'bold' },
+                              color: '#374151'
+                            },
+                            legend: {
+                              position: 'top',
+                              labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                color: '#374151'
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                afterLabel: function(context) {
+                                  const dataIndex = context.dataIndex;
+                                  const vendorData = chartData[dataIndex];
+                                  if (context.datasetIndex === 0) {
+                                    return `Faturamento: R$ ${(vendorData.faturamento * 1000).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                                  }
+                                  return '';
+                                }
+                              }
+                            }
+                          },
+                          scales: {
+                            x: {
+                              grid: { display: false },
+                              ticks: { 
+                                color: '#6b7280',
+                                maxRotation: 45
+                              }
+                            },
+                            y: {
+                              type: 'linear',
+                              display: true,
+                              position: 'left',
+                              title: {
+                                display: true,
+                                text: 'Número de Propostas',
+                                color: '#374151'
+                              },
+                              grid: { color: '#e5e7eb' },
+                              ticks: { 
+                                color: '#6b7280',
+                                stepSize: 1
+                              }
+                            },
+                            y1: {
+                              type: 'linear',
+                              display: true,
+                              position: 'right',
+                              title: {
+                                display: true,
+                                text: 'Taxa de Conversão (%)',
+                                color: '#374151'
+                              },
+                              grid: { drawOnChartArea: false },
+                              ticks: { 
+                                color: '#6b7280',
+                                callback: function(value) {
+                                  return value + '%';
+                                }
+                              },
+                              max: 100
+                            }
+                          },
+                          interaction: {
+                            intersect: false,
+                            mode: 'index'
+                          }
+                        }
+                      });
+                    }}
+                    height="400"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            ) : null}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {uniqueVendors.filter(vendor => {
                 // Só mostrar vendedores que têm propostas no período filtrado
