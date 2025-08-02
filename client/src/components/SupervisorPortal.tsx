@@ -2657,76 +2657,84 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Distribuição por Status</h2>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Gráfico de Pizza */}
-              <div className="flex justify-center">
-                <div className="w-80 h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={Object.entries(STATUS_CONFIG)
-                          .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                          .map(([status, config]) => ({
-                            name: config.label,
-                            value: finalAnalyticsData.filter(p => p.status === status).length,
-                            color: config.color,
-                            fill: config.color
-                          }))}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => {
-                          return (
-                            <text fill="#1F2937" fontSize="12" fontWeight="500">
-                              {`${name} ${(percent * 100).toFixed(0)}%`}
-                            </text>
-                          );
-                        }}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {Object.entries(STATUS_CONFIG).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry[1].color} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: any, name: any) => [value, name]}
-                        labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
-                        contentStyle={{ 
-                          backgroundColor: '#FFFFFF', 
-                          border: '1px solid #D1D5DB', 
-                          borderRadius: '8px',
-                          color: '#1F2937',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}
-                      />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+            {/* Gráfico de Barras Horizontal Limpo */}
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsBarChart
+                  data={Object.entries(STATUS_CONFIG)
+                    .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
+                    .map(([status, config]) => {
+                      const count = finalAnalyticsData.filter(p => p.status === status).length;
+                      const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
+                      
+                      return {
+                        status: config.label,
+                        count: count,
+                        percentage: percentage,
+                        fill: config.color
+                      };
+                    })}
+                  layout="horizontal"
+                  margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis 
+                    type="number"
+                    tick={{ fill: '#6B7280', fontSize: 12 }}
+                    axisLine={{ stroke: '#D1D5DB' }}
+                    tickLine={{ stroke: '#D1D5DB' }}
+                  />
+                  <YAxis 
+                    type="category"
+                    dataKey="status"
+                    tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                    axisLine={{ stroke: '#D1D5DB' }}
+                    tickLine={{ stroke: '#D1D5DB' }}
+                    width={90}
+                  />
+                  <Tooltip 
+                    formatter={(value: any, name: any) => [
+                      `${value} propostas (${finalAnalyticsData.length > 0 ? ((value / finalAnalyticsData.length) * 100).toFixed(1) : 0}%)`,
+                      'Quantidade'
+                    ]}
+                    labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
+                    contentStyle={{ 
+                      backgroundColor: '#FFFFFF', 
+                      border: '1px solid #D1D5DB', 
+                      borderRadius: '8px',
+                      color: '#1F2937',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    radius={[0, 4, 4, 0]}
+                    fill={(entry: any) => entry.fill}
+                  />
+                </RechartsBarChart>
+              </ResponsiveContainer>
+            </div>
 
-              {/* Dados Numéricos */}
-              <div className="grid grid-cols-2 gap-4">
-                {Object.entries(STATUS_CONFIG)
-                  .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                  .map(([status, config]) => {
-                    const count = finalAnalyticsData.filter(p => p.status === status).length;
-                    const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
-                    
-                    return (
-                      <div key={status} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div 
-                          className="w-4 h-4 rounded-full mx-auto mb-2"
-                          style={{ backgroundColor: config.color }}
-                        ></div>
-                        <div className="text-2xl font-semibold text-gray-800 dark:text-white mb-1">{count}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">{config.label}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{percentage.toFixed(0)}%</div>
-                      </div>
-                    );
-                  })}
-              </div>
+            {/* Legenda Horizontal */}
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              {Object.entries(STATUS_CONFIG)
+                .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
+                .map(([status, config]) => {
+                  const count = finalAnalyticsData.filter(p => p.status === status).length;
+                  const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
+                  
+                  return (
+                    <div key={status} className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: config.color }}
+                      ></div>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                        {config.label}: {count} ({percentage.toFixed(0)}%)
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </div>
