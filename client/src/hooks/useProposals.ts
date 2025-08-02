@@ -31,6 +31,8 @@ export interface ProposalData {
   clientCompleted: boolean;
   status: string;
   priority: string;
+  numeroProposta?: number | null;
+  numeroApolice?: number | null;
   createdAt: string;
   updatedAt: string;
   // Campos calculados
@@ -66,7 +68,9 @@ export function useProposals() {
           contractData: proposal.contractData,
           status: proposal.status,
           titulares: proposal.titulares?.length || 0,
-          dependentes: proposal.dependentes?.length || 0
+          dependentes: proposal.dependentes?.length || 0,
+          numeroProposta: proposal.numeroProposta,
+          numeroApolice: proposal.numeroApolice
         });
         
         return {
@@ -74,6 +78,8 @@ export function useProposals() {
           cliente: proposal.contractData?.nomeEmpresa || 'N/A',
           plano: proposal.contractData?.planoContratado || 'N/A',
           valor: proposal.contractData?.valor || '0',
+          numeroProposta: proposal.numeroProposta,
+          numeroApolice: proposal.numeroApolice,
           progresso: calculateProposalProgress({
             titulares: proposal.titulares || [],
             dependentes: proposal.dependentes || [],
