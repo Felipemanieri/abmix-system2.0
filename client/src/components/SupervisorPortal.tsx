@@ -1268,12 +1268,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const targetValue = target.targetValue ? parseFloat(target.targetValue.toString().replace(/[^\d]/g, '')) || 1 : 1;
     const targetProposals = target.targetProposals || 1;
 
-    // Calcular progressos individuais
+    // Calcular progresso baseado APENAS no valor das vendas
     const valueProgress = Math.min((totalValue / targetValue) * 100, 100);
-    const proposalProgress = Math.min((vendorProposals.length / targetProposals) * 100, 100);
 
-    // Retornar o MAIOR dos dois progressos (100% se bater valor OU propostas)
-    return Math.round(Math.max(valueProgress, proposalProgress));
+    // Retornar apenas o progresso por valor das vendas
+    return Math.round(valueProgress);
   };
 
   const renderDashboard = () => (
