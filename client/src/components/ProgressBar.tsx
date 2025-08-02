@@ -26,18 +26,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const progressResult = calculateProposalProgress(proposalData);
   const progress = progressResult.overallProgress;
-  
-  // DEBUG: Log temporário para verificar cálculo de progresso
-  if (proposal.id) {
-    console.log(`🔍 ProgressBar DEBUG - Proposta ${proposal.id}:`, {
-      titulares: proposalData.titulares.length,
-      dependentes: proposalData.dependentes.length,
-      attachments: proposalData.clientAttachments.length,
-      completed: proposalData.clientCompleted,
-      calculatedProgress: progress,
-      progressResult: progressResult
-    });
-  }
   const progressColor = getProgressColor(progress);
   const progressText = getProgressText(progress);
   const details = showDetails ? getProgressDetails(proposalData) : null;

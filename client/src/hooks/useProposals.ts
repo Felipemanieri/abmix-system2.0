@@ -202,34 +202,20 @@ export function useVendorProposals(vendorId: number) {
       }
     },
     select: (data: any[]) => {
-      console.log(`🔍 VENDOR PROPOSALS DEBUG - Raw data for vendor ${vendorId}:`, data);
-      return data.map((proposal): ProposalData => {
-        const progressData = {
+      console.log(`Propostas do vendedor ${vendorId}:`, data);
+      return data.map((proposal): ProposalData => ({
+        ...proposal,
+        cliente: proposal.contractData?.nomeEmpresa || 'N/A',
+        plano: proposal.contractData?.planoContratado || 'N/A',
+        valor: proposal.contractData?.valor || '0',
+        progresso: calculateProposalProgress({
           titulares: proposal.titulares || [],
           dependentes: proposal.dependentes || [],
           clientAttachments: proposal.clientAttachments || [],
           clientCompleted: proposal.clientCompleted || false
-        };
-        const progressResult = calculateProposalProgress(progressData);
-        
-        console.log(`🔍 VENDOR PROGRESS - Proposal ${proposal.id}:`, {
-          titulares: progressData.titulares.length,
-          dependentes: progressData.dependentes.length, 
-          attachments: progressData.clientAttachments.length,
-          completed: progressData.clientCompleted,
-          calculatedProgress: progressResult.overallProgress,
-          fullResult: progressResult
-        });
-        
-        return {
-          ...proposal,
-          cliente: proposal.contractData?.nomeEmpresa || 'N/A',
-          plano: proposal.contractData?.planoContratado || 'N/A',
-          valor: proposal.contractData?.valor || '0',
-          progresso: progressResult.overallProgress,
-          priority: proposal.priority || 'medium'
-        };
-      });
+        }).overallProgress,
+        priority: proposal.priority || 'medium'
+      }));
     },
     refetchInterval: 1000, // 1 segundo - resposta imediata
     refetchIntervalInBackground: false,
