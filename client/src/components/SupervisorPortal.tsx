@@ -2533,6 +2533,14 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         // Pegar TODAS as propostas desse vendedor (usar vendorId primeiro)
         const vendorProposals = proposals?.filter(p => p.vendorId === selectedVendor.id || p.vendor_id === selectedVendor.id) || [];
         console.log(`🎯 CHART DATA - Propostas do vendedor ${selectedVendor.name}:`, vendorProposals.length);
+        console.log(`🎯 CHART DATA - Detalhes das propostas encontradas:`, vendorProposals);
+        
+        // ESPECIAL LOG PARA ISABELA VELASQUEZ
+        if (selectedVendor.name === 'Isabela Velasquez') {
+          console.log('🚨 ISABELA DEBUG - Vendedor ID:', selectedVendor.id);
+          console.log('🚨 ISABELA DEBUG - Todas as propostas disponíveis:', proposals?.map(p => ({id: p.id, vendorId: p.vendorId, vendor_id: p.vendor_id, vendorName: p.vendorName})));
+          console.log('🚨 ISABELA DEBUG - Propostas filtradas para Isabela:', vendorProposals);
+        }
         
         // Aplicar filtros de data se existirem
         let filteredProposals = vendorProposals;
