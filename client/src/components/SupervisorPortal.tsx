@@ -2417,8 +2417,24 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       fill: item.color
     }));
 
-    // Análise por vendedor
-    const vendorAnalysis = analyticsData.reduce((acc, proposal) => {
+    // Aplicar os filtros do Analytics também no vendorAnalysis
+    const finalAnalyticsData = (() => {
+      let data = analyticsData;
+      
+      // Aplicar filtros adicionais do analytics
+      if (selectedVendorForChart && selectedVendorForChart !== 'all') {
+        data = data.filter(p => p.vendorName === selectedVendorForChart);
+      }
+      
+      if (selectedStatusForChart && selectedStatusForChart !== 'all') {
+        data = data.filter(p => p.status === selectedStatusForChart);
+      }
+      
+      return data;
+    })();
+
+    // Análise por vendedor (usando dados finais filtrados)
+    const vendorAnalysis = finalAnalyticsData.reduce((acc, proposal) => {
       const vendor = proposal.vendorName || 'Não Identificado';
       if (!acc[vendor]) {
         acc[vendor] = {
@@ -2472,13 +2488,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       }))
       .sort((a, b) => b.total - a.total);
 
-    // Dados agregados da equipe
+    // Dados agregados da equipe (usando dados finais filtrados)
     const teamMetrics = {
-      totalPropostas: analyticsData.length,
-      totalFaturamento: analyticsData.filter(p => p.status === 'implantado').reduce((sum, p) => sum + parseFloat(p.contractData?.valor || '0'), 0),
-      totalConvertidas: analyticsData.filter(p => p.status === 'implantado').length,
-      totalPerdidas: analyticsData.filter(p => ['declinado', 'expirado'].includes(p.status)).length,
-      totalPendentes: analyticsData.filter(p => !['implantado', 'declinado', 'expirado'].includes(p.status)).length,
+      totalPropostas: finalAnalyticsData.length,
+      totalFaturamento: finalAnalyticsData.filter(p => p.status === 'implantado').reduce((sum, p) => sum + parseFloat(p.contractData?.valor || '0'), 0),
+      totalConvertidas: finalAnalyticsData.filter(p => p.status === 'implantado').length,
+      totalPerdidas: finalAnalyticsData.filter(p => ['declinado', 'expirado'].includes(p.status)).length,
+      totalPendentes: finalAnalyticsData.filter(p => !['implantado', 'declinado', 'expirado'].includes(p.status)).length,
       ticketMedio: 0,
       taxaConversao: 0
     };
@@ -2497,7 +2513,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics & Performance</h2>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">Análise de {analyticsData.length} propostas</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">Análise de {finalAnalyticsData.length} propostas{(selectedVendorForChart && selectedVendorForChart !== 'all') || (selectedStatusForChart && selectedStatusForChart !== 'all') ? ' (filtradas)' : ''}</p>
             </div>
             <div className="text-white dark:text-white right">
               <span className="text-sm text-gray-600 dark:text-gray-300">{new Date().toLocaleDateString('pt-BR')}</span>
@@ -2638,16 +2654,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           <div className="p-6">
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
               {Object.entries(STATUS_CONFIG)
-                .filter(([status]) => analyticsData.filter(p => p.status === status).length > 0)
+                .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
                 .map(([status, config]) => {
-                  const count = analyticsData.filter(p => p.status === status).length;
-                  const percentage = analyticsData.length > 0 ? (count / analyticsData.length * 100) : 0;
+                  const count = finalAnalyticsData.filter(p => p.status === status).length;
+                  const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
                   
                   return (
-                    <div key={status} className="text-white dark:text-white center">
-                      <div className="text-white dark:text-white lg font-semibold text-slate- dark:text-white800 dark:text-white dark:text-white mb-1">{count}</div>
-                      <div className="text-white dark:text-white xs text-slate- dark:text-white600 dark:text-white dark:text-white mb-1">{config.label}</div>
-                      <div className="text-white dark:text-white xs text-slate- dark:text-white500 dark:text-white">{percentage.toFixed(0)}%</div>
+                    <div key={status} className="text-center">
+                      <div className="text-2xl font-semibold text-gray-800 dark:text-white mb-1">{count}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">{config.label}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{percentage.toFixed(0)}%</div>
                     </div>
                   );
                 })}
@@ -2773,9 +2789,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
         {/* Gráfico de Distribuição */}
         {showChart && (selectedStatusForChart || selectedVendorForChart) && (
-          <div className="bg-gray-800 border border-slate-200">
-            <div className="px-6 py-4 border-b border-slate-200">
-              <h2 className="text-white dark:text-white lg font-medium text-slate- dark:text-white800 dark:text-white dark:text-white">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+              <h2 className="text-gray-900 dark:text-white text-lg font-medium">
                 {selectedVendorForChart && selectedVendorForChart !== 'all' 
                   ? `Distribuição de Status - ${selectedVendorForChart}`
                   : selectedStatusForChart && selectedStatusForChart !== 'all'
@@ -2786,8 +2802,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             </div>
             <div className="p-6">
               {chartData.length === 0 ? (
-                <div className="text-white dark:text-white center py-12">
-                  <p className="text-white dark:text-white slate- dark:text-white500 dark:text-white">Nenhum dado encontrado para os filtros selecionados.</p>
+                <div className="text-center py-12">
+                  <p className="text-gray-500 dark:text-gray-400">Nenhum dado encontrado para os filtros selecionados.</p>
                 </div>
               ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2843,7 +2859,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
                 {/* Legenda */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-white mb-4">Legenda</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-white mb-4">Legenda</h3>
                   {chartData.map((item, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -2851,11 +2867,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: item.color }}
                         ></div>
-                        <span className="text-white text-sm font-medium">{item.name}</span>
+                        <span className="text-gray-900 dark:text-white text-sm font-medium">{item.name}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-white text-sm font-medium">{item.value}</div>
-                        <div className="text-gray-300 text-xs">
+                        <div className="text-gray-900 dark:text-white text-sm font-medium">{item.value}</div>
+                        <div className="text-gray-500 dark:text-gray-400 text-xs">
                           {chartData.reduce((sum, d) => sum + d.value, 0) > 0 
                             ? ((item.value / chartData.reduce((sum, d) => sum + d.value, 0)) * 100).toFixed(1)
                             : 0}%
