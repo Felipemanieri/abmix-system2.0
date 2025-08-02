@@ -2704,12 +2704,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           };
                           return fullNames[label] || label;
                         }}
-                        labelStyle={{ color: '#FFFFFF', fontWeight: 'bold' }}
+                        labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
                         contentStyle={{ 
-                          backgroundColor: '#1F2937', 
-                          border: '1px solid #374151', 
+                          backgroundColor: '#FFFFFF', 
+                          border: '1px solid #D1D5DB', 
                           borderRadius: '8px',
-                          color: '#FFFFFF'
+                          color: '#1F2937',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}
                       />
                       <Bar dataKey="total" radius={[4, 4, 0, 0]} />
@@ -2826,12 +2827,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         </Pie>
                         <Tooltip 
                           formatter={(value: any, name: any) => [value, name]}
-                          labelStyle={{ color: '#FFFFFF', fontWeight: 'bold' }}
+                          labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
                           contentStyle={{ 
-                            backgroundColor: '#1F2937', 
-                            border: '1px solid #374151', 
+                            backgroundColor: '#FFFFFF', 
+                            border: '1px solid #D1D5DB', 
                             borderRadius: '8px',
-                            color: '#FFFFFF'
+                            color: '#1F2937',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                           }}
                         />
                       </RechartsPieChart>
