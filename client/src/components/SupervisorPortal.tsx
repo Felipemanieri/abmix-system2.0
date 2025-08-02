@@ -26,6 +26,7 @@ import { getDynamicGreeting } from '../utils/greetingHelper';
 import { globalSyncConfig } from '@/utils/globalSyncConfig';
 import { useSupervisorWebSocket } from '@/hooks/useWebSocket';
 import { useProposals } from '@/hooks/useProposals';
+import { calculateProposalProgress } from '@shared/progressCalculator';
 
 interface SupervisorPortalProps {
   user: any;
@@ -618,7 +619,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       case 'baixa':
         return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
       default:
-        return 'bg-gray-100 dark:bg-gray-700 text-white dark:text-white';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white';
     }
   };
   
@@ -636,68 +637,62 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     }
   }
 
-  // Função para calcular progresso usando a calculadora oficial
+
+
+  // USAR A MESMA CALCULADORA DOS OUTROS PORTAIS PARA SINCRONIZAÇÃO
   const calculateProgress = (proposal: any) => {
     if (!proposal) return 0;
     
-    // Usar dados reais da proposta para calcular progresso
+    // Usar a calculadora oficial (mesma do ProgressBar)
     const proposalData = {
+      contractData: proposal.contractData || {},
       titulares: proposal.titulares || [],
       dependentes: proposal.dependentes || [],
       clientAttachments: proposal.clientAttachments || [],
-      contractData: proposal.contractData || {},
+      clientCompleted: proposal.clientCompleted || false,
       status: proposal.status
     };
     
-    // Cálculo simples baseado nos campos essenciais preenchidos
-    let completedFields = 0;
-    let totalFields = 0;
-    
-    // Verificar dados do contrato (peso 40%)
-    const contractData = proposalData.contractData || {};
-    const contractFields = ['nomeEmpresa', 'cnpj', 'planoContratado', 'valor'];
-    contractFields.forEach(field => {
-      totalFields++;
-      if (contractData[field as keyof typeof contractData]) {
-        completedFields++;
+    try {
+      // USAR A CALCULADORA OFICIAL (mesma dos outros portais)
+      const progressResult = calculateProposalProgress(proposalData);
+      return progressResult.overallProgress;
+    } catch (error) {
+      console.warn('Erro ao calcular progresso:', error);
+      
+      // FALLBACK: cálculo simples como backup
+      let completedFields = 0;
+      let totalFields = 9; // Total fixo para consistência
+      
+      const contractData = proposalData.contractData || {};
+      if (contractData.nomeEmpresa) completedFields++;
+      if (contractData.cnpj) completedFields++;
+      if (contractData.planoContratado) completedFields++;
+      if (contractData.valor) completedFields++;
+      
+      if (proposalData.titulares.length > 0) {
+        const titular = proposalData.titulares[0];
+        if (titular?.nomeCompleto) completedFields++;
+        if (titular?.cpf) completedFields++;
+        if (titular?.emailPessoal) completedFields++;
+        if (titular?.telefonePessoal) completedFields++;
       }
-    });
-    
-    // Verificar dados pessoais do titular (peso 50%)
-    if (proposalData.titulares.length > 0) {
-      const titular = proposalData.titulares[0];
-      const titularFields = ['nomeCompleto', 'cpf', 'emailPessoal', 'telefonePessoal'];
-      titularFields.forEach(field => {
-        totalFields++;
-        if (titular && titular[field as keyof typeof titular]) {
-          completedFields++;
-        }
-      });
-    } else {
-      totalFields += 4; // Campos do titular não preenchidos
+      
+      if (proposalData.clientAttachments.length > 0) completedFields++;
+      
+      const progress = Math.round((completedFields / totalFields) * 100);
+      
+      // Calibração: máximo 99% até ser implantado
+      if (progress >= 99 && proposal.status !== 'implantado') {
+        return 99;
+      }
+      
+      if (proposal.status === 'implantado') {
+        return 100;
+      }
+      
+      return Math.min(99, progress);
     }
-    
-    // Verificar anexos (peso 10%)
-    totalFields++;
-    if (proposalData.clientAttachments.length > 0) {
-      completedFields++;
-    }
-    
-    if (totalFields === 0) return 0;
-    
-    const progress = Math.round((completedFields / totalFields) * 100);
-    
-    // CALIBRAÇÃO: Máximo 99% até ser aprovado
-    if (progress >= 99 && proposal.status !== 'implantado') {
-      return 99;
-    }
-    
-    // 100% apenas quando implantado
-    if (proposal.status === 'implantado') {
-      return 100;
-    }
-    
-    return Math.min(99, progress);
   };
 
   // Funções para as ações da tabela
