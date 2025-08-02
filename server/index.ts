@@ -1119,6 +1119,23 @@ async function startServer() {
       }
     });
 
+    app.post('/api/vendor-targets/update', async (req: Request, res: Response) => {
+      try {
+        const { vendorName, field, value, month, year } = req.body;
+        const updatedTarget = await storage.updateVendorTargetByName(vendorName, field, value, month, year);
+        
+        if (updatedTarget) {
+          console.log('✅ Meta atualizada:', updatedTarget);
+          res.json(updatedTarget);
+        } else {
+          res.status(404).json({ error: 'Meta não encontrada' });
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar meta:', error);
+        res.status(500).json({ error: 'Erro interno do servidor' });
+      }
+    });
+
     app.delete('/api/vendor-targets/:id', async (req: Request, res: Response) => {
       try {
         const id = parseInt(req.params.id);

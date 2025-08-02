@@ -285,6 +285,51 @@ export class DatabaseStorage implements IStorage {
     return vendorTarget;
   }
 
+  async updateVendorTargetByName(vendorName: string, field: string, value: string, month: number, year: number): Promise<VendorTarget | null> {
+    try {
+      // Primeiro, encontrar o vendor pelo nome
+      const [vendor] = await db
+        .select()
+        .from(vendors)
+        .where(eq(vendors.name, vendorName));
+      
+      if (!vendor) {
+        console.log('Vendedor não encontrado:', vendorName);
+        return null;
+      }
+
+      // Encontrar o target existente
+      const [existingTarget] = await db
+        .select()
+        .from(vendorTargets)
+        .where(and(
+          eq(vendorTargets.vendorId, vendor.id),
+          eq(vendorTargets.month, month),
+          eq(vendorTargets.year, year)
+        ));
+
+      if (!existingTarget) {
+        console.log('Meta não encontrada para o vendedor:', vendorName);
+        return null;
+      }
+
+      // Atualizar o campo específico
+      const updateData: any = { updatedAt: new Date() };
+      updateData[field] = value;
+
+      const [updatedTarget] = await db
+        .update(vendorTargets)
+        .set(updateData)
+        .where(eq(vendorTargets.id, existingTarget.id))
+        .returning();
+
+      return updatedTarget;
+    } catch (error) {
+      console.error('Erro ao atualizar meta do vendedor:', error);
+      return null;
+    }
+  }
+
   async deleteVendorTarget(id: number): Promise<void> {
     await db.delete(vendorTargets).where(eq(vendorTargets.id, id));
   }
