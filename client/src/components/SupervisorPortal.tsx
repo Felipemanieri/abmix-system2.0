@@ -3190,8 +3190,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           const realVendorSales = vendors?.map(vendor => {
                             // Usar TODOS os proposals sem filtros para mostrar dados reais completos
                             const vendorImplantedProposals = proposals?.filter(p => 
-                              (p.vendorId === vendor.id || p.vendor_id === vendor.id || p.vendorName === vendor.name) && 
-                              p.status === 'implantado'
+                              p.vendor_id === vendor.id && p.status === 'implantado'
                             ) || [];
                             
                             const totalValue = vendorImplantedProposals.reduce((sum, p) => {
