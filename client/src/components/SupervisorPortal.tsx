@@ -2711,7 +2711,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 />
               </div>
 
-              {/* Status */}
+              {/* Status - RESTAURADO */}
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Status</label>
+                <select
+                  value={analyticsFilters.selectedStatus}
+                  onChange={(e) => setAnalyticsFilters(prev => ({...prev, selectedStatus: e.target.value}))}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
+                >
+                  <option className="text-black bg-white" value="">Todos os Status</option>
+                  <option className="text-black bg-white" value="implantado">Implantado</option>
+                  <option className="text-black bg-white" value="pendente">Pendente</option>
+                  <option className="text-black bg-white" value="em_analise">Em Análise</option>
+                  <option className="text-black bg-white" value="aguardando_documentos">Aguardando Documentos</option>
+                  <option className="text-black bg-white" value="declinado">Declinado</option>
+                  <option className="text-black bg-white" value="expirado">Expirado</option>
+                </select>
+              </div>
 
             </div>
             
@@ -3126,10 +3142,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       {(() => {
                         // Calcular performance individual usando dados reais e metas do banco
                         return vendors?.map(vendor => {
-                          // Pegar propostas implantadas do vendedor
-                          const vendorImplantedProposals = proposals?.filter(p => 
+                          // Pegar propostas implantadas do vendedor - APLICAR FILTROS AQUI
+                          let vendorProposals = proposals?.filter(p => 
                             p.vendor_id === vendor.id && p.status === 'implantado'
                           ) || [];
+                          
+                          // APLICAR FILTROS DE DATA
+                          if (dataInicio || dataFim) {
+                            vendorProposals = vendorProposals.filter(p => {
+                              const proposalDate = new Date(p.createdAt || Date.now());
+                              if (dataInicio && proposalDate < new Date(dataInicio)) return false;
+                              if (dataFim && proposalDate > new Date(dataFim)) return false;
+                              return true;
+                            });
+                          }
+                          
+                          // APLICAR FILTRO DE STATUS
+                          if (selectedStatus) {
+                            vendorProposals = vendorProposals.filter(p => p.status === selectedStatus);
+                          }
+                          
+                          const vendorImplantedProposals = vendorProposals;
                           
                           const totalValue = vendorImplantedProposals.reduce((sum, p) => {
                             const valor = p.contractData?.valor || '0';
@@ -3234,10 +3267,25 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         {(() => {
                           // Calcular dados reais de vendas por vendedor (apenas implantados)
                           const realVendorSales = vendors?.map(vendor => {
-                            // Usar TODOS os proposals sem filtros para mostrar dados reais completos
-                            const vendorImplantedProposals = proposals?.filter(p => 
+                            // Pegar propostas implantadas do vendedor - APLICAR FILTROS AQUI TAMBÉM
+                            let vendorImplantedProposals = proposals?.filter(p => 
                               p.vendor_id === vendor.id && p.status === 'implantado'
                             ) || [];
+
+                            // APLICAR FILTROS DE DATA
+                            if (dataInicio || dataFim) {
+                              vendorImplantedProposals = vendorImplantedProposals.filter(p => {
+                                const proposalDate = new Date(p.createdAt || Date.now());
+                                if (dataInicio && proposalDate < new Date(dataInicio)) return false;
+                                if (dataFim && proposalDate > new Date(dataFim)) return false;
+                                return true;
+                              });
+                            }
+
+                            // APLICAR FILTRO DE STATUS (se selecionado, só mostrar esse status)
+                            if (selectedStatus) {
+                              vendorImplantedProposals = vendorImplantedProposals.filter(p => p.status === selectedStatus);
+                            }
                             
                             const totalValue = vendorImplantedProposals.reduce((sum, p) => {
                               const valor = p.contractData?.valor || '0';
