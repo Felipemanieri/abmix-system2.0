@@ -3222,17 +3222,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               value: totalValue,
                               count: vendorImplantedProposals.length
                             };
-                          }).filter(v => v.value > 0 || v.count > 0) // Mostrar apenas vendedores com vendas
-                          .sort((a, b) => b.value - a.value) || []; // Ordenar por valor decrescente
+                          }).sort((a, b) => b.value - a.value) || []; // Mostrar TODOS os vendedores, ordenados por valor
                           
                           const maxValue = Math.max(...realVendorSales.map(v => v.value), 1);
                           const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316', '#84cc16'];
                           
-                          return realVendorSales.length === 0 ? (
-                            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                              Nenhuma venda implantada encontrada
-                            </div>
-                          ) : (
+                          return (
                             realVendorSales.map((vendor, index) => {
                               const percentage = (vendor.value / maxValue) * 100;
                               
