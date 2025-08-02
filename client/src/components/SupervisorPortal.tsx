@@ -90,12 +90,13 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas usando o hook correto que processa os dados
-  const { 
-    proposalsWithVendor: proposals = [], 
-    isLoading: proposalsLoading,
-    updateProposalPriority 
-  } = useProposals();
+  // Buscar propostas com tratamento robusto
+  const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
+    queryKey: ['/api/proposals'],
+    queryFn: () => apiRequest('/api/proposals'),
+    refetchInterval: 1000, // 1 segundo - resposta imediata
+    retry: false, // Sem retry para evitar erros
+  });
 
   // Buscar vendedores com tratamento robusto
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
