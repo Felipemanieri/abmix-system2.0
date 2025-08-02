@@ -2382,8 +2382,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
     // Dados específicos para gráfico de pizza por vendedor usando propostas reais
     const vendorPieData = realVendors.map(vendor => {
-      // Contar propostas REAIS - filtrando por vendorName das propostas no banco
-      const count = filteredProposals.filter(p => {
+      // Contar propostas REAIS usando finalAnalyticsData (dados filtrados)
+      const count = finalAnalyticsData.filter(p => {
         // Buscar o vendedor pelo ID se existir vendorId
         if (p.vendorId && vendors?.length > 0) {
           const vendorFromDb = vendors.find(v => v.id === p.vendorId);
@@ -2395,7 +2395,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       
       return {
         name: vendor,
-        value: count, // Valor real das propostas
+        value: count, // Valor real das propostas filtradas
         realValue: count,
         fill: getVendorColor(vendor)
       };
@@ -2718,10 +2718,18 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Distribuição por Status</h2>
           </div>
           <div className="p-6">
+            {/* DEBUG: Mostrar dados encontrados */}
+            <div className="mb-4 p-3 bg-blue-50 rounded text-sm">
+              <strong>Debug:</strong> {finalAnalyticsData.length} propostas filtradas encontradas
+              {finalAnalyticsData.length > 0 && (
+                <div className="mt-2">
+                  Status encontrados: {[...new Set(finalAnalyticsData.map(p => p.status))].join(', ')}
+                </div>
+              )}
+            </div>
+            
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(STATUS_CONFIG)
-                .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                .map(([status, config]) => {
+              {Object.entries(STATUS_CONFIG).map(([status, config]) => {
                   const count = finalAnalyticsData.filter(p => p.status === status).length;
                   const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
                   
@@ -2912,6 +2920,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Propostas por vendedor (dados reais do sistema)</p>
           </div>
           <div className="p-6">
+            {/* DEBUG: Mostrar vendedores encontrados */}
+            <div className="mb-4 p-3 bg-green-50 rounded text-sm">
+              <strong>Debug Vendedores:</strong> {finalAnalyticsData.length} propostas filtradas
+              {finalAnalyticsData.length > 0 && (
+                <div className="mt-2">
+                  Vendedores encontrados: {[...new Set(finalAnalyticsData.map(p => p.vendorName).filter(Boolean))].join(', ')}
+                </div>
+              )}
+            </div>
+            
             {/* Gráfico de Barras - Performance Individual */}
             {uniqueVendors.filter(vendor => {
               const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
