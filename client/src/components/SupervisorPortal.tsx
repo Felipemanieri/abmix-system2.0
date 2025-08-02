@@ -154,6 +154,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       
       const reportItem = {
         abmId: proposal.abmId || proposal.id || 'N/A',
+        numeroProposta: proposal.numeroProposta || null,
+        numeroApolice: proposal.numeroApolice || null,
         cliente: proposal.contractData?.nomeEmpresa || proposal.folderName || proposal.cliente || 'Empresa não informada',
         cnpj: proposal.contractData?.cnpj || 'CNPJ não informado', 
         valor: proposal.contractData?.valor || proposal.valor || '0',
@@ -323,9 +325,11 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
 
   const downloadReport = () => {
     const csvContent = [
-      ['ID', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Observações'].join(';'),
+      ['ID', 'Nº Proposta', 'Nº Apólice', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Observações'].join(';'),
       ...reportData.map(item => [
         item.abmId,
+        (item as any).numeroProposta || '-',
+        (item as any).numeroApolice || '-',
         item.cliente,
         item.cnpj,
         item.vendedor,
@@ -3404,6 +3408,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">ID</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Nº PROPOSTA</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">Nº APÓLICE</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">CLIENTE</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">CNPJ</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">VENDEDOR</th>
@@ -3432,6 +3438,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       >
                         {abmId}
                       </button>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {(proposal as any).numeroProposta || '-'}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {(proposal as any).numeroApolice || '-'}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-medium text-gray-900 dark:text-white">{contractData.nomeEmpresa || proposal.cliente || 'Empresa não informada'}</div>
