@@ -2931,17 +2931,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
           <div className="p-6">
             {(() => {
-              // Preparar dados simplificados usando Chart.js sem biblioteca React
-              const vendorsWithSales = uniqueVendors.filter(vendor => 
-                finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado').length > 0
-              );
+              // USAR DADOS FILTRADOS corretamente - problema identificado aqui!
+              const vendorsWithSales = finalAnalyticsData
+                .filter(p => p.status === 'implantado')
+                .map(p => p.vendorName)
+                .filter((vendor, index, arr) => arr.indexOf(vendor) === index); // remover duplicatas
+              
+              console.log('🎯 TORRES DEBUG - Vendedores com vendas implantadas:', vendorsWithSales);
+              console.log('🎯 TORRES DEBUG - finalAnalyticsData:', finalAnalyticsData);
+              console.log('🎯 TORRES DEBUG - Propostas implantadas:', finalAnalyticsData.filter(p => p.status === 'implantado'));
               
               if (vendorsWithSales.length === 0) {
                 return (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <TrendingUp className="mx-auto h-12 w-12 mb-4 opacity-50" />
                     <p className="font-medium">Nenhuma venda implantada encontrada</p>
-                    <p className="text-sm mt-2">Aguarde propostas serem marcadas como implantadas</p>
+                    <p className="text-sm mt-2">Filtros ativos: {selectedVendor ? `Vendedor: ${selectedVendor}` : 'Todos'}</p>
+                    <p className="text-xs mt-1 text-blue-600">Debug: {finalAnalyticsData.length} propostas no total</p>
                   </div>
                 );
               }
@@ -2963,13 +2969,17 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           return sum + value;
                         }, 0);
                         
-                        const maxValue = Math.max(...vendorsWithSales.map(v => 
-                          finalAnalyticsData.filter(p => p.vendorName === v && p.status === 'implantado')
-                            .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0)
-                        ));
+                        // Calcular valor máximo entre todos os vendedores filtrados
+                        const allVendorValues = vendorsWithSales.map(v => {
+                          const vSales = finalAnalyticsData.filter(p => p.vendorName === v && p.status === 'implantado');
+                          return vSales.reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0);
+                        });
+                        const maxValue = Math.max(...allVendorValues, 1); // evitar divisão por zero
                         
                         const percentage = maxValue > 0 ? (totalValue / maxValue) * 100 : 0;
                         const vendorColor = getVendorColor(vendor);
+                        
+                        console.log(`🎯 TORRES - ${vendor}: ${vendorSales.length} vendas, R$ ${totalValue.toLocaleString()}, ${percentage.toFixed(1)}%`);
                         
                         return (
                           <div key={vendor} className="flex items-center gap-4">
@@ -3000,7 +3010,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     </div>
                   </div>
 
-                  {/* Cards resumo por vendedor */}
+                  {/* Cards resumo por vendedor - DADOS FILTRADOS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {vendorsWithSales.map(vendor => {
                       const vendorSales = finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado');
@@ -3017,7 +3027,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           className="p-4 rounded-lg border-2 transition-all hover:shadow-md" 
                           style={{ 
                             borderColor: vendorColor, 
-                            backgroundColor: `${vendorColor}10` 
+                            backgroundColor: `${vendorColor}15` 
                           }}
                         >
                           <div className="flex items-center gap-3 mb-3">
@@ -3038,7 +3048,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               R$ {totalValue.toLocaleString('pt-BR')}
                             </div>
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-gray-400">Vendas:</span>
+                              <span className="text-gray-600 dark:text-gray-400">Vendas implantadas:</span>
                               <span className="font-semibold text-gray-800 dark:text-gray-200">
                                 {vendorSales.length}
                               </span>
@@ -3049,6 +3059,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 R$ {vendorSales.length > 0 ? (totalValue / vendorSales.length).toLocaleString('pt-BR') : '0'}
                               </span>
                             </div>
+                            
+                            {/* Informação de filtro ativo */}
+                            {selectedVendor && (
+                              <div className="text-xs text-blue-600 dark:text-blue-400 mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                                Filtro: {selectedVendor}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
