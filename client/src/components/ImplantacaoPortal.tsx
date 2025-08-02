@@ -98,17 +98,6 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // Adicionar estado para notificações internas
   const [internalNotifications, setInternalNotifications] = useState<{id: string, message: string, type: 'success' | 'error'}[]>([]);
   
-  // Estados para o editor de imagem e PDF
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileType, setFileType] = useState<'image' | 'pdf' | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
-
   // Função para mostrar notificação interna no painel
   const showInternalNotification = (message: string, type: 'success' | 'error') => {
     const id = Date.now().toString();
@@ -117,237 +106,6 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     setTimeout(() => {
       setInternalNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
-  };
-
-  // Funções para o editor de imagem e PDF
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFile(file);
-    }
-    
-    // Limpar input para permitir recarregar o mesmo arquivo
-    event.target.value = '';
-  };
-
-  // Função para processar arquivo (imagem ou PDF)
-  const handleFile = (file: File) => {
-    console.log('📄 Processando arquivo:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    });
-
-    if (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg') {
-      setSelectedFile(file);
-      setFileType('image');
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setIsEditorOpen(false);
-      };
-      reader.readAsDataURL(file);
-      showInternalNotification('Imagem carregada com sucesso!', 'success');
-    } else if (file.type === 'application/pdf') {
-      console.log('📄 Iniciando processamento do PDF com PDF.js nativo...');
-      setSelectedFile(file);
-      setFileType('pdf');
-      
-      try {
-        // Não criar URL object para evitar abertura em nova aba
-        console.log('📄 Processando PDF sem criar URL object');
-        setSelectedImage('pdf-loaded'); // Valor placeholder para mostrar que PDF foi carregado
-        setIsEditorOpen(false);
-        
-        // Renderizar PDF usando PDF.js nativo
-        renderPDFToCanvas(file);
-        
-        console.log('📄 PDF processado com sucesso');
-      } catch (error) {
-        console.error('❌ Erro ao processar PDF:', error);
-        showInternalNotification('Erro ao processar PDF', 'error');
-      }
-    } else {
-      console.log('❌ Tipo de arquivo não suportado:', file.type);
-      showInternalNotification('Por favor, selecione apenas imagens (JPG, PNG) ou arquivos PDF.', 'error');
-    }
-  };
-
-  // Funções de drag and drop
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFile(files[0]);
-    }
-  };
-
-  const openEditor = () => {
-    if (selectedImage) {
-      setIsEditorOpen(true);
-      showInternalNotification(`Editor de ${fileType} aberto!`, 'success');
-    } else {
-      showInternalNotification('Por favor, carregue um arquivo primeiro.', 'error');
-    }
-  };
-
-  const downloadEditedFile = () => {
-    if (selectedImage && selectedFile) {
-      const link = document.createElement('a');
-      const fileExtension = fileType === 'pdf' ? 'pdf' : 'png';
-      link.download = `arquivo-editado-abmix-${Date.now()}.${fileExtension}`;
-      link.href = selectedImage;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showInternalNotification(`${fileType === 'pdf' ? 'PDF' : 'Imagem'} baixado com sucesso!`, 'success');
-    }
-  };
-
-  const clearFile = () => {
-    setSelectedImage(null);
-    setSelectedFile(null);
-    setFileType(null);
-    setIsEditorOpen(false);
-    
-    // Limpar URL do PDF se existir
-    if (pdfUrl) {
-      URL.revokeObjectURL(pdfUrl);
-      setPdfUrl(null);
-    }
-    
-    setNumPages(null);
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    showInternalNotification('Arquivo removido!', 'success');
-  };
-
-  // Função para renderizar PDF usando PDF.js nativo
-  const renderPDFToCanvas = async (file: File) => {
-    console.log('🔄 Iniciando renderização PDF com PDF.js nativo...');
-    console.log('📄 Arquivo:', {
-      name: file.name,
-      size: file.size,
-      type: file.type
-    });
-    
-    // Aguardar carregamento do PDF.js se necessário
-    let attempts = 0;
-    while (attempts < 50 && (!window.pdfjsLib)) {
-      console.log(`⏳ Aguardando PDF.js carregar... (tentativa ${attempts + 1})`);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-    
-    if (!window.pdfjsLib) {
-      console.error('❌ PDF.js não carregado após aguardar');
-      showInternalNotification('PDF.js não carregado. Recarregue a página.', 'error');
-      return;
-    }
-
-    try {
-      console.log('✅ PDF.js encontrado:', window.pdfjsLib.version);
-      
-      const reader = new FileReader();
-      reader.onerror = (error) => {
-        console.error('❌ Erro no FileReader:', error);
-        showInternalNotification('Erro ao ler arquivo PDF.', 'error');
-      };
-      
-      reader.onload = function (event) {
-        console.log('📖 FileReader concluído');
-        
-        if (!event.target?.result) {
-          console.error('❌ Resultado do FileReader vazio');
-          showInternalNotification('Erro: arquivo não pôde ser lido.', 'error');
-          return;
-        }
-        
-        try {
-          const typedarray = new Uint8Array(event.target.result as ArrayBuffer);
-          console.log('📊 TypedArray criado, tamanho:', typedarray.length);
-          
-          // Configurar worker path para PDF.js
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js';
-          
-          window.pdfjsLib.getDocument({
-            data: typedarray,
-            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/cmaps/',
-            cMapPacked: true
-          }).promise.then((pdf: any) => {
-            console.log('✅ PDF carregado com sucesso:', pdf.numPages, 'páginas');
-            setNumPages(pdf.numPages);
-            
-            pdf.getPage(1).then((page: any) => {
-              const canvas = canvasRef.current;
-              if (!canvas) {
-                console.error('❌ Canvas não encontrado');
-                showInternalNotification('Erro: canvas não encontrado.', 'error');
-                return;
-              }
-              
-              console.log('🎨 Canvas encontrado, iniciando renderização...');
-              const ctx = canvas.getContext('2d');
-              const viewport = page.getViewport({ scale: 1.5 });
-              
-              canvas.height = viewport.height;
-              canvas.width = viewport.width;
-              
-              console.log('📐 Viewport configurado:', {
-                width: viewport.width,
-                height: viewport.height
-              });
-              
-              page.render({ 
-                canvasContext: ctx, 
-                viewport: viewport 
-              }).promise.then(() => {
-                console.log('✅ PDF renderizado no canvas com sucesso!');
-                showInternalNotification('PDF carregado e visualizado com sucesso!', 'success');
-              }).catch((renderError: any) => {
-                console.error('❌ Erro na renderização:', renderError);
-                showInternalNotification('Erro ao renderizar PDF no canvas.', 'error');
-              });
-            }).catch((pageError: any) => {
-              console.error('❌ Erro ao obter página:', pageError);
-              showInternalNotification('Erro ao acessar página do PDF.', 'error');
-            });
-          }).catch((pdfError: any) => {
-            console.error('❌ Erro ao carregar PDF:', pdfError);
-            showInternalNotification('Erro ao processar PDF. Verifique se o arquivo é válido.', 'error');
-          });
-        } catch (processingError) {
-          console.error('❌ Erro no processamento do PDF:', processingError);
-          showInternalNotification('Erro no processamento do arquivo PDF.', 'error');
-        }
-      };
-      
-      console.log('📂 Iniciando leitura do arquivo...');
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      console.error('❌ Erro geral na renderização PDF:', error);
-      showInternalNotification('Erro ao processar arquivo PDF.', 'error');
-    }
   };
 
 
@@ -1306,117 +1064,31 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Editor de PDF e Imagem</h2>
                   </div>
 
-                  {/* Editor de PDF e Imagem Nativo */}
+                  {/* Editores Externos - Interface Simples */}
                   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/30 border border-gray-100 dark:border-gray-700 p-6">
-                    <div className="flex items-center mb-4">
-                      {fileType === 'pdf' ? (
-                        <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-                      ) : (
-                        <Image className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-                      )}
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                        Editor de {selectedImage ? (fileType === 'pdf' ? 'PDF' : 'Imagem') : 'PDF e Imagem'}
-                      </h3>
-                    </div>
-
-                    {/* Upload de PDF e Imagem com Drag & Drop */}
-                    {!selectedImage && (
-                      <div 
-                        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                          isDragOver 
-                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-500' 
-                            : 'border-gray-300 dark:border-gray-500'
-                        }`}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                      >
-                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload de PDF ou Imagem</h4>
-                        <p className="text-gray-600 dark:text-gray-300 mb-4">
-                          {isDragOver 
-                            ? 'Solte o arquivo aqui...' 
-                            : 'Arraste e solte ou clique para selecionar um arquivo PDF, JPG ou PNG'
-                          }
-                        </p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="application/pdf,image/jpeg,image/jpg,image/png"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          onClick={(e) => e.stopPropagation()}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => e.preventDefault()}
-                        />
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Clique no botão desejado para editar imagens ou PDF. Edite no editor externo e faça o upload manual do arquivo editado, se necessário.
+                      </p>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                          onClick={() => window.open('https://www.photopea.com/', '_blank')}
+                          className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                         >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Selecionar Arquivo
+                          <Image className="w-4 h-4 mr-2" />
+                          Editor de Imagens
+                        </button>
+                        
+                        <button
+                          onClick={() => window.open('https://www.pdfescape.com/open/', '_blank')}
+                          className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Editor de PDF
                         </button>
                       </div>
-                    )}
-
-                    {/* Visualização e Controles */}
-                    {selectedImage && (
-                      <div className="space-y-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
-                          <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-md font-medium text-gray-900 dark:text-white">
-                              {fileType === 'pdf' ? 'PDF Carregado' : 'Imagem Carregada'}
-                            </h4>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
-                                {fileType?.toUpperCase()}
-                              </span>
-                              <button
-                                onClick={() => fileInputRef.current?.click()}
-                                className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                              >
-                                <Upload className="w-3 h-3 mr-1" />
-                                Trocar
-                              </button>
-                              <button
-                                onClick={clearFile}
-                                className="inline-flex items-center px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                              >
-                                <Trash2 className="w-3 h-3 mr-1" />
-                                Remover
-                              </button>
-                            </div>
-                          </div>
-                          
-                          {/* Editores Externos - Interface Simples */}
-                          <div className="text-center mb-6">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                              Clique no botão desejado para editar imagens ou PDF. Edite no editor externo e faça o upload manual do arquivo editado, se necessário.
-                            </p>
-                            
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                              <button
-                                onClick={() => window.open('https://www.photopea.com/', '_blank')}
-                                className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                              >
-                                <Image className="w-4 h-4 mr-2" />
-                                Editor de Imagens
-                              </button>
-                              
-                              <button
-                                onClick={() => window.open('https://www.pdfescape.com/open/', '_blank')}
-                                className="inline-flex items-center px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Editor de PDF
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               )}
