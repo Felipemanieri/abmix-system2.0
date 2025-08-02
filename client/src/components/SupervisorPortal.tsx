@@ -2433,6 +2433,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       return data;
     })();
 
+    // Debug dos dados
+    console.log('🔍 DEBUG ANALYTICS - analyticsData:', analyticsData.length, 'propostas');
+    console.log('🔍 DEBUG ANALYTICS - finalAnalyticsData:', finalAnalyticsData.length, 'propostas');
+    console.log('🔍 DEBUG ANALYTICS - primeira proposta:', finalAnalyticsData[0]);
+
     // Análise por vendedor (usando dados finais filtrados)
     const vendorAnalysis = finalAnalyticsData.reduce((acc, proposal) => {
       const vendor = proposal.vendorName || 'Não Identificado';
@@ -2452,7 +2457,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       
       // Só conta valor no faturamento se status for 'implantado'
       if (proposal.status === 'implantado') {
-        const valor = parseFloat(proposal.contractData?.valor || '0');
+        // Corrigir conversão de valor brasileiro
+        const valorStr = proposal.contractData?.valor || '0';
+        const valor = parseFloat(valorStr.replace(/\./g, '').replace(',', '.'));
         acc[vendor].faturamento += valor;
       }
       
