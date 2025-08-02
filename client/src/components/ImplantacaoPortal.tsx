@@ -16,6 +16,7 @@ import ProposalEditor from './ProposalEditor';
 import FolderNameEditor from './FolderNameEditor';
 import { showNotification } from '../utils/notifications';
 import { useProposals, useRealTimeProposals, useDeleteProposal, useUpdateProposal } from '../hooks/useProposals';
+import { useQueryClient } from '@tanstack/react-query';
 import { realTimeSync } from '../utils/realTimeSync';
 import statusManager, { ProposalStatus, STATUS_CONFIG } from '@shared/statusSystem';
 import { getDynamicGreeting } from '../utils/greetingHelper';
@@ -88,6 +89,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   
   // StatusManager já está importado como statusManager
   const [proposalStatuses, setProposalStatuses] = useState<Map<string, ProposalStatus>>(new Map());
+  
+  // Query client para invalidação de cache
+  const queryClient = useQueryClient();
   
   // Hook para propostas com sincronização em tempo real
   const { proposals: realProposals, isLoading: proposalsLoading, rejectProposal } = useProposals();
@@ -191,7 +195,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         const numeroProposta = value ? parseInt(value) : null;
         console.log(`💾 Salvando numeroProposta: ${proposalId} -> ${numeroProposta}`);
         
-        await (updateProposal as any).mutateAsync({ 
+        await updateProposal.mutateAsync({ 
           id: proposalId, 
           numeroProposta: numeroProposta 
         });
@@ -224,7 +228,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         const numeroApolice = value ? parseInt(value) : null;
         console.log(`💾 Salvando numeroApolice: ${proposalId} -> ${numeroApolice}`);
         
-        await (updateProposal as any).mutateAsync({ 
+        await updateProposal.mutateAsync({ 
           id: proposalId, 
           numeroApolice: numeroApolice 
         });
@@ -261,11 +265,9 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
       const result = await response.json();
       console.log(`✅ Proposta ${proposalId} aprovada com sucesso - Sincronização ativada`);
       
-      // Forçar atualização das queries para sincronização em tempo real
-      await updateProposal.mutateAsync({ 
-        id: proposalId, 
-        approved: true 
-      });
+      // Forçar refetch das propostas para sincronização em tempo real
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
       
       showInternalNotification(`Proposta de ${empresa} aprovada com sucesso! ✅`, 'success');
     } catch (error) {
