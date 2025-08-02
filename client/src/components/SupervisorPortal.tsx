@@ -2444,7 +2444,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Portal Supervisor</h1>
               <p className="text-gray-600 dark:text-gray-300 mt-1">
-                {proposals?.length || 0} propostas cadastradas • {filtered.length} exibidas
+                {proposals?.length || 0} propostas cadastradas • {filteredProposals.length} exibidas
               </p>
             </div>
             <div className="flex items-center gap-4">
