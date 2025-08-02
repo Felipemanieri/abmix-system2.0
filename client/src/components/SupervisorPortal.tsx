@@ -3948,6 +3948,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Plano</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Desconto</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Autorizador do Desconto</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data de Pagamento do Cliente</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Venda Dupla</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% do vendedor</th>
@@ -3999,6 +4000,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.desconto}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.autorizadorDesconto || '-'}</td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
                             <input
                               type="date"
