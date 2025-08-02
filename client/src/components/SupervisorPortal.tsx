@@ -586,9 +586,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       // Converter para formato do backend
       const backendPriority = priority === 'alta' ? 'high' : priority === 'media' ? 'medium' : 'low';
       
-      // Enviar para o backend
+      // Enviar para o backend usando PUT (conforme rota existente no servidor)
       const response = await fetch(`/api/proposals/${proposalId}`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: JSON.stringify({ priority: backendPriority }),
         headers: {
           'Content-Type': 'application/json',
