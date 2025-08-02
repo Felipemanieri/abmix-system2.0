@@ -3130,17 +3130,35 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         return filteredVendors.map(vendor => {
                           // DEBUG: Verificar propostas do vendedor
                           console.log(`🔍 PERFORMANCE INDIVIDUAL - Vendedor: ${vendor.name} (ID: ${vendor.id})`);
-                          const allVendorProposals = proposals?.filter(p => p.vendor_id === vendor.id) || [];
-                          console.log(`   Total propostas: ${allVendorProposals.length}`);
+                          console.log(`   Proposals array:`, proposals);
+                          console.log(`   Proposals length:`, proposals?.length);
+                          
+                          const allVendorProposals = proposals?.filter(p => {
+                            console.log(`     Checking proposal: ${p.id}, vendor_id: ${p.vendor_id}, vendorId: ${p.vendorId}`);
+                            return p.vendor_id === vendor.id || p.vendorId === vendor.id;
+                          }) || [];
+                          console.log(`   Total propostas for ${vendor.name}: ${allVendorProposals.length}`);
                           
                           const vendorImplantedProposals = allVendorProposals.filter(p => p.status === 'implantado');
                           console.log(`   Propostas implantadas: ${vendorImplantedProposals.length}`);
                           
                           const totalValue = vendorImplantedProposals.reduce((sum, p) => {
-                            const valor = p.contract_data?.valor || p.contractData?.valor || '0';
-                            console.log(`     Proposta ${p.id}: valor = ${valor}`);
-                            const numerico = parseFloat(valor.toString().replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
-                            console.log(`     Valor numérico: ${numerico}`);
+                            // Usar contract_data primeiro, depois contractData como fallback
+                            const contractData = p.contract_data || p.contractData;
+                            const valor = contractData?.valor || '0';
+                            console.log(`     Proposta ${p.id}:`);
+                            console.log(`       contract_data:`, p.contract_data);
+                            console.log(`       contractData:`, p.contractData);
+                            console.log(`       valor final:`, valor);
+                            
+                            // Converter string do tipo "1.000,00" para número
+                            let numerico = 0;
+                            if (valor && typeof valor === 'string') {
+                              numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                            } else if (typeof valor === 'number') {
+                              numerico = valor;
+                            }
+                            console.log(`       Valor numérico final: ${numerico}`);
                             return sum + numerico;
                           }, 0);
                           
@@ -3207,7 +3225,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor Total</label>
                                   <input 
                                     type="text" 
-                                    value={`R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                                    value={totalValue > 0 ? `R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ 0,00'}
                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                     readOnly
                                   />
