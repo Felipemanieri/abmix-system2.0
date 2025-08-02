@@ -1304,6 +1304,26 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     return totalAccumulated;
   };
 
+  // Função para calcular valor total acumulado de TODA a equipe
+  const calculateTeamTotalAccumulatedValue = () => {
+    if (!proposals) {
+      return 0;
+    }
+
+    // Buscar TODAS as propostas implantadas da equipe
+    const allImplantedProposals = proposals.filter((p: any) => p.status === 'implantado');
+
+    // Calcular valor total acumulado da equipe
+    const totalAccumulated = allImplantedProposals.reduce((sum: number, p: any) => {
+      const value = p.contractData?.valor || "0";
+      const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+      const numericValue = parseFloat(cleanValue) || 0;
+      return sum + numericValue;
+    }, 0);
+
+    return totalAccumulated;
+  };
+
   const renderDashboard = () => (
     <div className="space-y-6">
       {/* Header com botão de reset */}
@@ -1585,6 +1605,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               <tr className="border-b border-gray-200 dark:border-gray-600">
                 <th className="text-left py-2 text-gray-900 dark:text-white">Período</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Meta Valor</th>
+                <th className="text-left py-2 text-gray-900 dark:text-white">Valor Acumulado</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Meta Propostas</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Bônus da Equipe</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Progresso</th>
@@ -1620,6 +1641,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   <tr key={target.id} className="border-b border-gray-200 dark:border-gray-600">
                     <td className="py-2 text-gray-900 dark:text-white">{getMonthName(target.month)}/{target.year}</td>
                     <td className="py-2 text-gray-900 dark:text-white">{formatCurrency(target.targetValue)}</td>
+                    <td className="py-2 text-gray-900 dark:text-white font-semibold text-blue-600">
+                      {formatCurrency(calculateTeamTotalAccumulatedValue())}
+                    </td>
                     <td className="py-2 text-gray-900 dark:text-white">{target.targetProposals}</td>
                     <td className="py-2 text-gray-900 dark:text-white">{formatCurrency(target.teamBonus)}</td>
                     <td className="py-2">
