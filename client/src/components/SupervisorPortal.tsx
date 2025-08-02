@@ -2673,7 +2673,6 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   value={selectedVendorForChart}
                   onChange={(e) => {
                     setSelectedVendorForChart(e.target.value);
-                    setShowChart(true);
                   }}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
                 >
@@ -2708,23 +2707,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               </div>
 
               {/* Status */}
-              <div>
-                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Status</label>
-                <select
-                  value={selectedStatusForChart}
-                  onChange={(e) => {
-                    setSelectedStatusForChart(e.target.value);
-                    setShowChart(true);
-                  }}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
-                >
-                  <option className="text-black bg-white" value="">Selecione um status</option>
-                  <option className="text-black bg-white" value="all">Todos os Status</option> className="text-white"
-                  {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                    <option className="text-black bg-white" key={key} value={key}>{config.label}</option>
-                  ))}
-                </select>
-              </div>
+
             </div>
             
             {/* Botão Limpar Filtros */}
@@ -3205,8 +3188,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         {(() => {
                           // Calcular dados reais de vendas por vendedor (apenas implantados)
                           const realVendorSales = vendors?.map(vendor => {
-                            const vendorImplantedProposals = filteredProposals?.filter(p => 
-                              p.vendor_id === vendor.id && p.status === 'implantado'
+                            // Usar TODOS os proposals sem filtros para mostrar dados reais completos
+                            const vendorImplantedProposals = proposals?.filter(p => 
+                              (p.vendorId === vendor.id || p.vendor_id === vendor.id || p.vendorName === vendor.name) && 
+                              p.status === 'implantado'
                             ) || [];
                             
                             const totalValue = vendorImplantedProposals.reduce((sum, p) => {
