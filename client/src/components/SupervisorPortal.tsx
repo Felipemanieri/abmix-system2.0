@@ -2452,16 +2452,141 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
         {/* Conteúdo das Tabs */}
         {activeView === 'propostas' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium mb-4">Propostas</h3>
-            <p>Conteúdo das propostas será exibido aqui</p>
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Todas as Propostas</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {proposals.map(proposal => {
+                    const vendor = vendors.find(v => v.id === proposal.vendorId);
+                    return (
+                      <tr key={proposal.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {proposal.abmId || proposal.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {proposal.contractData?.nomeEmpresa || 'Empresa não informada'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {vendor?.name || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          R$ {parseFloat(proposal.contractData?.valor || '0').toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <StatusBadge status={proposal.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {format(new Date(proposal.createdAt), 'dd/MM/yyyy')}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
         {activeView === 'analytics' && renderAnalytics()}
         {activeView === 'dashboard' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium mb-4">Dashboard</h3>
-            <p>Conteúdo do dashboard será exibido aqui</p>
+          <div className="space-y-6">
+            {/* Cards de Métricas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <FileText className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Propostas</dt>
+                      <dd className="text-lg font-medium text-gray-900">{proposals.length}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Users className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Vendedores Ativos</dt>
+                      <dd className="text-lg font-medium text-gray-900">{vendors.length}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <CheckCircle className="h-8 w-8 text-emerald-600" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Aprovadas</dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        {proposals.filter(p => p.status === 'aprovada').length}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <DollarSign className="h-8 w-8 text-yellow-600" />
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Valor Total</dt>
+                      <dd className="text-lg font-medium text-gray-900">
+                        R$ {proposals.reduce((sum, p) => sum + parseFloat(p.contractData?.valor || '0'), 0).toLocaleString()}
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Propostas Recentes */}
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">Propostas Recentes</h3>
+              </div>
+              <div className="px-6 py-4">
+                <div className="space-y-4">
+                  {proposals.slice(0, 5).map(proposal => (
+                    <div key={proposal.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{proposal.contractData?.nomeEmpresa || 'Empresa não informada'}</p>
+                        <p className="text-sm text-gray-500">ID: {proposal.abmId || proposal.id}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">R$ {proposal.contractData?.valor || '0'}</p>
+                        <StatusBadge status={proposal.status} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
         {activeView === 'metas' && (
