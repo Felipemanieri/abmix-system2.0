@@ -2504,8 +2504,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           return [];
         }
         
-        // Pegar TODAS as propostas desse vendedor
-        const vendorProposals = proposals?.filter(p => p.vendor_id === selectedVendor.id) || [];
+        // Pegar TODAS as propostas desse vendedor (usar vendorId primeiro)
+        const vendorProposals = proposals?.filter(p => p.vendorId === selectedVendor.id || p.vendor_id === selectedVendor.id) || [];
         console.log(`🎯 CHART DATA - Propostas do vendedor ${selectedVendor.name}:`, vendorProposals.length);
         
         // Aplicar filtros de data se existirem
@@ -2553,9 +2553,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           });
         }
         
-        // Contar por vendedor
+        // Contar por vendedor (usar vendorId primeiro)
         const vendorCounts = vendors?.map(vendor => {
-          const count = statusProposals.filter(p => p.vendor_id === vendor.id).length;
+          const count = statusProposals.filter(p => p.vendorId === vendor.id || p.vendor_id === vendor.id).length;
           console.log(`   Vendedor ${vendor.name}: ${count} propostas`);
           return {
             name: vendor.name,
