@@ -2491,7 +2491,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     // Dados agregados da equipe (usando dados finais filtrados)
     const teamMetrics = {
       totalPropostas: finalAnalyticsData.length,
-      totalFaturamento: finalAnalyticsData.filter(p => p.status === 'implantado').reduce((sum, p) => sum + parseFloat(p.contractData?.valor || '0'), 0),
+      totalFaturamento: finalAnalyticsData.filter(p => p.status === 'implantado').reduce((sum, p) => {
+        // Converter valores corretamente: "1.000,00" -> 1000.00
+        const valor = p.contractData?.valor || '0';
+        const valorNumerico = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+        return sum + valorNumerico;
+      }, 0),
       totalConvertidas: finalAnalyticsData.filter(p => p.status === 'implantado').length,
       totalPerdidas: finalAnalyticsData.filter(p => ['declinado', 'expirado'].includes(p.status)).length,
       totalPendentes: finalAnalyticsData.filter(p => !['implantado', 'declinado', 'expirado'].includes(p.status)).length,
@@ -2646,27 +2651,82 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Distribuição por Status */}
+        {/* Distribuição por Status com Gráfico */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Distribuição por Status</h2>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
-              {Object.entries(STATUS_CONFIG)
-                .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                .map(([status, config]) => {
-                  const count = finalAnalyticsData.filter(p => p.status === status).length;
-                  const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
-                  
-                  return (
-                    <div key={status} className="text-center">
-                      <div className="text-2xl font-semibold text-gray-800 dark:text-white mb-1">{count}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">{config.label}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">{percentage.toFixed(0)}%</div>
-                    </div>
-                  );
-                })}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Gráfico de Pizza */}
+              <div className="flex justify-center">
+                <div className="w-80 h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                      <Pie
+                        data={Object.entries(STATUS_CONFIG)
+                          .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
+                          .map(([status, config]) => ({
+                            name: config.label,
+                            value: finalAnalyticsData.filter(p => p.status === status).length,
+                            color: config.color,
+                            fill: config.color
+                          }))}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => {
+                          return (
+                            <text fill="#1F2937" fontSize="12" fontWeight="500">
+                              {`${name} ${(percent * 100).toFixed(0)}%`}
+                            </text>
+                          );
+                        }}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {Object.entries(STATUS_CONFIG).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry[1].color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: any, name: any) => [value, name]}
+                        labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
+                        contentStyle={{ 
+                          backgroundColor: '#FFFFFF', 
+                          border: '1px solid #D1D5DB', 
+                          borderRadius: '8px',
+                          color: '#1F2937',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Dados Numéricos */}
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(STATUS_CONFIG)
+                  .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
+                  .map(([status, config]) => {
+                    const count = finalAnalyticsData.filter(p => p.status === status).length;
+                    const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
+                    
+                    return (
+                      <div key={status} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div 
+                          className="w-4 h-4 rounded-full mx-auto mb-2"
+                          style={{ backgroundColor: config.color }}
+                        ></div>
+                        <div className="text-2xl font-semibold text-gray-800 dark:text-white mb-1">{count}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-300 mb-1">{config.label}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{percentage.toFixed(0)}%</div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
         </div>
@@ -2685,15 +2745,24 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsBarChart
-                      data={realVendors.map(vendor => {
-                        const vendorData = vendorAnalysis[vendor] || { total: 0, convertidas: 0, taxaConversao: 0 };
+                      data={uniqueVendors.map(vendor => {
+                        // Contar propostas REAIS do banco de dados
+                        const totalPropostas = finalAnalyticsData.filter(p => {
+                          // Buscar pelo vendorName direto nas propostas
+                          return p.vendorName === vendor;
+                        }).length;
+
+                        const convertidas = finalAnalyticsData.filter(p => {
+                          return p.vendorName === vendor && p.status === 'implantado';
+                        }).length;
+
                         return {
                           vendor: vendor.split(' ')[0], // Só primeiro nome para o gráfico
-                          total: vendorData.total,
-                          convertidas: vendorData.convertidas,
+                          total: totalPropostas,
+                          convertidas: convertidas,
                           fill: getVendorColor(vendor)
                         };
-                      })}
+                      }).filter(item => item.total > 0)} // Só mostrar quem tem propostas
                       margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -2742,8 +2811,24 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Legenda e Métricas</h3>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {realVendors.map(vendor => {
-                    const vendorData = vendorAnalysis[vendor] || { total: 0, convertidas: 0, taxaConversao: 0, faturamento: 0 };
+                  {uniqueVendors.filter(vendor => {
+                    // Só mostrar vendedores que têm propostas no período filtrado
+                    const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
+                    return hasProposals;
+                  }).map(vendor => {
+                    // Calcular dados REAIS do banco
+                    const vendorProposals = finalAnalyticsData.filter(p => p.vendorName === vendor);
+                    const convertidas = vendorProposals.filter(p => p.status === 'implantado').length;
+                    const faturamento = vendorProposals
+                      .filter(p => p.status === 'implantado')
+                      .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0);
+                    
+                    const vendorData = {
+                      total: vendorProposals.length,
+                      convertidas: convertidas,
+                      taxaConversao: vendorProposals.length > 0 ? (convertidas / vendorProposals.length) * 100 : 0,
+                      faturamento: faturamento
+                    };
                     return (
                       <div key={vendor} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-3">
