@@ -2281,7 +2281,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       'Ana Caroline Terto',
       'Bruna Garcia', 
       'Fabiana Ferreira',
-      'Fabiana Godinho Santos',
+      'Fabiana Godinho',
       'Fernanda Batista',
       'Gabrielle Fernandes',
       'Isabela Velasquez',
@@ -2298,7 +2298,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         'Ana Caroline Terto': '#60A5FA',      // azul claro
         'Bruna Garcia': '#F87171',           // vermelho claro
         'Fabiana Ferreira': '#34D399',       // verde claro
-        'Fabiana Godinho Santos': '#FBBF24', // amarelo claro
+        'Fabiana Godinho': '#FBBF24',        // amarelo claro - CORRIGIDO
         'Fernanda Batista': '#A78BFA',       // roxo claro
         'Gabrielle Fernandes': '#F472B6',    // rosa claro
         'Isabela Velasquez': '#818CF8',      // índigo claro
@@ -2309,7 +2309,26 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         'Sara Mattos': '#D97706'             // amber
       };
       return vendorColors[vendor as keyof typeof vendorColors] || '#9CA3AF';
-    };
+    }
+
+    // Função para obter cor hexadecimal do status
+    const getStatusColor = (status: string): string => {
+      const statusColors: Record<string, string> = {
+        'observacao': '#0EA5E9',        // azul claro
+        'analise': '#10B981',           // verde claro  
+        'assinatura_ds': '#D97706',     // amarelo escuro
+        'expirado': '#1D4ED8',          // azul forte
+        'implantado': '#059669',        // verde forte
+        'aguar_pagamento': '#EC4899',   // rosa
+        'assinatura_proposta': '#EAB308', // amarelo claro
+        'aguar_selecao_vigencia': '#EA580C', // laranja
+        'pendencia': '#DC2626',         // vermelho
+        'declinado': '#7C3AED',         // roxo
+        'aguar_vigencia': '#0EA5E9'     // azul claro
+      };
+      
+      return statusColors[status] || '#6B7280'; // cinza padrão
+    };;
     
     // Lista de vendedores únicos (incluindo dados reais e do banco)
     const uniqueVendors = [...new Set([...realVendors, ...filteredProposals.map(p => p.vendorName).filter(Boolean)])];;
@@ -2360,8 +2379,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const statusData = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
       name: config.label,
       value: finalAnalyticsData.filter(p => p.status === key).length,
-      color: config.color,
-      fill: config.color
+      color: getStatusColor(key),
+      fill: getStatusColor(key)
     })).filter(item => item.value > 0);
 
     // Mapeamento de vendorId para nome do vendedor
@@ -2424,8 +2443,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         return Object.entries(STATUS_CONFIG).map(([key, config]) => ({
           name: config.label,
           value: filteredData.filter(p => p.status === key).length,
-          color: config.color,
-          fill: config.color
+          color: getStatusColor(key),
+          fill: getStatusColor(key)
         })).filter(item => item.value > 0);
       }
       
@@ -2447,7 +2466,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const statusBarData = statusData.map(item => ({
       status: item.name,
       total: item.value,
-      fill: item.color
+      fill: item.fill
     }));
 
     // Gerar dados mensais para gráfico de ondas (comparação de meses)
