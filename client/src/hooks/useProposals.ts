@@ -348,54 +348,6 @@ export function useRealTimeProposals(vendorId?: number) {
   return { lastUpdate };
 }
 
-// Hook para atualizar status/prioridade das propostas (USADO EM TODOS OS PORTAIS)
-export function useUpdateProposal() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, status, priority }: { id: string, status?: string, priority?: string }) => {
-      console.log(`🔄 GLOBAL UPDATE PROPOSAL: ${id} -> Status: ${status}, Priority: ${priority}`);
-      try {
-        const response = await fetch(`/api/proposals/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status, priority })
-        });
-        if (!response.ok) {
-          console.warn(`Erro global ao atualizar proposta ${id}:`, response.status);
-          return null;
-        }
-        return response.json();
-      } catch (error) {
-        console.warn(`Global update failed for proposal ${id}:`, error.message);
-        return null;
-      }
-    },
-    onSuccess: (data) => {
-      console.log(`✅ GLOBAL STATUS UPDATE SUCCESS:`, data);
-      // SINCRONIZAÇÃO FORÇADA EM TODOS OS PORTAIS
-
-      // 1. Invalidar consultas gerais (para todos os portais)
-      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
-
-      // 2. Invalidar consultas por vendedor (para portal vendedor)
-      queryClient.invalidateQueries({ queryKey: ['/api/proposals/vendor'] });
-
-      // 3. Refetch imediato para garantir sincronização
-      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
-
-      // Refetch único para garantir sincronização
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
-        console.log(`🚀 SYNC COMPLETE - All portals synchronized`);
-      }, 2000);
-    },
-    onError: (error) => {
-      console.error(`❌ GLOBAL STATUS UPDATE ERROR:`, error);
-    }
-  });
-}
-
 // Hook para deletar propostas com sincronização forçada em todos os portais
 export function useDeleteProposal() {
   const queryClient = useQueryClient();
