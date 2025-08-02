@@ -18,6 +18,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   // Calcula o progresso baseado nos dados da proposta
   const proposalData = {
+    contractData: proposal.contractData || {},
     titulares: proposal.titulares || [],
     dependentes: proposal.dependentes || [],
     clientAttachments: proposal.clientAttachments || [],

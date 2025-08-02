@@ -60,21 +60,30 @@ export function useProposals() {
       }
     },
     select: (data: any[]) => {
-      console.log('Dados recebidos da API:', data);
-      return data.map((proposal): ProposalData => ({
-        ...proposal,
-        cliente: proposal.contractData?.nomeEmpresa || 'N/A',
-        plano: proposal.contractData?.planoContratado || 'N/A',
-        valor: proposal.contractData?.valor || '0',
-        progresso: calculateProposalProgress({
-          titulares: proposal.titulares || [],
-          dependentes: proposal.dependentes || [],
-          clientAttachments: proposal.clientAttachments || [],
+      console.log('🔍 HOOK useProposals - Dados recebidos da API:', data);
+      return data.map((proposal): ProposalData => {
+        console.log(`📊 CALCULANDO PROGRESSO PARA ${proposal.abmId}:`, {
           contractData: proposal.contractData,
-          status: proposal.status
-        }).overallProgress,
-        priority: proposal.priority || 'medium' // Garantir que priority existe
-      }));
+          status: proposal.status,
+          titulares: proposal.titulares?.length || 0,
+          dependentes: proposal.dependentes?.length || 0
+        });
+        
+        return {
+          ...proposal,
+          cliente: proposal.contractData?.nomeEmpresa || 'N/A',
+          plano: proposal.contractData?.planoContratado || 'N/A',
+          valor: proposal.contractData?.valor || '0',
+          progresso: calculateProposalProgress({
+            titulares: proposal.titulares || [],
+            dependentes: proposal.dependentes || [],
+            clientAttachments: proposal.clientAttachments || [],
+            contractData: proposal.contractData,
+            status: proposal.status
+          }).overallProgress,
+          priority: proposal.priority || 'medium' // Garantir que priority existe
+        };
+      });
     },
     refetchInterval: 60000, // Reduzido de 30s para 60s para evitar sobrecarga
     refetchIntervalInBackground: false, // NÃO atualizar em background
