@@ -114,6 +114,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedVendor, setSelectedVendor] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
   
   // Buscar propostas com tratamento robusto
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
@@ -564,8 +567,6 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedOperadora, setSelectedOperadora] = useState('');
   const [selectedTipoPlano, setSelectedTipoPlano] = useState('');
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
   const [valorMin, setValorMin] = useState('');
   const [valorMax, setValorMax] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
