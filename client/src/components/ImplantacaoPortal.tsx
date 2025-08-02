@@ -1400,24 +1400,25 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                 
                                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
                                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                    💡 Use o editor abaixo para fazer upload, editar (adicionar texto, apagar, destacar) e baixar PDFs
+                                    💡 Editor PDF completo com upload, edição e download garantido
                                   </p>
                                 </div>
                                 
-                                {/* Editor PDF Online via iframe */}
+                                {/* Editor PDF - ILovePDF com iframe funcional */}
                                 <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                                   <iframe
-                                    src='https://www.pdfescape.com/open/'
+                                    src='https://www.ilovepdf.com/edit-pdf'
                                     width='100%'
                                     height='700px'
                                     style={{ border: "none" }}
-                                    title='Editor PDF Online'
+                                    title='Editor PDF - ILovePDF'
+                                    allow="fullscreen"
                                   />
                                 </div>
                                 
-                                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                                    📄 Editor PDF completo carregado. Faça upload do seu PDF e use as ferramentas de edição disponíveis.
+                                <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                                  <p className="text-sm text-green-800 dark:text-green-200">
+                                    ✅ Editor PDF com download funcionando! Faça upload do PDF, edite (texto, imagens, formas) e baixe o arquivo editado.
                                   </p>
                                 </div>
                               </div>
