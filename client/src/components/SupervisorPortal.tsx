@@ -1565,9 +1565,26 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <tbody>
               {teamTargets.map(target => {
                 // CORREÇÃO: Progresso baseado APENAS na soma de todas as vendas da equipe
-                const targetValue = parseInt(target.targetValue.replace(/[^\d]/g, "")) || 1;
-                const teamProgress = teamStats.totalValue 
-                  ? Math.min((teamStats.totalValue / targetValue) * 100, 100)
+                const targetValue = parseFloat(target.targetValue.toString().replace(/[R$\s\.]/g, '').replace(',', '.')) || 1;
+                
+                // Calcular valor total da equipe no período da meta
+                const targetDate = { month: target.month, year: target.year };
+                const teamTotalValue = proposals.filter((p: any) => {
+                  const proposalDate = new Date(p.createdAt);
+                  return (
+                    p.status === 'implantado' &&
+                    proposalDate.getMonth() + 1 === targetDate.month &&
+                    proposalDate.getFullYear() === targetDate.year
+                  );
+                }).reduce((sum: number, p: any) => {
+                  const value = p.contractData?.valor || "0";
+                  const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+                  const numericValue = parseFloat(cleanValue) || 0;
+                  return sum + numericValue;
+                }, 0);
+                
+                const teamProgress = teamTotalValue > 0 
+                  ? Math.min((teamTotalValue / targetValue) * 100, 100)
                   : 0;
                 
                 return (

@@ -1163,7 +1163,11 @@ Vendedor Abmix`;
                   const targetValueNumber = parseFloat(target.targetValue.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
                   const teamValueProgress = targetValueNumber > 0 ? Math.min((totalTeamValue / targetValueNumber) * 100, 100) : 0;
                   const teamProposalProgress = target.targetProposals > 0 ? Math.min((allImplantedProposals.length / target.targetProposals) * 100, 100) : 0;
-                  const teamOverallProgress = Math.max(teamValueProgress, teamProposalProgress);
+                  
+                  // Priorizar valor das vendas, mas permitir que propostas compensem se valor for baixo
+                  const teamOverallProgress = teamValueProgress >= 50 
+                    ? teamValueProgress 
+                    : Math.max(teamValueProgress, teamProposalProgress);
                   
                   return (
                     <tr key={target.id} className="border-b border-gray-100 dark:border-gray-700">
