@@ -2383,9 +2383,25 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const tiposPlano = ['Individual', 'Familiar', 'Empresarial', 'PME'];
 
     // Dados filtrados do Analytics - ISOLADOS das outras abas
+    console.log('🎯 FILTRO DEBUG - Filtros aplicados:', {
+      selectedVendor: analyticsFilters.selectedVendor,
+      selectedStatus: analyticsFilters.selectedStatus,
+      totalProposals: proposals?.length || 0
+    });
+    
     const finalAnalyticsData = (proposals || []).filter(proposal => {
-      // Filtro de vendedores
-      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all' && proposal.vendorName !== analyticsFilters.selectedVendor) return false;
+      // Filtro de vendedores - CORRIGIDO para usar vendorId
+      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
+        // Encontrar o vendedor pelo nome selecionado
+        const selectedVendor = vendors?.find(v => v.name === analyticsFilters.selectedVendor);
+        if (selectedVendor) {
+          // Verificar se a proposta pertence a esse vendedor usando vendorId ou vendor_id
+          const belongsToVendor = proposal.vendorId === selectedVendor.id || proposal.vendor_id === selectedVendor.id;
+          if (!belongsToVendor) return false;
+        } else {
+          return false; // Se vendedor não encontrado, não incluir
+        }
+      }
       
       // Filtro de status
       if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all' && proposal.status !== analyticsFilters.selectedStatus) return false;
@@ -2418,6 +2434,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       }
       
       return true;
+    });
+    
+    console.log('🎯 FILTRO RESULTADO - Dados após filtro:', {
+      finalCount: finalAnalyticsData.length,
+      samples: finalAnalyticsData.slice(0, 2).map(p => ({
+        id: p.id,
+        vendorId: p.vendorId,
+        vendor_id: p.vendor_id,
+        status: p.status
+      }))
     });
 
     // Dados para gráfico de pizza por status - usando dados REAIS do banco
