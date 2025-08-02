@@ -12,6 +12,7 @@ import ProposalGenerator from './ProposalGenerator';
 import ProposalTracker from './ProposalTracker';
 import QuotationPanel from './QuotationPanel';
 import ProgressBar from './ProgressBar';
+import SimpleProgressBar from './SimpleProgressBar';
 import StatusBadge from './StatusBadge';
 import SystemFooter from './SystemFooter';
 import ThemeToggle from './ThemeToggle';
@@ -1097,16 +1098,12 @@ Vendedor Abmix`;
                               <span>Progresso</span>
                               <span>{overallProgress.toFixed(0)}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  overallProgress >= 100 ? 'bg-green-500 dark:bg-green-600' :
-                                  overallProgress >= 70 ? 'bg-yellow-500 dark:bg-yellow-600' :
-                                  'bg-red-500 dark:bg-red-600'
-                                }`}
-                                style={{ width: `${Math.min(overallProgress, 100)}%` }}
-                              ></div>
-                            </div>
+                            <SimpleProgressBar 
+                              progress={overallProgress}
+                              showPercentage={false}
+                              animated={true}
+                              className="w-full h-2"
+                            />
                           </div>
                           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                             overallProgress >= 100 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
@@ -1220,16 +1217,12 @@ Vendedor Abmix`;
                               <span>Progresso</span>
                               <span>{teamOverallProgress.toFixed(0)}%</span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-300 ${
-                                  teamOverallProgress >= 100 ? 'bg-green-500 dark:bg-green-600' :
-                                  teamOverallProgress >= 70 ? 'bg-yellow-500 dark:bg-yellow-600' :
-                                  'bg-red-500 dark:bg-red-600'
-                                }`}
-                                style={{ width: `${Math.min(teamOverallProgress, 100)}%` }}
-                              ></div>
-                            </div>
+                            <SimpleProgressBar 
+                              progress={teamOverallProgress}
+                              showPercentage={false}
+                              animated={true}
+                              className="w-full h-2"
+                            />
                           </div>
                           <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                             teamOverallProgress >= 100 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
