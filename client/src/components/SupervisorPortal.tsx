@@ -3028,15 +3028,18 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               
               return (
                 <div className="space-y-8">
-                  {/* Filtros de Performance */}
+                  {/* Filtros de Performance COMPLETOS */}
                   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                    <div className="flex flex-wrap gap-4 items-center">
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Vendedor:</label>
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Filtros de Performance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      
+                      {/* Vendedor */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vendedor</label>
                         <select 
                           value={selectedVendor || ''}
                           onChange={(e) => setSelectedVendor(e.target.value || null)}
-                          className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         >
                           <option value="">TODOS OS VENDEDORES ({vendors?.length || 0})</option>
                           {vendors?.map(v => (
@@ -3046,24 +3049,59 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           )) || []}
                         </select>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Período:</label>
-                        <select className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                          <option value="mensal">Mensal</option>
-                          <option value="trimestral">Trimestral</option>
-                          <option value="anual">Anual</option>
-                        </select>
+
+                      {/* Data Início */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
+                        <input
+                          type="date"
+                          value={dataInicio}
+                          onChange={(e) => setDataInicio(e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+
+                      {/* Data Fim */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
+                        <input
+                          type="date"
+                          value={dataFim}
+                          onChange={(e) => setDataFim(e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
                       </div>
                       
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tipo:</label>
-                        <select className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                          <option value="vendas">Vendas</option>
-                          <option value="valores">Valores</option>
-                          <option value="metas">Metas</option>
+                      {/* Status */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                        <select
+                          value={selectedStatus}
+                          onChange={(e) => setSelectedStatus(e.target.value)}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        >
+                          <option value="">TODOS OS STATUS</option>
+                          <option value="implantado">Implantado</option>
+                          <option value="pendente">Pendente</option>
+                          <option value="perdido">Perdido</option>
+                          <option value="cancelado">Cancelado</option>
                         </select>
                       </div>
+                    </div>
+
+                    {/* Botão Limpar Filtros */}
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedVendor(null);
+                          setSelectedStatus('');
+                          setDataInicio('');
+                          setDataFim('');
+                        }}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-600 rounded-md"
+                      >
+                        Limpar Filtros
+                      </button>
                     </div>
                   </div>
 
