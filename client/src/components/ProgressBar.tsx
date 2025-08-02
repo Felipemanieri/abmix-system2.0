@@ -79,14 +79,20 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         </span>
       </div>
       
-      <div className={`bg-gray-200 dark:bg-gray-600 dark:bg-gray-600 rounded-full ${sizeConfig[size]} overflow-hidden`}>
-        <div 
-          className={`${progressColor} transition-all duration-700 ease-out rounded-full h-full relative ${animated ? 'vendor-progress-bar' : ''} ${progress === 100 && animated ? 'progress-complete' : ''} overflow-hidden`}
-          style={{ width: `${progress}%` }}
-        >
-          {/* Animação shimmer - sempre visível quando animated=true */}
-          {animated && <div className="progress-shimmer"></div>}
+      <div className="flex items-center gap-2">
+        <div className={`bg-gray-200 dark:bg-gray-600 dark:bg-gray-600 rounded-full ${sizeConfig[size]} overflow-hidden flex-1`}>
+          <div 
+            className={`${progressColor} transition-all duration-700 ease-out rounded-full h-full relative ${animated ? 'vendor-progress-bar' : ''} ${progress === 100 && animated ? 'progress-complete' : ''} overflow-hidden`}
+            style={{ width: `${progress}%` }}
+          >
+            {/* Animação shimmer - sempre visível quando animated=true */}
+            {animated && <div className="progress-shimmer"></div>}
+          </div>
         </div>
+        {/* Emoji de confete para propostas 100% completas */}
+        {progress === 100 && animated && (
+          <span className="text-xs opacity-60 animate-pulse">🎉</span>
+        )}
       </div>
 
       {showDetails && details && (
