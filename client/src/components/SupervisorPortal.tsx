@@ -2653,36 +2653,96 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Performance Individual */}
+        {/* Gráfico de Performance por Vendedor */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Performance Individual</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Performance Individual dos Vendedores</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Propostas por vendedor com cores identificadoras</p>
           </div>
           <div className="p-6">
-            <div className="space-y-4">
-              {Object.entries(vendorAnalysis)
-                .sort(([,a], [,b]) => b.total - a.total)
-                .slice(0, 6)
-                .map(([vendor, data], index) => (
-                <div key={`performance-${vendor}-${index}`} className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-1 bg-slate-300 rounded-full relative">
-                      <div 
-                        className="h-1 bg-blue-600 rounded-full absolute top-0 left-0"
-                        style={{ width: `${Math.min(data.taxaConversao, 100)}%` }}
-                      ></div>
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate- dark:text-white800 dark:text-white dark:text-white">{vendor}</div>
-                      <div className="text-white dark:text-white sm text-slate- dark:text-white500 dark:text-white">{data.total} propostas</div>
-                    </div>
-                  </div>
-                  <div className="text-white dark:text-white right">
-                    <div className="font-medium text-slate- dark:text-white800 dark:text-white dark:text-white">{data.taxaConversao.toFixed(1)}%</div>
-                    <div className="text-white dark:text-white sm text-slate- dark:text-white500 dark:text-white">{formatCurrency(data.faturamento.toString())}</div>
-                  </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Gráfico de Barras */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Total de Propostas por Vendedor</h3>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={realVendors.map(vendor => {
+                        const vendorData = vendorAnalysis[vendor] || { total: 0, convertidas: 0, taxaConversao: 0 };
+                        return {
+                          vendor: vendor.split(' ')[0], // Só primeiro nome para o gráfico
+                          total: vendorData.total,
+                          convertidas: vendorData.convertidas,
+                          fill: getVendorColor(vendor)
+                        };
+                      })}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="vendor" 
+                        angle={-45} 
+                        textAnchor="end" 
+                        height={80}
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      />
+                      <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                      <Tooltip 
+                        formatter={(value: any, name: any) => [value, name === 'total' ? 'Total Propostas' : 'Convertidas']}
+                        labelStyle={{ color: '#374151' }}
+                        contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                      />
+                      <Bar dataKey="total" radius={[4, 4, 0, 0]} />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  📊 Gráfico mostra total de propostas filtradas por vendedor
+                </p>
+              </div>
+
+              {/* Legenda de Cores e Métricas */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Legenda e Métricas</h3>
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {realVendors.map(vendor => {
+                    const vendorData = vendorAnalysis[vendor] || { total: 0, convertidas: 0, taxaConversao: 0, faturamento: 0 };
+                    return (
+                      <div key={vendor} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full border-2 border-gray-300"
+                            style={{ backgroundColor: getVendorColor(vendor) }}
+                          ></div>
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white text-sm">{vendor}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              {vendorData.total} propostas • {vendorData.convertidas} implantadas
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {vendorData.taxaConversao.toFixed(1)}%
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                            {formatCurrency(vendorData.faturamento.toString())}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">Legenda dos Dados:</h4>
+                  <ul className="text-xs text-blue-800 dark:text-blue-400 space-y-1">
+                    <li>• <strong>Propostas:</strong> Total filtrado pelos critérios selecionados</li>
+                    <li>• <strong>Implantadas:</strong> Propostas com status "implantado" (vendas efetivas)</li>
+                    <li>• <strong>Taxa %:</strong> (Implantadas ÷ Total) × 100</li>
+                    <li>• <strong>Faturamento:</strong> Soma apenas das propostas implantadas</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
