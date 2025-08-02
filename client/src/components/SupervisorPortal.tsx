@@ -2691,8 +2691,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                       <Tooltip 
                         formatter={(value: any, name: any) => [value, name === 'total' ? 'Total Propostas' : 'Convertidas']}
-                        labelStyle={{ color: '#374151' }}
-                        contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                        labelStyle={{ color: '#FFFFFF', fontWeight: 'bold' }}
+                        contentStyle={{ 
+                          backgroundColor: '#1F2937', 
+                          border: '1px solid #374151', 
+                          borderRadius: '8px',
+                          color: '#FFFFFF'
+                        }}
                       />
                       <Bar dataKey="total" radius={[4, 4, 0, 0]} />
                     </RechartsBarChart>
@@ -2808,7 +2813,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         </Pie>
                         <Tooltip 
                           formatter={(value: any, name: any) => [value, name]}
-                          labelStyle={{ color: '#374151' }}
+                          labelStyle={{ color: '#FFFFFF', fontWeight: 'bold' }}
+                          contentStyle={{ 
+                            backgroundColor: '#1F2937', 
+                            border: '1px solid #374151', 
+                            borderRadius: '8px',
+                            color: '#FFFFFF'
+                          }}
                         />
                       </RechartsPieChart>
                     </ResponsiveContainer>
