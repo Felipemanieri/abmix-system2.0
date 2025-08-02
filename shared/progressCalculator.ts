@@ -114,28 +114,22 @@ export function calculateProposalProgress(proposal: ProposalData): {
   
   // Cálculo do progresso geral
   let overallProgress = 0;
-  let weightSum = 0;
   
-  // Titulares sempre contam (peso 0.6)
+  // Titulares sempre contam (peso 60%)
   if (titulares.length > 0) {
     overallProgress += totalTitularesProgress * 0.6;
-    weightSum += 0.6;
   }
   
-  // Dependentes contam se existirem (peso 0.3)
+  // Dependentes contam se existirem (peso 30%)
   if (dependentes.length > 0) {
     overallProgress += totalDependentesProgress * 0.3;
-    weightSum += 0.3;
+  } else {
+    // Se não há dependentes, redistribuir peso para titulares
+    overallProgress += totalTitularesProgress * 0.3;
   }
   
-  // Anexos sempre contam (peso 0.1)
+  // Anexos sempre contam (peso 10%)
   overallProgress += attachmentsProgress * 0.1;
-  weightSum += 0.1;
-  
-  // Normalizar se necessário
-  if (weightSum > 0) {
-    overallProgress = overallProgress / weightSum;
-  }
   
   overallProgress = Math.round(overallProgress);
   
