@@ -100,15 +100,9 @@ export function calculateContractProgress(contractData: ContractData = {}): numb
   const requiredContractFields = ['nomeEmpresa', 'cnpj', 'planoContratado', 'valor'];
   let filledFields = 0;
   
-  console.log('🔍 CONTRACT: Verificando campos:', {
-    contractData,
-    fields: requiredContractFields
-  });
-  
   for (const field of requiredContractFields) {
     const value = contractData[field as keyof ContractData];
     const isValid = value && value.toString().trim() !== '';
-    console.log(`  - ${field}: "${value}" -> ${isValid ? 'VÁLIDO' : 'INVÁLIDO'}`);
     
     if (isValid) {
       filledFields++;
@@ -116,7 +110,6 @@ export function calculateContractProgress(contractData: ContractData = {}): numb
   }
   
   const progress = Math.round((filledFields / requiredContractFields.length) * 100);
-  console.log(`📊 CONTRACT: ${filledFields}/${requiredContractFields.length} campos = ${progress}%`);
   
   return progress;
 }
@@ -135,15 +128,7 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
 } {
   const { titulares = [], dependentes = [], clientAttachments = [], contractData, status } = proposal;
   
-  // Log detalhado para debug FORÇADO
-  console.log(`🔍 CALCULATOR - Dados recebidos:`, {
-    contractData: contractData || "UNDEFINED!",
-    contractDataKeys: contractData ? Object.keys(contractData) : "NO KEYS",
-    titularesCount: titulares.length,
-    dependentesCount: dependentes.length,
-    attachmentsCount: clientAttachments.length,
-    status
-  });
+  // Removed debug logs as requested by user
   
   // SE JÁ FOI APROVADO NA IMPLANTAÇÃO = 100%
   if (status === 'implantado') {
