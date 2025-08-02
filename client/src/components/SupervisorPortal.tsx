@@ -3057,82 +3057,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               
               return (
                 <div className="space-y-8">
-                  {/* Filtros de Performance COMPLETOS */}
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">Filtros de Performance</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      
-                      {/* Vendedor */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vendedor</label>
-                        <select 
-                          value={selectedVendor || ''}
-                          onChange={(e) => setSelectedVendor(e.target.value || null)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        >
-                          <option value="">TODOS OS VENDEDORES</option>
-                          {vendors?.map(v => (
-                            <option key={v.id} value={v.name}>
-                              {v.name} ({v.active ? 'Ativo' : 'Inativo'})
-                            </option>
-                          )) || []}
-                        </select>
-                      </div>
 
-                      {/* Data Início */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
-                        <input
-                          type="date"
-                          value={dataInicio}
-                          onChange={(e) => setDataInicio(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-
-                      {/* Data Fim */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
-                        <input
-                          type="date"
-                          value={dataFim}
-                          onChange={(e) => setDataFim(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-                      
-                      {/* Status */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                        <select
-                          value={selectedStatus}
-                          onChange={(e) => setSelectedStatus(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        >
-                          <option value="">TODOS OS STATUS</option>
-                          <option value="implantado">Implantado</option>
-                          <option value="pendente">Pendente</option>
-                          <option value="perdido">Perdido</option>
-                          <option value="cancelado">Cancelado</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Botão Limpar Filtros */}
-                    <div className="mt-4 flex justify-end">
-                      <button
-                        onClick={() => {
-                          setSelectedVendor(null);
-                          setSelectedStatus('');
-                          setDataInicio('');
-                          setDataFim('');
-                        }}
-                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-600 rounded-md"
-                      >
-                        Limpar Filtros
-                      </button>
-                    </div>
-                  </div>
 
                   {/* Gráfico Individual de Performance */}
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
@@ -3142,27 +3067,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       {(() => {
                         // Calcular performance individual usando dados reais e metas do banco
                         return vendors?.map(vendor => {
-                          // Pegar propostas implantadas do vendedor - APLICAR FILTROS AQUI
-                          let vendorProposals = proposals?.filter(p => 
+                          // Pegar TODAS as propostas implantadas do vendedor - SEM FILTROS
+                          const vendorImplantedProposals = proposals?.filter(p => 
                             p.vendor_id === vendor.id && p.status === 'implantado'
                           ) || [];
-                          
-                          // APLICAR FILTROS DE DATA
-                          if (dataInicio || dataFim) {
-                            vendorProposals = vendorProposals.filter(p => {
-                              const proposalDate = new Date(p.createdAt || Date.now());
-                              if (dataInicio && proposalDate < new Date(dataInicio)) return false;
-                              if (dataFim && proposalDate > new Date(dataFim)) return false;
-                              return true;
-                            });
-                          }
-                          
-                          // APLICAR FILTRO DE STATUS
-                          if (selectedStatus) {
-                            vendorProposals = vendorProposals.filter(p => p.status === selectedStatus);
-                          }
-                          
-                          const vendorImplantedProposals = vendorProposals;
                           
                           const totalValue = vendorImplantedProposals.reduce((sum, p) => {
                             const valor = p.contractData?.valor || '0';
@@ -3272,19 +3180,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               p.vendor_id === vendor.id && p.status === 'implantado'
                             ) || [];
 
-                            // APLICAR FILTROS DE DATA
-                            if (dataInicio || dataFim) {
+                            // APLICAR FILTROS DO ANALYTICS
+                            if (analyticsFilters.dataInicio || analyticsFilters.dataFim) {
                               vendorImplantedProposals = vendorImplantedProposals.filter(p => {
                                 const proposalDate = new Date(p.createdAt || Date.now());
-                                if (dataInicio && proposalDate < new Date(dataInicio)) return false;
-                                if (dataFim && proposalDate > new Date(dataFim)) return false;
+                                if (analyticsFilters.dataInicio && proposalDate < new Date(analyticsFilters.dataInicio)) return false;
+                                if (analyticsFilters.dataFim && proposalDate > new Date(analyticsFilters.dataFim)) return false;
                                 return true;
                               });
                             }
 
-                            // APLICAR FILTRO DE STATUS (se selecionado, só mostrar esse status)
-                            if (selectedStatus) {
-                              vendorImplantedProposals = vendorImplantedProposals.filter(p => p.status === selectedStatus);
+                            // APLICAR FILTRO DE VENDEDOR
+                            if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
+                              // Se há filtro de vendedor, só mostra esse vendedor
+                              if (vendor.name !== analyticsFilters.selectedVendor) {
+                                vendorImplantedProposals = [];
+                              }
+                            }
+
+                            // APLICAR FILTRO DE STATUS
+                            if (analyticsFilters.selectedStatus) {
+                              vendorImplantedProposals = vendorImplantedProposals.filter(p => p.status === analyticsFilters.selectedStatus);
                             }
                             
                             const totalValue = vendorImplantedProposals.reduce((sum, p) => {
