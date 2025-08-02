@@ -1394,53 +1394,30 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                               <div className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
                                 <div className="flex items-center justify-between mb-4">
                                   <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                                    Visualização do PDF
+                                    Editor de PDF Online
                                   </h4>
-                                  {numPages && (
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                                      {numPages} página{numPages > 1 ? 's' : ''}
-                                    </span>
-                                  )}
                                 </div>
                                 
-                                {/* Container para o PDF usando Canvas nativo */}
-                                <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-lg">
-                                  {selectedFile && fileType === 'pdf' ? (
-                                    <div className="relative p-4">
-                                      <div className="text-center mb-4">
-                                        <FileText className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
-                                        <p className="text-emerald-700 dark:text-emerald-300 font-medium">
-                                          PDF renderizado com PDF.js nativo
-                                        </p>
-                                        {numPages && (
-                                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                            {numPages} página{numPages > 1 ? 's' : ''} • Primeira página exibida
-                                          </p>
-                                        )}
-                                      </div>
-                                      
-                                      {/* Canvas para renderização do PDF */}
-                                      <div className="flex justify-center">
-                                        <canvas 
-                                          ref={canvasRef}
-                                          className="max-w-full border border-gray-300 dark:border-gray-600 rounded shadow-sm"
-                                          style={{ maxHeight: '400px' }}
-                                        />
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center justify-center p-8">
-                                      <div className="text-center">
-                                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                        <p className="text-gray-600 dark:text-gray-400">Nenhum PDF carregado</p>
-                                      </div>
-                                    </div>
-                                  )}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                    💡 Use o editor abaixo para fazer upload, editar (adicionar texto, apagar, destacar) e baixar PDFs
+                                  </p>
                                 </div>
                                 
-                                <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg">
-                                  <p className="text-sm text-emerald-800 dark:text-emerald-200">
-                                    ✓ PDF carregado e renderizado com sucesso! Use as ferramentas abaixo para editar.
+                                {/* Editor PDF Online via iframe */}
+                                <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                                  <iframe
+                                    src='https://www.pdfescape.com/open/'
+                                    width='100%'
+                                    height='700px'
+                                    style={{ border: "none" }}
+                                    title='Editor PDF Online'
+                                  />
+                                </div>
+                                
+                                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                                    📄 Editor PDF completo carregado. Faça upload do seu PDF e use as ferramentas de edição disponíveis.
                                   </p>
                                 </div>
                               </div>
