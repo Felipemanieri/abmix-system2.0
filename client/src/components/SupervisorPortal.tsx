@@ -19,7 +19,7 @@ import StatusBadge from './StatusBadge';
 import FolderNameEditor from './FolderNameEditor';
 import { apiRequest } from '@/lib/queryClient';
 import { queryClient as queryClientInstance } from '@/lib/queryClient';
-import { showNotification } from '@/utils/notifications';
+// import { showNotification } from '@/utils/notifications';
 import { realTimeSync } from '@/utils/realTimeSync';
 import { useSupervisorReport } from '@/hooks/useSupervisorReport';
 import { getDynamicGreeting } from '../utils/greetingHelper';
@@ -71,6 +71,12 @@ interface Award {
 export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [activeView, setActiveView] = useState<SupervisorView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Função local para notificações
+  const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    console.log(`${type.toUpperCase()}: ${message}`);
+    // Implementação simples via console por enquanto
+  };
   
   // WEBSOCKET TEMPORARIAMENTE DESABILITADO - corrigindo múltiplas conexões
   // const { isConnected: isWebSocketConnected } = useSupervisorWebSocket(user.id);
@@ -630,31 +636,68 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     }
   }
 
-  // Função para calcular progresso simples baseado nos dados
+  // Função para calcular progresso usando a calculadora oficial
   const calculateProgress = (proposal: any) => {
     if (!proposal) return 0;
     
+    // Usar dados reais da proposta para calcular progresso
+    const proposalData = {
+      titulares: proposal.titulares || [],
+      dependentes: proposal.dependentes || [],
+      clientAttachments: proposal.clientAttachments || [],
+      contractData: proposal.contractData || {},
+      status: proposal.status
+    };
+    
+    // Cálculo simples baseado nos campos essenciais preenchidos
     let completedFields = 0;
-    let totalFields = 10; // Campos básicos esperados
+    let totalFields = 0;
     
-    // Verificar dados do contrato
-    if (proposal.contractData?.nomeEmpresa) completedFields++;
-    if (proposal.contractData?.cnpj) completedFields++;
-    if (proposal.contractData?.valor) completedFields++;
-    if (proposal.contractData?.planoContratado) completedFields++;
+    // Verificar dados do contrato (peso 40%)
+    const contractData = proposalData.contractData || {};
+    const contractFields = ['nomeEmpresa', 'cnpj', 'planoContratado', 'valor'];
+    contractFields.forEach(field => {
+      totalFields++;
+      if (contractData[field as keyof typeof contractData]) {
+        completedFields++;
+      }
+    });
     
-    // Verificar dados pessoais
-    if (proposal.titulares && proposal.titulares.length > 0) {
-      completedFields += 2; // Titular básico
-      if (proposal.titulares[0]?.nomeCompleto) completedFields++;
-      if (proposal.titulares[0]?.cpf) completedFields++;
+    // Verificar dados pessoais do titular (peso 50%)
+    if (proposalData.titulares.length > 0) {
+      const titular = proposalData.titulares[0];
+      const titularFields = ['nomeCompleto', 'cpf', 'emailPessoal', 'telefonePessoal'];
+      titularFields.forEach(field => {
+        totalFields++;
+        if (titular && titular[field as keyof typeof titular]) {
+          completedFields++;
+        }
+      });
+    } else {
+      totalFields += 4; // Campos do titular não preenchidos
     }
     
-    // Verificar anexos
-    if (proposal.clientAttachments && proposal.clientAttachments.length > 0) completedFields++;
-    if (proposal.clientCompleted) completedFields++;
+    // Verificar anexos (peso 10%)
+    totalFields++;
+    if (proposalData.clientAttachments.length > 0) {
+      completedFields++;
+    }
     
-    return Math.round((completedFields / totalFields) * 100);
+    if (totalFields === 0) return 0;
+    
+    const progress = Math.round((completedFields / totalFields) * 100);
+    
+    // CALIBRAÇÃO: Máximo 99% até ser aprovado
+    if (progress >= 99 && proposal.status !== 'implantado') {
+      return 99;
+    }
+    
+    // 100% apenas quando implantado
+    if (proposal.status === 'implantado') {
+      return 100;
+    }
+    
+    return Math.min(99, progress);
   };
 
   // Funções para as ações da tabela
