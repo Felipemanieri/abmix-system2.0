@@ -2691,6 +2691,19 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                       <Tooltip 
                         formatter={(value: any, name: any) => [value, name === 'total' ? 'Total Propostas' : 'Convertidas']}
+                        labelFormatter={(label: any) => {
+                          // Mostrar nome completo no tooltip
+                          const fullNames: { [key: string]: string } = {
+                            'Fabiana': 'Fabiana Godinho Santos',
+                            'Bruna': 'Bruna',
+                            'Gabrielle': 'Gabrielle',
+                            'Juliana': 'Juliana', 
+                            'Luciana': 'Luciana',
+                            'Sara': 'Sara',
+                            'Isabela': 'Isabela Velasquez'
+                          };
+                          return fullNames[label] || label;
+                        }}
                         labelStyle={{ color: '#FFFFFF', fontWeight: 'bold' }}
                         contentStyle={{ 
                           backgroundColor: '#1F2937', 
