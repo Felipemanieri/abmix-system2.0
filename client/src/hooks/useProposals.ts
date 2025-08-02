@@ -212,7 +212,8 @@ export function useVendorProposals(vendorId: number) {
           titulares: proposal.titulares || [],
           dependentes: proposal.dependentes || [],
           clientAttachments: proposal.clientAttachments || [],
-          clientCompleted: proposal.clientCompleted || false
+          clientCompleted: proposal.clientCompleted || false,
+          status: proposal.status
         }).overallProgress,
         priority: proposal.priority || 'medium'
       }));

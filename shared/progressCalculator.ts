@@ -81,15 +81,27 @@ export function calculatePersonProgress(person: PersonData, isTitular: boolean =
 
 /**
  * Calcula o progresso geral de uma proposta
+ * Sistema calibrado para: 99% = cliente completou tudo | 100% = aprovado na implantação
  */
-export function calculateProposalProgress(proposal: ProposalData): {
+export function calculateProposalProgress(proposal: ProposalData & { status?: string }): {
   overallProgress: number;
   titularesProgress: number;
   dependentesProgress: number;
   attachmentsProgress: number;
   completed: boolean;
 } {
-  const { titulares = [], dependentes = [], clientAttachments = [] } = proposal;
+  const { titulares = [], dependentes = [], clientAttachments = [], status } = proposal;
+  
+  // SE JÁ FOI APROVADO NA IMPLANTAÇÃO = 100%
+  if (status === 'implantado') {
+    return {
+      overallProgress: 100,
+      titularesProgress: 100,
+      dependentesProgress: 100,
+      attachmentsProgress: 100,
+      completed: true
+    };
+  }
   
   // Progresso dos titulares
   let totalTitularesProgress = 0;
@@ -116,16 +128,16 @@ export function calculateProposalProgress(proposal: ProposalData): {
   let overallProgress = 0;
   let weightSum = 0;
   
-  // Titulares sempre contam (peso 0.6)
+  // Titulares sempre contam (peso 0.7 - mais importante)
   if (titulares.length > 0) {
-    overallProgress += totalTitularesProgress * 0.6;
-    weightSum += 0.6;
+    overallProgress += totalTitularesProgress * 0.7;
+    weightSum += 0.7;
   }
   
-  // Dependentes contam se existirem (peso 0.3)
+  // Dependentes contam se existirem (peso 0.2)
   if (dependentes.length > 0) {
-    overallProgress += totalDependentesProgress * 0.3;
-    weightSum += 0.3;
+    overallProgress += totalDependentesProgress * 0.2;
+    weightSum += 0.2;
   }
   
   // Anexos sempre contam (peso 0.1)
@@ -137,6 +149,11 @@ export function calculateProposalProgress(proposal: ProposalData): {
     overallProgress = overallProgress / weightSum;
   }
   
+  // CALIBRAÇÃO FINAL: Máximo 99% até ser aprovado na implantação
+  if (overallProgress >= 99 && status !== 'implantado') {
+    overallProgress = 99;
+  }
+  
   overallProgress = Math.round(overallProgress);
   
   return {
@@ -144,7 +161,7 @@ export function calculateProposalProgress(proposal: ProposalData): {
     titularesProgress: Math.round(totalTitularesProgress),
     dependentesProgress: Math.round(totalDependentesProgress),
     attachmentsProgress,
-    completed: overallProgress >= 100 && proposal.clientCompleted === true
+    completed: status === 'implantado'
   };
 }
 

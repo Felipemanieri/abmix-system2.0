@@ -21,7 +21,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     titulares: proposal.titulares || [],
     dependentes: proposal.dependentes || [],
     clientAttachments: proposal.clientAttachments || [],
-    clientCompleted: proposal.clientCompleted || false
+    clientCompleted: proposal.clientCompleted || false,
+    status: proposal.status
   };
 
   const progressResult = calculateProposalProgress(proposalData);
