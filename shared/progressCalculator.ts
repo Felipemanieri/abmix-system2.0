@@ -115,16 +115,14 @@ export function calculateProposalProgress(proposal: ProposalData): {
   // Cálculo do progresso geral
   let overallProgress = 0;
   
-  // Titulares sempre contam (peso 60%)
-  if (titulares.length > 0) {
-    overallProgress += totalTitularesProgress * 0.6;
-  }
+  // Titulares sempre contam (peso base 60%)
+  overallProgress += totalTitularesProgress * 0.6;
   
   // Dependentes contam se existirem (peso 30%)
   if (dependentes.length > 0) {
     overallProgress += totalDependentesProgress * 0.3;
   } else {
-    // Se não há dependentes, redistribuir peso para titulares
+    // Se não há dependentes, soma o peso aos titulares
     overallProgress += totalTitularesProgress * 0.3;
   }
   

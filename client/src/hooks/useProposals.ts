@@ -60,20 +60,26 @@ export function useProposals() {
       }
     },
     select: (data: any[]) => {
-      console.log('Dados recebidos da API:', data);
-      return data.map((proposal): ProposalData => ({
-        ...proposal,
-        cliente: proposal.contractData?.nomeEmpresa || 'N/A',
-        plano: proposal.contractData?.planoContratado || 'N/A',
-        valor: proposal.contractData?.valor || '0',
-        progresso: calculateProposalProgress({
+      console.log('📊 Dados recebidos da API (useProposals):', data?.length || 0, 'propostas');
+      return data.map((proposal): ProposalData => {
+        const progressData = calculateProposalProgress({
           titulares: proposal.titulares || [],
           dependentes: proposal.dependentes || [],
           clientAttachments: proposal.clientAttachments || [],
           clientCompleted: proposal.clientCompleted || false
-        }).overallProgress,
-        priority: proposal.priority || 'medium' // Garantir que priority existe
-      }));
+        });
+        
+        console.log(`📈 Progresso calculado para ${proposal.abmId}:`, progressData.overallProgress + '%');
+        
+        return {
+          ...proposal,
+          cliente: proposal.contractData?.nomeEmpresa || proposal.folderName || 'Empresa não informada',
+          plano: proposal.contractData?.planoContratado || 'Plano não informado',
+          valor: proposal.contractData?.valor || '0',
+          progresso: progressData.overallProgress,
+          priority: proposal.priority || 'medium'
+        };
+      });
     },
     refetchInterval: 60000, // Reduzido de 30s para 60s para evitar sobrecarga
     refetchIntervalInBackground: false, // NÃO atualizar em background
@@ -202,20 +208,26 @@ export function useVendorProposals(vendorId: number) {
       }
     },
     select: (data: any[]) => {
-      console.log(`Propostas do vendedor ${vendorId}:`, data);
-      return data.map((proposal): ProposalData => ({
-        ...proposal,
-        cliente: proposal.contractData?.nomeEmpresa || 'N/A',
-        plano: proposal.contractData?.planoContratado || 'N/A',
-        valor: proposal.contractData?.valor || '0',
-        progresso: calculateProposalProgress({
+      console.log(`📊 Propostas do vendedor ${vendorId}:`, data?.length || 0);
+      return data.map((proposal): ProposalData => {
+        const progressData = calculateProposalProgress({
           titulares: proposal.titulares || [],
           dependentes: proposal.dependentes || [],
           clientAttachments: proposal.clientAttachments || [],
           clientCompleted: proposal.clientCompleted || false
-        }).overallProgress,
-        priority: proposal.priority || 'medium'
-      }));
+        });
+        
+        console.log(`📈 Progresso calculado para vendedor ${vendorId} - ${proposal.abmId}:`, progressData.overallProgress + '%');
+        
+        return {
+          ...proposal,
+          cliente: proposal.contractData?.nomeEmpresa || proposal.folderName || 'Empresa não informada',
+          plano: proposal.contractData?.planoContratado || 'Plano não informado',
+          valor: proposal.contractData?.valor || '0',
+          progresso: progressData.overallProgress,
+          priority: proposal.priority || 'medium'
+        };
+      });
     },
     refetchInterval: 1000, // 1 segundo - resposta imediata
     refetchIntervalInBackground: false,
