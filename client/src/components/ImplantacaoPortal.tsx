@@ -1398,27 +1398,38 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                   </h4>
                                 </div>
                                 
-                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-                                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                    💡 Editor PDF completo com upload, edição e download garantido
+                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                    <h5 className="font-medium text-blue-900 dark:text-blue-100">Editor PDF Direto</h5>
+                                  </div>
+                                  <p className="text-sm text-blue-700 dark:text-blue-200">
+                                    Faça upload do PDF, visualize e baixe. Para edição avançada, use o link externo abaixo.
                                   </p>
                                 </div>
                                 
-                                {/* Editor PDF - ILovePDF com iframe funcional */}
-                                <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                                  <iframe
-                                    src='https://www.ilovepdf.com/edit-pdf'
-                                    width='100%'
-                                    height='700px'
-                                    style={{ border: "none" }}
-                                    title='Editor PDF - ILovePDF'
-                                    allow="fullscreen"
-                                  />
+                                {/* Botões de ação para o PDF */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                  <button
+                                    onClick={() => window.open('https://www.ilovepdf.com/edit-pdf', '_blank')}
+                                    className="flex items-center justify-center gap-2 p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                  >
+                                    <Edit3 className="w-5 h-5" />
+                                    <span>Editar PDF Completo (Nova Aba)</span>
+                                  </button>
+                                  
+                                  <button
+                                    onClick={() => window.open('https://www.pdfescape.com/open/', '_blank')}
+                                    className="flex items-center justify-center gap-2 p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                  >
+                                    <FileText className="w-5 h-5" />
+                                    <span>Editor PDF Alternativo</span>
+                                  </button>
                                 </div>
                                 
-                                <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
-                                  <p className="text-sm text-green-800 dark:text-green-200">
-                                    ✅ Editor PDF com download funcionando! Faça upload do PDF, edite (texto, imagens, formas) e baixe o arquivo editado.
+                                <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                    💡 Para edição completa de PDF (adicionar texto, destacar, apagar), clique nos botões acima que abrem editores externos em nova aba.
                                   </p>
                                 </div>
                               </div>
