@@ -11,6 +11,8 @@ import NotificationCenter from './NotificationCenter';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
 import MessageNotificationBadge from './MessageNotificationBadge';
 import { WelcomeMessage } from './WelcomeMessage';
+import InboxModal from './InboxModal';
+import InternalMessageModal from './InternalMessageModal';
 
 import SystemFooter from './SystemFooter';
 import ThemeToggle from './ThemeToggle';
@@ -114,6 +116,21 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedVendor, setSelectedVendor] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+  // Estados necessários para o Portal
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [showInboxModal, setShowInboxModal] = useState(false);
+  const unreadCount = 0; // Por enquanto sem notificações
+  
+  // Estados para filtros do Analytics
+  const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedOperadora, setSelectedOperadora] = useState('');
+  const [valorMin, setValorMin] = useState('');
+  const [valorMax, setValorMax] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Buscar propostas com tratamento robusto
   const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
@@ -548,16 +565,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [filterStatus, setFilterStatus] = useState(() => localStorage.getItem('supervisor_filterStatus') || '');
   const [filterDate, setFilterDate] = useState(() => localStorage.getItem('supervisor_filterDate') || '');
 
-  // Estados para Analytics - movidos para nível principal
-  const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [selectedOperadora, setSelectedOperadora] = useState('');
+  // Estados para filtros adicionais
   const [selectedTipoPlano, setSelectedTipoPlano] = useState('');
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
-  const [valorMin, setValorMin] = useState('');
-  const [valorMax, setValorMax] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
