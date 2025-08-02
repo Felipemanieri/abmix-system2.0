@@ -4406,11 +4406,6 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             <div className="mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
                               <h4 className="font-bold text-lg text-gray-900 dark:text-white">
                                 {vendedor.toUpperCase()} ({group.count} proposta{group.count !== 1 ? 's' : ''})
-                                {group.vendasReuniao > 0 && (
-                                  <span className="ml-2 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 px-2 py-1 rounded text-sm font-normal">
-                                    👥 {group.vendasReuniao} reuniã{group.vendasReuniao === 1 ? 'o' : 'ões'}
-                                  </span>
-                                )}
                               </h4>
                             </div>
                             
