@@ -579,8 +579,21 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       // Converter para formato do backend
       const backendPriority = priority === 'alta' ? 'high' : priority === 'media' ? 'medium' : 'low';
       
-      // Usar a função do hook useProposals
-      await updateProposalPriority(proposalId, backendPriority);
+      // Enviar para o backend
+      const response = await fetch(`/api/proposals/${proposalId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ priority: backendPriority }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar prioridade');
+      }
+
+      // Invalidar cache usando React Query para forçar recarregamento dos dados
+      queryClientInstance.invalidateQueries({ queryKey: ["/api/proposals"] });
       
       showNotification(`Prioridade alterada para ${getPriorityText(priority)}`, 'success');
     } catch (error) {
