@@ -2375,20 +2375,32 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       return true;
     });
 
-    // Dados para gráfico de pizza por status
-    const statusData = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-      name: config.label,
-      value: finalAnalyticsData.filter(p => p.status === key).length,
-      color: getStatusColor(key),
-      fill: getStatusColor(key)
-    })).filter(item => item.value > 0);
+    // Dados para gráfico de pizza por status - usando dados REAIS do banco
+    const realStatusData = finalAnalyticsData.reduce((acc: any[], proposal) => {
+      const existingStatus = acc.find(item => item.status === proposal.status);
+      if (existingStatus) {
+        existingStatus.value++;
+      } else {
+        const config = STATUS_CONFIG[proposal.status as keyof typeof STATUS_CONFIG];
+        acc.push({
+          name: config?.label || proposal.status.toUpperCase(),
+          status: proposal.status,
+          value: 1,
+          color: getStatusColor(proposal.status),
+          fill: getStatusColor(proposal.status)
+        });
+      }
+      return acc;
+    }, []);
+
+    const statusData = realStatusData;
 
     // Mapeamento de vendorId para nome do vendedor
     const vendorIdToNameMap: { [key: number]: string } = {
       1: 'Ana Caroline Terto',
       2: 'Bruna Garcia', 
       3: 'Fabiana Ferreira',
-      4: 'Fabiana Godinho Santos',
+      4: 'Fabiana Godinho',
       5: 'Fernanda Batista',
       6: 'Gabrielle Fernandes',
       7: 'Isabela Velasquez',
@@ -2945,8 +2957,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         {/* Torres de Performance Mensal */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Torres de Performance Mensal</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Valor total vendido por mês - últimos 12 meses (apenas status implantado)</p>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">SEÇÃO REMOVIDA - NÃO FUNCIONAVA</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Esta seção foi removida conforme solicitado</p>
           </div>
           <div className="p-6">
             {(() => {
