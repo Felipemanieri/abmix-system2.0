@@ -205,33 +205,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVendorProposals(vendorId: number): Promise<any[]> {
-    // SYNC CRITICAL: Retornar TODOS os campos da proposta para sincronização de progresso
-    return await db.select({
-      id: proposals.id,
-      abmId: proposals.abmId,
-      vendorId: proposals.vendorId,
-      clientToken: proposals.clientToken,
-      contractData: proposals.contractData,
-      titulares: proposals.titulares,
-      dependentes: proposals.dependentes,
-      internalData: proposals.internalData,
-      vendorAttachments: proposals.vendorAttachments,
-      clientAttachments: proposals.clientAttachments,
-      clientCompleted: proposals.clientCompleted,
-      status: proposals.status,
-      priority: proposals.priority,
-      approved: proposals.approved,
-      rejected: proposals.rejected,
-      driveFolder: proposals.driveFolder,
-      folderName: proposals.folderName,
-      driveFolderId: proposals.driveFolderId,
-      observacaoFinanceira: proposals.observacaoFinanceira,
-      observacaoSupervisor: proposals.observacaoSupervisor,
-      observacaoImplementacao: proposals.observacaoImplementacao,
-      documentosRecebidos: proposals.documentosRecebidos,
-      createdAt: proposals.createdAt,
-      updatedAt: proposals.updatedAt
-    }).from(proposals)
+    return await db.select().from(proposals)
       .where(eq(proposals.vendorId, vendorId))
       .orderBy(proposals.createdAt); // Manter ordem cronológica de criação
   }
