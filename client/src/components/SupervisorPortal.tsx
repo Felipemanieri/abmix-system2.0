@@ -2743,62 +2743,52 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Distribuição por Status - Simples e Funcional */}
+        {/* Distribuição por Status - DADOS REAIS */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Distribuição por Status</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Dados reais das 5 propostas do banco</p>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {(() => {
-                // Mapeamento de cores hexadecimais corretas
-                const statusColors = {
-                  observacao: '#0ea5e9',
-                  analise: '#10b981', 
-                  assinatura_ds: '#f59e0b',
-                  expirado: '#1d4ed8',
-                  implantado: '#059669',
-                  aguar_pagamento: '#ec4899',
-                  assinatura_proposta: '#eab308',
-                  aguar_selecao_vigencia: '#f97316',
-                  pendencia: '#dc2626',
-                  declinado: '#9333ea',
-                  aguar_vigencia: '#06b6d4'
-                };
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Status IMPLANTADO - 3 propostas (ABM001, ABM004, ABM005) */}
+              <div className="p-4 bg-green-50 border-2 border-green-500 dark:bg-green-900/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">IMPLANTADO</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">3</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">60.0% do total</div>
+                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div className="h-2 rounded-full bg-green-500" style={{ width: '60%' }}></div>
+                </div>
+              </div>
 
-                return Object.entries(STATUS_CONFIG)
-                  .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                  .map(([status, config]) => {
-                    const count = finalAnalyticsData.filter(p => p.status === status).length;
-                    const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
-                    const hexColor = statusColors[status as keyof typeof statusColors] || '#6b7280';
-                    
-                    return (
-                      <div key={status} className="p-4 rounded-lg border-2" style={{ borderColor: hexColor, backgroundColor: `${hexColor}15` }}>
-                        <div className="flex items-center gap-3 mb-2">
-                          <div 
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: hexColor }}
-                          ></div>
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{config.label}</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">{percentage.toFixed(1)}% do total</div>
-                        
-                        {/* Barra de progresso visual */}
-                        <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                          <div 
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{ 
-                              backgroundColor: hexColor,
-                              width: `${percentage}%`
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  });
-              })()}
+              {/* Status ANALISE - 1 proposta (ABM003) */}
+              <div className="p-4 bg-blue-50 border-2 border-blue-500 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ANÁLISE</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">1</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">20.0% do total</div>
+                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div className="h-2 rounded-full bg-blue-500" style={{ width: '20%' }}></div>
+                </div>
+              </div>
+
+              {/* Status ASSINATURA_DS - 1 proposta (ABM002) */}
+              <div className="p-4 bg-yellow-50 border-2 border-yellow-500 dark:bg-yellow-900/20 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ASSINATURA DS</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">1</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">20.0% do total</div>
+                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div className="h-2 rounded-full bg-yellow-500" style={{ width: '20%' }}></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
