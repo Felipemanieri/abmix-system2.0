@@ -1153,16 +1153,25 @@ Vendedor Abmix`;
               </thead>
               <tbody>
                 {teamTargets.map((target) => {
-                  // Calcular progresso da equipe baseado em todas as propostas implantadas de todos os vendedores
-                  const allImplantedProposals = realProposals?.filter(p => p.status === 'implantado') || [];
-                  const totalTeamValue = allImplantedProposals.reduce((sum, proposal) => {
+                  // Calcular progresso da equipe baseado nas propostas implantadas do período específico da meta
+                  const targetDate = { month: target.month, year: target.year };
+                  const periodImplantedProposals = realProposals?.filter((p: any) => {
+                    const proposalDate = new Date(p.createdAt);
+                    return (
+                      p.status === 'implantado' &&
+                      proposalDate.getMonth() + 1 === targetDate.month &&
+                      proposalDate.getFullYear() === targetDate.year
+                    );
+                  }) || [];
+                  
+                  const totalTeamValue = periodImplantedProposals.reduce((sum, proposal) => {
                     const value = parseFloat(proposal.contractData?.valor?.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
                     return sum + value;
                   }, 0);
                   
                   const targetValueNumber = parseFloat(target.targetValue.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
                   const teamValueProgress = targetValueNumber > 0 ? Math.min((totalTeamValue / targetValueNumber) * 100, 100) : 0;
-                  const teamProposalProgress = target.targetProposals > 0 ? Math.min((allImplantedProposals.length / target.targetProposals) * 100, 100) : 0;
+                  const teamProposalProgress = target.targetProposals > 0 ? Math.min((periodImplantedProposals.length / target.targetProposals) * 100, 100) : 0;
                   
                   // Priorizar valor das vendas, mas permitir que propostas compensem se valor for baixo
                   const teamOverallProgress = teamValueProgress >= 50 
@@ -1181,7 +1190,7 @@ Vendedor Abmix`;
                       </td>
                       <td className="py-4 px-4">
                         <div className="text-sm font-bold text-green-600 dark:text-green-400">
-                          R$ {calculateAccumulatedValue().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {totalTeamValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">vendas da equipe</div>
                       </td>
