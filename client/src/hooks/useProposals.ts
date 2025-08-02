@@ -208,14 +208,27 @@ export function useVendorProposals(vendorId: number) {
         cliente: proposal.contractData?.nomeEmpresa || 'N/A',
         plano: proposal.contractData?.planoContratado || 'N/A',
         valor: proposal.contractData?.valor || '0',
-        progresso: calculateProposalProgress({
-          titulares: proposal.titulares || [],
-          dependentes: proposal.dependentes || [],
-          clientAttachments: proposal.clientAttachments || [],
-          clientCompleted: proposal.clientCompleted || false,
-          contractData: proposal.contractData,
-          status: proposal.status
-        }).overallProgress,
+        progresso: (() => {
+          const progressData = calculateProposalProgress({
+            titulares: proposal.titulares || [],
+            dependentes: proposal.dependentes || [],
+            clientAttachments: proposal.clientAttachments || [],
+            clientCompleted: proposal.clientCompleted || false,
+            contractData: proposal.contractData,
+            status: proposal.status
+          });
+          
+          // Log detalhado para debug do progresso
+          console.log(`📊 PROGRESSO ${proposal.abmId}:`, {
+            contractData: proposal.contractData,
+            contractProgress: progressData.contractProgress,
+            titularesProgress: progressData.titularesProgress,
+            overallProgress: progressData.overallProgress,
+            status: proposal.status
+          });
+          
+          return progressData.overallProgress;
+        })(),
         priority: proposal.priority || 'medium'
       }));
     },
