@@ -168,25 +168,50 @@
 
 .vendor-progress-bar {
   animation: progress-glow 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
 }
 
-@keyframes progress-wave {
+@keyframes progress-shimmer {
   0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.6;
+    transform: translateX(-100%) skewX(-15deg);
   }
   100% {
-    transform: translateX(100%);
-    opacity: 0;
+    transform: translateX(300%) skewX(-15deg);
   }
 }
 
-.progress-wave {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: progress-wave 2.5s ease-in-out infinite;
+.progress-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255,255,255,0.2) 20%, 
+    rgba(255,255,255,0.5) 50%, 
+    rgba(255,255,255,0.2) 80%, 
+    transparent 100%);
+  width: 30%;
+  animation: progress-shimmer 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+/* Efeito de pulsação suave para barras completas */
+@keyframes progress-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.progress-complete {
+  animation: progress-pulse 4s ease-in-out infinite;
 }
 
 /* Chatbot sempre fixo */

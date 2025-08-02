@@ -81,11 +81,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       
       <div className={`bg-gray-200 dark:bg-gray-600 dark:bg-gray-600 rounded-full ${sizeConfig[size]} overflow-hidden`}>
         <div 
-          className={`${progressColor} transition-all duration-700 ease-out rounded-full h-full relative ${animated ? 'vendor-progress-bar' : ''} overflow-hidden`}
+          className={`${progressColor} transition-all duration-700 ease-out rounded-full h-full relative ${animated ? 'vendor-progress-bar' : ''} ${progress === 100 && animated ? 'progress-complete' : ''} overflow-hidden`}
           style={{ width: `${progress}%` }}
         >
-          {/* Animação de onda sutil - apenas quando animated=true */}
-          {animated && <div className="absolute inset-0 progress-wave"></div>}
+          {/* Animação shimmer - sempre visível quando animated=true */}
+          {animated && <div className="progress-shimmer"></div>}
         </div>
       </div>
 
