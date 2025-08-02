@@ -168,7 +168,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     try {
       console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroProposta: ${proposalId} -> ${numeroProposta}`);
       
-      await updateProposal.mutateAsync({ 
+      await (updateProposal as any).mutateAsync({ 
         id: proposalId, 
         numeroProposta: numeroProposta 
       });
@@ -184,7 +184,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     try {
       console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroApolice: ${proposalId} -> ${numeroApolice}`);
       
-      await updateProposal.mutateAsync({ 
+      await (updateProposal as any).mutateAsync({ 
         id: proposalId, 
         numeroApolice: numeroApolice 
       });
@@ -494,7 +494,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={proposal.numeroProposta || ''}
+                      value={(proposal as any).numeroProposta || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
                         handleNumeroPropostaUpdate(proposal.id, value ? parseInt(value) : null);
@@ -509,7 +509,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={proposal.numeroApolice || ''}
+                      value={(proposal as any).numeroApolice || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
                         handleNumeroApoliceUpdate(proposal.id, value ? parseInt(value) : null);
