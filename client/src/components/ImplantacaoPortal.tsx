@@ -100,7 +100,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   // Hook para exclusão de propostas
   const deleteProposal = useDeleteProposal();
   
-  // Hook para atualização de status/prioridade com sincronização global
+  // Hook isolado para atualização de status/prioridade com sincronização global
   const updateProposal = useUpdateProposal();
 
   // Adicionar estado para notificações internas
@@ -195,10 +195,15 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         const numeroProposta = value ? parseInt(value) : null;
         console.log(`💾 Salvando numeroProposta: ${proposalId} -> ${numeroProposta}`);
         
-        await updateProposal.mutateAsync({ 
+        const result = await updateProposal.mutateAsync({ 
           id: proposalId, 
           numeroProposta: numeroProposta 
         });
+        
+        console.log(`✅ SUCESSO numeroProposta salvo:`, result);
+        
+        // Invalidar cache para forçar refetch
+        queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
         
         showInternalNotification(`Número da Proposta salvo!`, 'success');
       } catch (error) {
@@ -228,10 +233,15 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
         const numeroApolice = value ? parseInt(value) : null;
         console.log(`💾 Salvando numeroApolice: ${proposalId} -> ${numeroApolice}`);
         
-        await updateProposal.mutateAsync({ 
+        const result = await updateProposal.mutateAsync({ 
           id: proposalId, 
           numeroApolice: numeroApolice 
         });
+        
+        console.log(`✅ SUCESSO numeroApolice salvo:`, result);
+        
+        // Invalidar cache para forçar refetch
+        queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
         
         showInternalNotification(`Número da Apólice salvo!`, 'success');
       } catch (error) {

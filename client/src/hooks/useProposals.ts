@@ -205,6 +205,51 @@ export function useProposals() {
   };
 }
 
+// Hook para atualização isolada de propostas
+export function useUpdateProposal() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, status, priority, numeroProposta, numeroApolice }: { 
+      id: string, 
+      status?: string, 
+      priority?: string,
+      numeroProposta?: number | null,
+      numeroApolice?: number | null
+    }) => {
+      console.log(`UPDATING PROPOSAL: ${id} -> status: ${status}, numeroProposta: ${numeroProposta}, numeroApolice: ${numeroApolice}`);
+      try {
+        const response = await fetch(`/api/proposals/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status, priority, numeroProposta, numeroApolice })
+        });
+        if (!response.ok) {
+          console.warn(`Erro ao atualizar proposta ${id}:`, response.status);
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      } catch (error) {
+        console.warn(`Update failed for proposal ${id}:`, error.message);
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log(`STATUS UPDATE SUCCESS:`, data);
+      // Invalidar e forçar refetch imediato de todas as consultas relacionadas
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
+
+      // Sincronização completa após mudança
+      console.log(`🔄 Forcing immediate update of all proposals`);
+      console.log(`✅ All proposal queries invalidated and refetched`);
+    },
+    onError: (error) => {
+      console.error(`STATUS UPDATE ERROR:`, error);
+    }
+  });
+}
+
 export function useVendorProposals(vendorId: number) {
   const queryClient = useQueryClient();
 
