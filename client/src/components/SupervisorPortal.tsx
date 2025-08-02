@@ -1147,9 +1147,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     // Se for string, tentar converter para número
     let numValue: number;
     if (typeof value === 'string') {
-      // Se já tem formato de moeda, extrair apenas números
-      if (value.includes('R$') || value.includes(',')) {
-        numValue = parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.'));
+      // Lidar com formato brasileiro: "1.000,00" 
+      if (value.includes('.') && value.includes(',')) {
+        // Formato: "1.000,00" -> remove pontos de milhares e substitui vírgula por ponto
+        numValue = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+      } else if (value.includes(',')) {
+        // Formato: "1000,00" -> substitui vírgula por ponto
+        numValue = parseFloat(value.replace(',', '.'));
+      } else if (value.includes('R$')) {
+        // Remove símbolos de moeda e tenta novamente
+        const cleanValue = value.replace(/[R$\s]/g, '');
+        if (cleanValue.includes('.') && cleanValue.includes(',')) {
+          numValue = parseFloat(cleanValue.replace(/\./g, '').replace(',', '.'));
+        } else if (cleanValue.includes(',')) {
+          numValue = parseFloat(cleanValue.replace(',', '.'));
+        } else {
+          numValue = parseFloat(cleanValue);
+        }
       } else {
         numValue = parseFloat(value);
       }
@@ -1922,9 +1936,52 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           {awards.map(award => {
             // Calcular progresso da premiação baseado em dados reais de vendas
             const vendorProps = proposals.filter(p => p.vendorId === award.vendorId && p.status === 'implantado');
-            const vendorValue = vendorProps.reduce((sum, p) => sum + parseFloat(p.contractData?.valor || '0'), 0);
-            const targetValue = parseFloat(award.targetValue || '0'); // Valor da meta
-            const superPremium = parseFloat(award.value || '0'); // Super premiação
+            
+            // Usar a função formatCurrency para converter corretamente os valores
+            const vendorValue = vendorProps.reduce((sum, p) => {
+              const valor = p.contractData?.valor || '0';
+              // Converter string brasileira para número
+              let numValue = 0;
+              if (typeof valor === 'string') {
+                if (valor.includes('.') && valor.includes(',')) {
+                  numValue = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+                } else if (valor.includes(',')) {
+                  numValue = parseFloat(valor.replace(',', '.'));
+                } else {
+                  numValue = parseFloat(valor);
+                }
+              }
+              return sum + numValue;
+            }, 0);
+            
+            // Converter valores da premiação
+            const targetValue = (() => {
+              const target = award.targetValue || '0';
+              if (typeof target === 'string') {
+                if (target.includes('.') && target.includes(',')) {
+                  return parseFloat(target.replace(/\./g, '').replace(',', '.'));
+                } else if (target.includes(',')) {
+                  return parseFloat(target.replace(',', '.'));
+                } else {
+                  return parseFloat(target);
+                }
+              }
+              return parseFloat(target);
+            })();
+            
+            const superPremium = (() => {
+              const premium = award.value || '0';
+              if (typeof premium === 'string') {
+                if (premium.includes('.') && premium.includes(',')) {
+                  return parseFloat(premium.replace(/\./g, '').replace(',', '.'));
+                } else if (premium.includes(',')) {
+                  return parseFloat(premium.replace(',', '.'));
+                } else {
+                  return parseFloat(premium);
+                }
+              }
+              return parseFloat(premium);
+            })();
             const progress = targetValue > 0 ? Math.min((vendorValue / targetValue) * 100, 100) : 0;
             
             return (
