@@ -3921,6 +3921,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <thead className="bg-green-50 dark:bg-green-900">
                       <tr>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">ID</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Número de Proposta</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Número de Apólice</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data/Hora</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Cliente</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">CNPJ</th>
@@ -3962,6 +3964,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         return (
                         <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.abmId}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{item.numeroProposta || '-'}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{item.numeroApolice || '-'}</td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{formattedDateTime}</td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.cliente}</td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.cnpj}</td>
