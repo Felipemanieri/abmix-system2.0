@@ -503,6 +503,15 @@ async function startServer() {
       }
     });
 
+    app.delete('/api/vendors/:id', async (req: Request, res: Response) => {
+      try {
+        await storage.deleteVendor(parseInt(req.params.id));
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ error: 'Erro ao remover vendedor' });
+      }
+    });
+
     app.get('/api/vendors/:id/proposals', async (req: Request, res: Response) => {
       try {
         const proposals = await storage.getVendorProposals(parseInt(req.params.id));
