@@ -21,11 +21,20 @@ export interface PersonData {
   dadosReembolso: string;
 }
 
+export interface ContractData {
+  nomeEmpresa?: string;
+  cnpj?: string;
+  planoContratado?: string;
+  valor?: string;
+  inicioVigencia?: string;
+}
+
 export interface ProposalData {
   titulares: PersonData[];
   dependentes: PersonData[];
   clientAttachments?: any[];
   clientCompleted?: boolean;
+  contractData?: ContractData;
 }
 
 // Campos obrigatórios para titular
@@ -80,6 +89,23 @@ export function calculatePersonProgress(person: PersonData, isTitular: boolean =
 }
 
 /**
+ * Calcula o progresso dos dados contratuais
+ */
+export function calculateContractProgress(contractData: ContractData = {}): number {
+  const requiredContractFields = ['nomeEmpresa', 'cnpj', 'planoContratado', 'valor'];
+  let filledFields = 0;
+  
+  for (const field of requiredContractFields) {
+    const value = contractData[field as keyof ContractData];
+    if (value && value.toString().trim() !== '') {
+      filledFields++;
+    }
+  }
+  
+  return Math.round((filledFields / requiredContractFields.length) * 100);
+}
+
+/**
  * Calcula o progresso geral de uma proposta
  * Sistema calibrado para: 99% = cliente completou tudo | 100% = aprovado na implantação
  */
@@ -88,9 +114,10 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
   titularesProgress: number;
   dependentesProgress: number;
   attachmentsProgress: number;
+  contractProgress: number;
   completed: boolean;
 } {
-  const { titulares = [], dependentes = [], clientAttachments = [], status } = proposal;
+  const { titulares = [], dependentes = [], clientAttachments = [], contractData, status } = proposal;
   
   // SE JÁ FOI APROVADO NA IMPLANTAÇÃO = 100%
   if (status === 'implantado') {
@@ -99,9 +126,13 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
       titularesProgress: 100,
       dependentesProgress: 100,
       attachmentsProgress: 100,
+      contractProgress: 100,
       completed: true
     };
   }
+  
+  // Progresso dos dados contratuais (sempre presente)
+  const contractProgress = calculateContractProgress(contractData);
   
   // Progresso dos titulares
   let totalTitularesProgress = 0;
@@ -124,25 +155,29 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
   // Progresso dos anexos (consideramos 100% se existir pelo menos 1 anexo)
   const attachmentsProgress = clientAttachments.length > 0 ? 100 : 0;
   
-  // Cálculo do progresso geral
+  // Cálculo do progresso geral com NOVOS PESOS incluindo contratos
   let overallProgress = 0;
   let weightSum = 0;
   
-  // Titulares sempre contam (peso 0.7 - mais importante)
+  // Dados contratuais sempre contam (peso 0.3 - importante base)
+  overallProgress += contractProgress * 0.3;
+  weightSum += 0.3;
+  
+  // Titulares sempre contam (peso 0.5 - mais importante)
   if (titulares.length > 0) {
-    overallProgress += totalTitularesProgress * 0.7;
-    weightSum += 0.7;
+    overallProgress += totalTitularesProgress * 0.5;
+    weightSum += 0.5;
   }
   
-  // Dependentes contam se existirem (peso 0.2)
+  // Dependentes contam se existirem (peso 0.15)
   if (dependentes.length > 0) {
-    overallProgress += totalDependentesProgress * 0.2;
-    weightSum += 0.2;
+    overallProgress += totalDependentesProgress * 0.15;
+    weightSum += 0.15;
   }
   
-  // Anexos sempre contam (peso 0.1)
-  overallProgress += attachmentsProgress * 0.1;
-  weightSum += 0.1;
+  // Anexos sempre contam (peso 0.05)
+  overallProgress += attachmentsProgress * 0.05;
+  weightSum += 0.05;
   
   // Normalizar se necessário
   if (weightSum > 0) {
@@ -161,6 +196,7 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
     titularesProgress: Math.round(totalTitularesProgress),
     dependentesProgress: Math.round(totalDependentesProgress),
     attachmentsProgress,
+    contractProgress,
     completed: status === 'implantado'
   };
 }
