@@ -2783,52 +2783,70 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Distribuição por Status - DADOS REAIS */}
+        {/* Distribuição por Status - DADOS REAIS DO BANCO */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Distribuição por Status</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Dados reais das 5 propostas do banco</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Dados reais sincronizados automaticamente</p>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Status IMPLANTADO - 3 propostas (ABM001, ABM004, ABM005) */}
-              <div className="p-4 bg-green-50 border-2 border-green-500 dark:bg-green-900/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">IMPLANTADO</span>
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">3</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">60.0% do total</div>
-                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                  <div className="h-2 rounded-full bg-green-500" style={{ width: '60%' }}></div>
-                </div>
-              </div>
+              {(() => {
+                // Calcular distribuição real de status das propostas filtradas
+                const statusDistribution = finalAnalyticsData.reduce((acc, proposal) => {
+                  const status = proposal.status || 'pendente';
+                  acc[status] = (acc[status] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>);
 
-              {/* Status ANALISE - 1 proposta (ABM003) */}
-              <div className="p-4 bg-blue-50 border-2 border-blue-500 dark:bg-blue-900/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ANÁLISE</span>
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">1</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">20.0% do total</div>
-                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                  <div className="h-2 rounded-full bg-blue-500" style={{ width: '20%' }}></div>
-                </div>
-              </div>
+                const totalProposals = finalAnalyticsData.length;
+                
+                return Object.entries(statusDistribution).map(([status, count]) => {
+                  const config = STATUS_CONFIG[status] || { label: status.toUpperCase(), color: 'gray' };
+                  const percentage = totalProposals > 0 ? (count / totalProposals) * 100 : 0;
+                  
+                  const colorClasses = {
+                    'implantado': 'bg-green-50 border-green-500 dark:bg-green-900/20',
+                    'analise': 'bg-blue-50 border-blue-500 dark:bg-blue-900/20', 
+                    'assinatura_ds': 'bg-yellow-50 border-yellow-500 dark:bg-yellow-900/20',
+                    'pendente': 'bg-orange-50 border-orange-500 dark:bg-orange-900/20',
+                    'declinado': 'bg-red-50 border-red-500 dark:bg-red-900/20',
+                    'expirado': 'bg-gray-50 border-gray-500 dark:bg-gray-900/20'
+                  };
 
-              {/* Status ASSINATURA_DS - 1 proposta (ABM002) */}
-              <div className="p-4 bg-yellow-50 border-2 border-yellow-500 dark:bg-yellow-900/20 rounded-lg">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">ASSINATURA DS</span>
-                </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">1</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">20.0% do total</div>
-                <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                  <div className="h-2 rounded-full bg-yellow-500" style={{ width: '20%' }}></div>
-                </div>
-              </div>
+                  const dotColors = {
+                    'implantado': 'bg-green-500',
+                    'analise': 'bg-blue-500',
+                    'assinatura_ds': 'bg-yellow-500', 
+                    'pendente': 'bg-orange-500',
+                    'declinado': 'bg-red-500',
+                    'expirado': 'bg-gray-500'
+                  };
+
+                  const progressColors = {
+                    'implantado': 'bg-green-500',
+                    'analise': 'bg-blue-500',
+                    'assinatura_ds': 'bg-yellow-500',
+                    'pendente': 'bg-orange-500', 
+                    'declinado': 'bg-red-500',
+                    'expirado': 'bg-gray-500'
+                  };
+
+                  return (
+                    <div key={status} className={`p-4 border-2 rounded-lg ${colorClasses[status] || 'bg-gray-50 border-gray-500 dark:bg-gray-900/20'}`}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-4 h-4 rounded-full ${dotColors[status] || 'bg-gray-500'}`}></div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{config.label}</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{percentage.toFixed(1)}% do total</div>
+                      <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div className={`h-2 rounded-full ${progressColors[status] || 'bg-gray-500'}`} style={{ width: `${percentage}%` }}></div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>
@@ -3175,40 +3193,70 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     </div>
                   </div>
 
-                  {/* Gráfico de Equipe */}
+                  {/* Gráfico de Equipe - DADOS REAIS DO BANCO */}
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-white">Performance da Equipe</h3>
+                    <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-white">Performance da Equipe - DADOS REAIS</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Gráfico de barras da equipe */}
+                      {/* Gráfico de barras da equipe com dados reais */}
                       <div className="space-y-4">
-                        <h4 className="font-medium text-gray-700 dark:text-gray-300">Vendas por Vendedor</h4>
-                        {vendorData.map((vendor, index) => {
-                          const maxValue = Math.max(...vendorData.map(v => v.value));
-                          const percentage = (vendor.value / maxValue) * 100;
-                          const colors = ['#3b82f6', '#10b981', '#f59e0b'];
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300">Vendas por Vendedor (Apenas Implantados)</h4>
+                        {(() => {
+                          // Calcular dados reais de vendas por vendedor (apenas implantados)
+                          const realVendorSales = vendors?.map(vendor => {
+                            const vendorImplantedProposals = filteredProposals?.filter(p => 
+                              p.vendorId === vendor.id && p.status === 'implantado'
+                            ) || [];
+                            
+                            const totalValue = vendorImplantedProposals.reduce((sum, p) => {
+                              const valor = p.contractData?.valor || '0';
+                              const numerico = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+                              return sum + numerico;
+                            }, 0);
+                            
+                            return {
+                              id: vendor.id,
+                              name: vendor.name,
+                              value: totalValue,
+                              count: vendorImplantedProposals.length
+                            };
+                          }).filter(v => v.value > 0 || v.count > 0) // Mostrar apenas vendedores com vendas
+                          .sort((a, b) => b.value - a.value) || []; // Ordenar por valor decrescente
                           
-                          return (
-                            <div key={vendor.name} className="flex items-center gap-3">
-                              <div className="w-32 text-sm text-gray-700 dark:text-gray-300 truncate">
-                                {vendor.name.split(' ')[0]}
-                              </div>
-                              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6">
-                                <div 
-                                  className="h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-1000"
-                                  style={{ 
-                                    backgroundColor: colors[index],
-                                    width: `${Math.max(percentage, 10)}%`
-                                  }}
-                                >
-                                  <span className="text-xs font-bold text-white">
-                                    R$ {(vendor.value / 1000).toFixed(0)}k
-                                  </span>
-                                </div>
-                              </div>
+                          const maxValue = Math.max(...realVendorSales.map(v => v.value), 1);
+                          const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316', '#84cc16'];
+                          
+                          return realVendorSales.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                              Nenhuma venda implantada encontrada
                             </div>
+                          ) : (
+                            realVendorSales.map((vendor, index) => {
+                              const percentage = (vendor.value / maxValue) * 100;
+                              
+                              return (
+                                <div key={vendor.id} className="flex items-center gap-3">
+                                  <div className="w-32 text-sm text-gray-700 dark:text-gray-300 truncate">
+                                    {vendor.name.split(' ')[0]}
+                                  </div>
+                                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-6">
+                                    <div 
+                                      className="h-6 rounded-full flex items-center justify-end pr-2 transition-all duration-1000"
+                                      style={{ 
+                                        backgroundColor: colors[index % colors.length],
+                                        width: `${Math.max(percentage, 15)}%`
+                                      }}
+                                    >
+                                      <span className="text-xs font-bold text-white">
+                                        R$ {(vendor.value / 1000).toFixed(0)}k ({vendor.count})
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
                           );
-                        })}
+                        })()}
                       </div>
 
                       {/* Métricas da equipe */}
