@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LogOut, Settings, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Send, Calendar, FileText, User, Bell, MessageCircle, MessageSquare, Bot, X, Send as SendIcon, Zap, Filter, Search, Download, Upload, Trash2, Edit, Edit3, Plus, ArrowLeft, RefreshCw, Link, Copy, Mail, Share2, ExternalLink, Phone, Database, Image, Crop, Highlighter, Type, Eraser } from 'lucide-react';
+import { LogOut, Settings, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Send, Calendar, FileText, User, Bell, MessageCircle, MessageSquare, Bot, X, Send as SendIcon, Zap, Filter, Search, Download, Upload, Trash2, Edit, Plus, ArrowLeft, RefreshCw, Link, Copy, Mail, Share2, ExternalLink, Phone, Database, Image, Crop, Highlighter, Type, Eraser } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import SystemFooter from './SystemFooter';
 import ThemeToggle from './ThemeToggle';
@@ -1414,7 +1414,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                                     onClick={() => window.open('https://www.ilovepdf.com/edit-pdf', '_blank')}
                                     className="flex items-center justify-center gap-2 p-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                                   >
-                                    <Edit3 className="w-5 h-5" />
+                                    <Edit className="w-5 h-5" />
                                     <span>Editar PDF Completo (Nova Aba)</span>
                                   </button>
                                   
