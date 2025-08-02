@@ -116,13 +116,19 @@ export function useProposals() {
 
   // Mutation para atualizar status da proposta com sincronização em tempo real
   const updateProposal = useMutation({
-    mutationFn: async ({ id, status, priority }: { id: string, status?: string, priority?: string }) => {
-      console.log(`UPDATING PROPOSAL STATUS: ${id} -> ${status}`);
+    mutationFn: async ({ id, status, priority, numeroProposta, numeroApolice }: { 
+      id: string, 
+      status?: string, 
+      priority?: string,
+      numeroProposta?: number | null,
+      numeroApolice?: number | null
+    }) => {
+      console.log(`UPDATING PROPOSAL: ${id} -> status: ${status}, numeroProposta: ${numeroProposta}, numeroApolice: ${numeroApolice}`);
       try {
         const response = await fetch(`/api/proposals/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status, priority })
+          body: JSON.stringify({ status, priority, numeroProposta, numeroApolice })
         });
         if (!response.ok) {
           console.warn(`Erro ao atualizar proposta ${id}:`, response.status);

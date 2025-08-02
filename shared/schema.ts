@@ -88,6 +88,8 @@ export const proposals = pgTable("proposals", {
   observacaoSupervisor: text("observacao_supervisor"), // Observação do Portal Supervisor
   observacaoImplementacao: text("observacao_implementacao"), // Observação do Portal Implementação
   documentosRecebidos: jsonb("documentos_recebidos").default(sql`'{}'::jsonb`), // Documentos marcados como recebidos pelo vendedor
+  numeroProposta: integer("numero_proposta"), // Número de Proposta (editável no Portal Implantação)
+  numeroApolice: integer("numero_apolice"), // Número de Apólice (editável no Portal Implantação)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -164,6 +164,38 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     }
   };
 
+  const handleNumeroPropostaUpdate = async (proposalId: string, numeroProposta: number | null) => {
+    try {
+      console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroProposta: ${proposalId} -> ${numeroProposta}`);
+      
+      await updateProposal.mutateAsync({ 
+        id: proposalId, 
+        numeroProposta: numeroProposta 
+      });
+      
+      showInternalNotification(`Número da Proposta atualizado - Sincronizado em todos os portais!`, 'success');
+    } catch (error) {
+      console.error('Erro ao atualizar número da proposta:', error);
+      showInternalNotification('Erro ao atualizar número da proposta', 'error');
+    }
+  };
+
+  const handleNumeroApoliceUpdate = async (proposalId: string, numeroApolice: number | null) => {
+    try {
+      console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroApolice: ${proposalId} -> ${numeroApolice}`);
+      
+      await updateProposal.mutateAsync({ 
+        id: proposalId, 
+        numeroApolice: numeroApolice 
+      });
+      
+      showInternalNotification(`Número da Apólice atualizado - Sincronizado em todos os portais!`, 'success');
+    } catch (error) {
+      console.error('Erro ao atualizar número da apólice:', error);
+      showInternalNotification('Erro ao atualizar número da apólice', 'error');
+    }
+  };
+
   // Função removida - prioridade agora é controlada apenas pelo Supervisor
   // const handlePriorityUpdate = async (proposalId: string, newPriority: 'low' | 'medium' | 'high') => {
   //   ... funcionalidade removida
@@ -409,6 +441,12 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                   ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Número de Proposta
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  Número de Apólice  
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   Data/Hora
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -450,6 +488,24 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                     >
                       {proposal.abmId}
                     </button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="number"
+                      value={proposal.numeroProposta || ''}
+                      onChange={(e) => handleNumeroPropostaUpdate(proposal.id, e.target.value ? parseInt(e.target.value) : null)}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Digite o número"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="number"
+                      value={proposal.numeroApolice || ''}
+                      onChange={(e) => handleNumeroApoliceUpdate(proposal.id, e.target.value ? parseInt(e.target.value) : null)}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Digite o número"
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-xs text-gray-600 dark:text-gray-400">
