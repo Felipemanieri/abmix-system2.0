@@ -2719,37 +2719,55 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
           <div className="p-6">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(STATUS_CONFIG)
-                .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
-                .map(([status, config]) => {
-                  const count = finalAnalyticsData.filter(p => p.status === status).length;
-                  const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
-                  
-                  return (
-                    <div key={status} className="p-4 rounded-lg border-2" style={{ borderColor: config.color, backgroundColor: `${config.color}15` }}>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div 
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: config.color }}
-                        ></div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{config.label}</span>
+              {(() => {
+                // Mapeamento de cores hexadecimais corretas
+                const statusColors = {
+                  observacao: '#0ea5e9',
+                  analise: '#10b981', 
+                  assinatura_ds: '#f59e0b',
+                  expirado: '#1d4ed8',
+                  implantado: '#059669',
+                  aguar_pagamento: '#ec4899',
+                  assinatura_proposta: '#eab308',
+                  aguar_selecao_vigencia: '#f97316',
+                  pendencia: '#dc2626',
+                  declinado: '#9333ea',
+                  aguar_vigencia: '#06b6d4'
+                };
+
+                return Object.entries(STATUS_CONFIG)
+                  .filter(([status]) => finalAnalyticsData.filter(p => p.status === status).length > 0)
+                  .map(([status, config]) => {
+                    const count = finalAnalyticsData.filter(p => p.status === status).length;
+                    const percentage = finalAnalyticsData.length > 0 ? (count / finalAnalyticsData.length * 100) : 0;
+                    const hexColor = statusColors[status as keyof typeof statusColors] || '#6b7280';
+                    
+                    return (
+                      <div key={status} className="p-4 rounded-lg border-2" style={{ borderColor: hexColor, backgroundColor: `${hexColor}15` }}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: hexColor }}
+                          ></div>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{config.label}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{percentage.toFixed(1)}% do total</div>
+                        
+                        {/* Barra de progresso visual */}
+                        <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div 
+                            className="h-2 rounded-full transition-all duration-500"
+                            style={{ 
+                              backgroundColor: hexColor,
+                              width: `${percentage}%`
+                            }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{count}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">{percentage.toFixed(1)}% do total</div>
-                      
-                      {/* Barra de progresso visual */}
-                      <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full transition-all duration-500"
-                          style={{ 
-                            backgroundColor: config.color,
-                            width: `${percentage}%`
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+              })()}
             </div>
           </div>
         </div>
@@ -2913,17 +2931,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
           <div className="p-6">
             {(() => {
-              // Preparar dados mensais simplificados para gráfico de torres
-              const now = new Date();
-              const monthsLabels = [];
-              
-              // Criar últimos 12 meses
-              for (let i = 11; i >= 0; i--) {
-                const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                monthsLabels.push(month.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
-              }
-              
-              // Filtrar vendedores com vendas implantadas
+              // Preparar dados simplificados usando Chart.js sem biblioteca React
               const vendorsWithSales = uniqueVendors.filter(vendor => 
                 finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado').length > 0
               );
@@ -2931,7 +2939,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               if (vendorsWithSales.length === 0) {
                 return (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                    <p>Nenhuma venda implantada encontrada</p>
+                    <TrendingUp className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                    <p className="font-medium">Nenhuma venda implantada encontrada</p>
                     <p className="text-sm mt-2">Aguarde propostas serem marcadas como implantadas</p>
                   </div>
                 );
@@ -2939,119 +2948,60 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
               return (
                 <div className="space-y-6">
-                  {/* Gráfico de Torres (Chart.js) */}
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                    <canvas
-                      ref={(canvas) => {
-                        if (!canvas) return;
+                  {/* Gráfico simplificado com barras CSS */}
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                      Performance Individual - Total de Vendas
+                    </h3>
+                    
+                    {/* Grid de barras por vendedor */}
+                    <div className="space-y-4">
+                      {vendorsWithSales.map((vendor, index) => {
+                        const vendorSales = finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado');
+                        const totalValue = vendorSales.reduce((sum, p) => {
+                          const value = parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
+                          return sum + value;
+                        }, 0);
                         
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) return;
-
-                        // Destruir gráfico existente
-                        if (canvas.chart) {
-                          canvas.chart.destroy();
-                        }
-
-                        // Criar datasets para cada vendedor
-                        const datasets = vendorsWithSales.map(vendor => {
-                          const monthlyValues = [];
-                          
-                          for (let i = 11; i >= 0; i--) {
-                            const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                            const monthKey = month.toISOString().slice(0, 7);
-                            
-                            const monthSales = finalAnalyticsData.filter(proposal => {
-                              const proposalDate = new Date(proposal.createdAt || Date.now());
-                              const proposalMonth = proposalDate.toISOString().slice(0, 7);
-                              return proposal.vendorName === vendor && 
-                                     proposal.status === 'implantado' && 
-                                     proposalMonth === monthKey;
-                            });
-                            
-                            const totalValue = monthSales.reduce((sum, p) => {
-                              const value = parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
-                              return sum + value;
-                            }, 0);
-                            
-                            monthlyValues.push(totalValue / 1000); // Converter para milhares
-                          }
-                          
-                          return {
-                            label: vendor,
-                            data: monthlyValues,
-                            backgroundColor: getVendorColor(vendor) + '80',
-                            borderColor: getVendorColor(vendor),
-                            borderWidth: 2
-                          };
-                        });
-
-                        // Criar gráfico
-                        canvas.chart = new Chart(ctx, {
-                          type: 'bar',
-                          data: {
-                            labels: monthsLabels,
-                            datasets: datasets
-                          },
-                          options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              title: {
-                                display: true,
-                                text: 'Torres de Performance - Valor Vendido Mensal (R$ mil)',
-                                font: { size: 16, weight: 'bold' },
-                                color: '#374151'
-                              },
-                              legend: {
-                                position: 'top',
-                                labels: {
-                                  usePointStyle: true,
-                                  padding: 15,
-                                  color: '#374151'
-                                }
-                              },
-                              tooltip: {
-                                callbacks: {
-                                  label: function(context) {
-                                    const value = context.parsed.y * 1000;
-                                    return `${context.dataset.label}: R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                                  }
-                                }
-                              }
-                            },
-                            scales: {
-                              x: {
-                                grid: { display: false },
-                                ticks: { 
-                                  color: '#6b7280',
-                                  maxRotation: 45
-                                }
-                              },
-                              y: {
-                                grid: { color: '#f3f4f6' },
-                                ticks: { 
-                                  color: '#6b7280',
-                                  callback: function(value) {
-                                    return 'R$ ' + (value * 1000).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
-                                  }
-                                },
-                                title: {
-                                  display: true,
-                                  text: 'Valor Vendido (R$ mil)',
-                                  color: '#374151'
-                                }
-                              }
-                            }
-                          }
-                        });
-                      }}
-                      height="400"
-                    />
+                        const maxValue = Math.max(...vendorsWithSales.map(v => 
+                          finalAnalyticsData.filter(p => p.vendorName === v && p.status === 'implantado')
+                            .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0)
+                        ));
+                        
+                        const percentage = maxValue > 0 ? (totalValue / maxValue) * 100 : 0;
+                        const vendorColor = getVendorColor(vendor);
+                        
+                        return (
+                          <div key={vendor} className="flex items-center gap-4">
+                            <div className="w-32 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                              {vendor}
+                            </div>
+                            <div className="flex-1 relative">
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-8 relative overflow-hidden">
+                                <div 
+                                  className="h-full rounded-full transition-all duration-1000 ease-out flex items-center justify-end pr-2"
+                                  style={{ 
+                                    backgroundColor: vendorColor,
+                                    width: `${Math.max(percentage, 5)}%`
+                                  }}
+                                >
+                                  <span className="text-xs font-bold text-white">
+                                    {vendorSales.length}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="w-24 text-right text-sm font-semibold" style={{ color: vendorColor }}>
+                              R$ {(totalValue / 1000).toFixed(0)}k
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* Resumo por Vendedor */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Cards resumo por vendedor */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {vendorsWithSales.map(vendor => {
                       const vendorSales = finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado');
                       const totalValue = vendorSales.reduce((sum, p) => {
@@ -3059,26 +3009,46 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         return sum + value;
                       }, 0);
                       
+                      const vendorColor = getVendorColor(vendor);
+                      
                       return (
                         <div 
                           key={vendor} 
-                          className="text-center p-4 rounded-lg border-2" 
+                          className="p-4 rounded-lg border-2 transition-all hover:shadow-md" 
                           style={{ 
-                            borderColor: getVendorColor(vendor), 
-                            backgroundColor: getVendorColor(vendor) + '15' 
+                            borderColor: vendorColor, 
+                            backgroundColor: `${vendorColor}10` 
                           }}
                         >
-                          <div 
-                            className="text-xl font-bold mb-1"
-                            style={{ color: getVendorColor(vendor) }}
-                          >
-                            R$ {totalValue.toLocaleString('pt-BR')}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div 
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: vendorColor }}
+                            ></div>
+                            <div className="font-medium text-gray-800 dark:text-gray-200 text-sm truncate">
+                              {vendor}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                            {vendor}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {vendorSales.length} vendas
+                          
+                          <div className="space-y-2">
+                            <div 
+                              className="text-2xl font-bold"
+                              style={{ color: vendorColor }}
+                            >
+                              R$ {totalValue.toLocaleString('pt-BR')}
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Vendas:</span>
+                              <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                {vendorSales.length}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Ticket médio:</span>
+                              <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                R$ {vendorSales.length > 0 ? (totalValue / vendorSales.length).toLocaleString('pt-BR') : '0'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       );
