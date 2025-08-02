@@ -2467,10 +2467,47 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       return data;
     })();
 
-    // Debug dos dados
-    console.log('🔍 DEBUG ANALYTICS - analyticsData:', analyticsData.length, 'propostas');
-    console.log('🔍 DEBUG ANALYTICS - finalAnalyticsData:', finalAnalyticsData.length, 'propostas');
-    console.log('🔍 DEBUG ANALYTICS - primeira proposta:', finalAnalyticsData[0]);
+    // Gerar dados mensais para gráfico de ondas (comparação de meses)
+    const generateMonthlyData = () => {
+      const now = new Date();
+      const monthlyData = [];
+      
+      // Últimos 12 meses
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthKey = month.toISOString().slice(0, 7); // YYYY-MM
+        const monthName = month.toLocaleDateString('pt-BR', { month: 'short' });
+        
+        // Filtrar propostas do mês
+        const monthProposals = analyticsData.filter(proposal => {
+          const proposalDate = new Date(proposal.createdAt || Date.now());
+          return proposalDate.toISOString().slice(0, 7) === monthKey;
+        });
+        
+        // Calcular métricas do mês
+        const total = monthProposals.length;
+        const implantadas = monthProposals.filter(p => p.status === 'implantado').length;
+        const faturamento = monthProposals
+          .filter(p => p.status === 'implantado')
+          .reduce((sum, p) => {
+            const valor = parseFloat((p.contractData?.valor || '0').replace(/\./g, '').replace(',', '.'));
+            return sum + valor;
+          }, 0);
+        
+        monthlyData.push({
+          month: monthName,
+          fullMonth: month.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+          total,
+          implantadas,
+          faturamento: faturamento / 1000, // em milhares
+          taxaConversao: total > 0 ? (implantadas / total) * 100 : 0
+        });
+      }
+      
+      return monthlyData;
+    };
+    
+    const monthlyData = generateMonthlyData();
 
     // Análise por vendedor (usando dados finais filtrados)
     const vendorAnalysis = finalAnalyticsData.reduce((acc, proposal) => {
@@ -2731,6 +2768,157 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   );
                 })}
             </div>
+          </div>
+        </div>
+
+        {/* Gráfico de Ondas - Comparação Mensal */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Evolução Mensal - Gráfico de Ondas</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Comparação dos últimos 12 meses com dados reais</p>
+          </div>
+          <div className="p-6">
+            {monthlyData.length > 0 ? (
+              <div className="space-y-6">
+                {/* Filtros temporais específicos */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {[
+                    { key: '24h', label: '24h' },
+                    { key: '7d', label: '7 dias' },
+                    { key: '30d', label: '30 dias' },
+                    { key: '90d', label: '90 dias' },
+                    { key: 'quarter', label: 'Trimestre' },
+                    { key: 'year', label: 'Ano' }
+                  ].map(period => (
+                    <button
+                      key={period.key}
+                      onClick={() => setSelectedPeriod(period.key)}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                        selectedPeriod === period.key
+                          ? 'bg-blue-100 text-blue-700 font-medium'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {period.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Gráfico de linha (ondas) para vendas mensais */}
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="month" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                        formatter={(value, name) => {
+                          if (name === 'total') return [`${value} propostas`, 'Total'];
+                          if (name === 'implantadas') return [`${value} convertidas`, 'Implantadas'];
+                          if (name === 'faturamento') return [`R$ ${(value * 1000).toLocaleString('pt-BR')}`, 'Faturamento'];
+                          if (name === 'taxaConversao') return [`${value.toFixed(1)}%`, 'Taxa Conversão'];
+                          return [value, name];
+                        }}
+                        labelFormatter={(label, payload) => {
+                          if (payload && payload[0]) {
+                            return payload[0].payload.fullMonth;
+                          }
+                          return label;
+                        }}
+                      />
+                      <Legend />
+                      
+                      {/* Linha ondulada para total de propostas */}
+                      <Line 
+                        type="monotone" 
+                        dataKey="total" 
+                        stroke="#3B82F6" 
+                        strokeWidth={3}
+                        dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2, fill: 'white' }}
+                        name="Total Propostas"
+                      />
+                      
+                      {/* Linha ondulada para propostas implantadas */}
+                      <Line 
+                        type="monotone" 
+                        dataKey="implantadas" 
+                        stroke="#10B981" 
+                        strokeWidth={3}
+                        dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: '#10B981', strokeWidth: 2, fill: 'white' }}
+                        name="Implantadas"
+                      />
+                      
+                      {/* Linha ondulada para faturamento (em milhares) */}
+                      <Line 
+                        type="monotone" 
+                        dataKey="faturamento" 
+                        stroke="#F59E0B" 
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        dot={{ fill: '#F59E0B', strokeWidth: 2, r: 3 }}
+                        activeDot={{ r: 5, stroke: '#F59E0B', strokeWidth: 2, fill: 'white' }}
+                        name="Faturamento (k)"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Resumo dos dados mensais */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-xl font-bold text-blue-600">
+                      {monthlyData.reduce((sum, month) => sum + month.total, 0)}
+                    </div>
+                    <div className="text-sm text-blue-700">Total 12 meses</div>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <div className="text-xl font-bold text-green-600">
+                      {monthlyData.reduce((sum, month) => sum + month.implantadas, 0)}
+                    </div>
+                    <div className="text-sm text-green-700">Convertidas</div>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                    <div className="text-xl font-bold text-yellow-600">
+                      R$ {(monthlyData.reduce((sum, month) => sum + month.faturamento, 0) * 1000).toLocaleString('pt-BR')}
+                    </div>
+                    <div className="text-sm text-yellow-700">Faturamento</div>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <div className="text-xl font-bold text-purple-600">
+                      {(monthlyData.reduce((sum, month, index, arr) => {
+                        return sum + month.taxaConversao;
+                      }, 0) / monthlyData.length).toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-purple-700">Taxa Média</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p>Não há dados suficientes para gerar o gráfico mensal</p>
+                <p className="text-sm mt-2">Aguarde mais propostas serem cadastradas</p>
+              </div>
+            )}
           </div>
         </div>
 
