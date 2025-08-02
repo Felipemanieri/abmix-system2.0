@@ -7,6 +7,7 @@ interface ProgressBarProps {
   size?: 'sm' | 'md' | 'lg';
   orientation?: 'horizontal' | 'vertical';
   className?: string;
+  animated?: boolean; // Nova prop para controlar animação
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ 
@@ -14,7 +15,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   showDetails = false, 
   size = 'md',
   orientation = 'horizontal',
-  className = '' 
+  className = '',
+  animated = false 
 }) => {
   // Calcula o progresso baseado nos dados da proposta
   const proposalData = {
@@ -79,9 +81,12 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       
       <div className={`bg-gray-200 dark:bg-gray-600 dark:bg-gray-600 rounded-full ${sizeConfig[size]} overflow-hidden`}>
         <div 
-          className={`${progressColor} transition-all duration-500 ease-in-out rounded-full h-full`}
+          className={`${progressColor} transition-all duration-700 ease-out rounded-full h-full relative ${animated ? 'vendor-progress-bar' : ''} overflow-hidden`}
           style={{ width: `${progress}%` }}
-        />
+        >
+          {/* Animação de onda sutil - apenas quando animated=true */}
+          {animated && <div className="absolute inset-0 progress-wave"></div>}
+        </div>
       </div>
 
       {showDetails && details && (

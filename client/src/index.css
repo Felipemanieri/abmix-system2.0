@@ -156,6 +156,39 @@
   }
 }
 
+/* Animação discreta para barras de progresso no Portal Vendedor */
+@keyframes progress-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(34, 197, 94, 0);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+  }
+}
+
+.vendor-progress-bar {
+  animation: progress-glow 3s ease-in-out infinite;
+}
+
+@keyframes progress-wave {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.progress-wave {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: progress-wave 2.5s ease-in-out infinite;
+}
+
 /* Chatbot sempre fixo */
 .chatbot-container {
   position: fixed !important;
