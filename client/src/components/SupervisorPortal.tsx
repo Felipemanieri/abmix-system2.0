@@ -2379,11 +2379,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
     // Usar os dados já filtrados (finalAnalyticsData) para consistência
     const finalAnalyticsData = filteredProposals.filter(proposal => {
-      // Filtro de vendedores
-      if (selectedVendors.length > 0 && !selectedVendors.includes(proposal.vendorName || '')) return false;
+      // Filtro de vendedores (usando o estado correto do Analytics)
+      if (selectedVendorForChart && selectedVendorForChart !== 'all' && proposal.vendorName !== selectedVendorForChart) return false;
       
-      // Filtro de status
-      if (selectedStatuses.length > 0 && !selectedStatuses.includes(proposal.status)) return false;
+      // Filtro de status (usando o estado correto do Analytics)
+      if (selectedStatusForChart && selectedStatusForChart !== 'all' && proposal.status !== selectedStatusForChart) return false;
       
       // Filtro de operadora (mock)
       if (selectedOperadora && proposal.contractData?.planoContratado !== selectedOperadora) return false;
