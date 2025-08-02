@@ -2591,38 +2591,72 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Métricas Principais */}
+        {/* Gráfico de Performance da Equipe */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Resumo Executivo</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Performance da Equipe</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Visualização em tempo real dos resultados filtrados</p>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="text-white dark:text-white center">
-                <div className="text-white dark:text-white 2xl font-semibold text-slate- dark:text-white800 dark:text-white dark:text-white mb-1">{teamMetrics.totalConvertidas}</div>
-                <div className="text-white dark:text-white sm text-slate- dark:text-white600 dark:text-white dark:text-white mb-2">Convertidas</div>
-                <div className="text-white dark:text-white xs text-emerald-600 dark:text-white font-medium">{teamMetrics.taxaConversao.toFixed(1)}% conversão</div>
-              </div>
-              
-              <div className="text-white dark:text-white center">
-                <div className="text-white dark:text-white 2xl font-semibold text-slate- dark:text-white800 dark:text-white dark:text-white mb-1">{teamMetrics.totalPerdidas}</div>
-                <div className="text-white dark:text-white sm text-slate- dark:text-white600 dark:text-white dark:text-white mb-2">Perdidas</div>
-                <div className="text-white dark:text-white xs text-slate- dark:text-white500 dark:text-white">
-                  {teamMetrics.totalPropostas > 0 ? ((teamMetrics.totalPerdidas / teamMetrics.totalPropostas) * 100).toFixed(1) : 0}% do total
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Gráfico de Barras - Status das Propostas */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Distribuição por Status</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsBarChart
+                      data={Object.entries(STATUS_CONFIG)
+                        .filter(([status]) => analyticsData.filter(p => p.status === status).length > 0)
+                        .map(([status, config]) => ({
+                          status: config.label,
+                          count: analyticsData.filter(p => p.status === status).length,
+                          fill: config.color
+                        }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis 
+                        dataKey="status" 
+                        angle={-45} 
+                        textAnchor="end" 
+                        height={80}
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      />
+                      <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                      <Tooltip 
+                        formatter={(value: any) => [value, 'Quantidade']}
+                        labelStyle={{ color: '#374151' }}
+                        contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
+                      />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]} />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 
-              <div className="text-white dark:text-white center">
-                <div className="text-white dark:text-white xl font-semibold text-slate- dark:text-white800 dark:text-white dark:text-white mb-1">{formatCurrency(teamMetrics.totalFaturamento.toString())}</div>
-                <div className="text-white dark:text-white sm text-slate- dark:text-white600 dark:text-white dark:text-white mb-2">Faturamento</div>
-                <div className="text-white dark:text-white xs text-slate- dark:text-white500 dark:text-white">Média: {formatCurrency(teamMetrics.ticketMedio.toString())}</div>
-              </div>
+              {/* Métricas Resumidas */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Métricas Resumidas</h3>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <div className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">{teamMetrics.totalConvertidas}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Propostas Convertidas</div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{teamMetrics.taxaConversao.toFixed(1)}% de conversão</div>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <div className="text-xl font-semibold text-gray-900 dark:text-white mb-1">{formatCurrency(teamMetrics.totalFaturamento.toString())}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Faturamento Total</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Ticket médio: {formatCurrency(teamMetrics.ticketMedio.toString())}</div>
+                  </div>
 
-              <div className="text-white dark:text-white center">
-                <div className="text-white dark:text-white 2xl font-semibold text-slate- dark:text-white800 dark:text-white dark:text-white mb-1">{teamMetrics.totalPendentes}</div>
-                <div className="text-white dark:text-white sm text-slate- dark:text-white600 dark:text-white dark:text-white mb-2">Em andamento</div>
-                <div className="text-white dark:text-white xs text-slate- dark:text-white500 dark:text-white">
-                  {teamMetrics.totalPropostas > 0 ? ((teamMetrics.totalPendentes / teamMetrics.totalPropostas) * 100).toFixed(1) : 0}% ativas
+                  <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <div className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">{teamMetrics.totalPendentes}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">Em Andamento</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {teamMetrics.totalPropostas > 0 ? ((teamMetrics.totalPendentes / teamMetrics.totalPropostas) * 100).toFixed(1) : 0}% do total
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2782,9 +2816,17 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           cy="50%"
                           labelLine={false}
                           label={({ name, percent }) => {
-                            const displayName = name.length > 15 ? name.substring(0, 12) + '...' : name;
+                            // Não encurtar o nome da Fabiana Godinho Santos
+                            let displayName = name;
+                            if (name === 'Fabiana Godinho Santos') {
+                              displayName = 'F. Godinho Santos';
+                            } else if (name === 'Fabiana Ferreira') {
+                              displayName = 'F. Ferreira';
+                            } else if (name.length > 15) {
+                              displayName = name.substring(0, 12) + '...';
+                            }
                             return (
-                              <text fill="white" fontSize="14" fontWeight="bold">
+                              <text fill="#FFFFFF" fontSize="14" fontWeight="bold" stroke="#000000" strokeWidth="0.5">
                                 {`${displayName} ${(percent * 100).toFixed(0)}%`}
                               </text>
                             );
