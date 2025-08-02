@@ -3227,8 +3227,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           const maxValue = Math.max(...realVendorSales.map(v => v.value), 1);
                           const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316', '#84cc16'];
                           
-                          return (
-                            realVendorSales.map((vendor, index) => {
+                          return realVendorSales.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                              Nenhuma venda implantada encontrada
+                            </div>
+                          ) : (
+                            realVendorSales.map((vendor: any, index: number) => {
                               const percentage = (vendor.value / maxValue) * 100;
                               
                               return (
@@ -3272,8 +3276,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                               {(() => {
                                 const implantados = filteredProposals?.filter(p => p.status === 'implantado') || [];
-                                const valorTotal = implantados.reduce((sum, p) => {
-                                  const valor = p.contractData?.valorTotal || '0';
+                                const valorTotal = implantados.reduce((sum: number, p: any) => {
+                                  const valor = p.contractData?.valor || '0';
                                   const numerico = parseFloat(valor.toString().replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
                                   return sum + numerico;
                                 }, 0);
