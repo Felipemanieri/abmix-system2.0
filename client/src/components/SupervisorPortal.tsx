@@ -123,12 +123,23 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     retry: false, // Sem retry para evitar erros
   });
 
-  // Buscar vendedores com tratamento robusto
+  // Buscar TODOS os vendedores sem filtro - IMEDIATO
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
-    queryKey: ['/api/vendors'],
-    queryFn: () => apiRequest('/api/vendors'),
-    refetchInterval: 1000, // 1 segundo - resposta imediata
-    retry: false, // Sem retry para evitar erros
+    queryKey: ['/api/vendors-all'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/vendors');
+        if (!response.ok) throw new Error('Falha ao buscar vendedores');
+        const data = await response.json();
+        console.log('🔥 TODOS OS VENDEDORES CARREGADOS:', data.length, 'vendedores');
+        return data;
+      } catch (error) {
+        console.error('Erro ao buscar vendedores:', error);
+        return [];
+      }
+    },
+    refetchInterval: 2000, // Atualização constante
+    retry: false,
   });
   
   // REALTIME SYNC TEMPORARIAMENTE DESABILITADO - causando erros repetidos
@@ -2982,12 +2993,38 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             {(() => {
               const implantedSales = finalAnalyticsData.filter(p => p.status === 'implantado');
               
-              // Dados reais dos vendedores
-              const vendorData = [
-                { name: 'Ana Caroline Terto', value: 1000, sales: 1, meta: 10000, bonus: 250 },
-                { name: 'Isabela Velasquez', value: 4000, sales: 1, meta: 10000, bonus: 250 },
-                { name: 'Fabiana Godinho', value: 5000, sales: 1, meta: 10000, bonus: 250 }
-              ];
+              // TODOS os 12 vendedores - SEMPRE VISÍVEIS
+              const vendorData = vendors?.map(vendor => {
+                // Aplicar filtros aos dados se necessário
+                let vendorProposals = filteredProposals?.filter(p => p.vendorId === vendor.id) || [];
+                
+                // Se há filtro de vendedor específico, filtrar
+                if (selectedVendor && vendor.name !== selectedVendor) {
+                  vendorProposals = [];
+                }
+                
+                const implantados = vendorProposals.filter(p => p.status === 'implantado');
+                
+                const totalValue = implantados.reduce((sum, p) => {
+                  const valor = p.contractData?.valorTotal || p.contractData?.valor || '0';
+                  const numerico = parseFloat(valor.toString().replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+                  return sum + numerico;
+                }, 0);
+
+                return {
+                  id: vendor.id,
+                  name: vendor.name,
+                  email: vendor.email,
+                  active: vendor.active,
+                  value: totalValue,
+                  sales: implantados.length,
+                  totalProposals: vendorProposals.length,
+                  meta: 10000,
+                  bonus: 250
+                };
+              }) || [];
+              
+              console.log('🔥 VENDOR DATA GERADO:', vendorData.length, 'vendedores processados');
               
               return (
                 <div className="space-y-8">
@@ -3001,10 +3038,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           onChange={(e) => setSelectedVendor(e.target.value || null)}
                           className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         >
-                          <option value="">Todos</option>
-                          {vendorData.map(v => (
-                            <option key={v.name} value={v.name}>{v.name}</option>
-                          ))}
+                          <option value="">TODOS OS VENDEDORES ({vendors?.length || 0})</option>
+                          {vendors?.map(v => (
+                            <option key={v.id} value={v.name}>
+                              {v.name} ({v.active ? 'Ativo' : 'Inativo'})
+                            </option>
+                          )) || []}
                         </select>
                       </div>
                       
@@ -3039,7 +3078,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           const performance = (vendor.value / vendor.meta) * 100;
                           
                           return (
-                            <div key={vendor.name} className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+                            <div key={vendor.id} className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
                               <div className="text-center mb-4">
                                 <h4 className="font-semibold text-gray-800 dark:text-white">{vendor.name}</h4>
                                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Vendedor</p>
@@ -3067,7 +3106,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 </div>
                               </div>
 
-                              {/* Métricas editáveis */}
+                              {/* Dados de performance */}
                               <div className="space-y-3">
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Vendas</label>
@@ -3089,43 +3128,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   />
                                 </div>
                                 
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Meta Mensal (Editável)</label>
-                                  <input 
-                                    type="text" 
-                                    defaultValue={`R$ ${vendor.meta.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                                    onBlur={(e) => {
-                                      const value = e.target.value.replace(/[R$\s.]/g, '').replace(',', '.');
-                                      updateVendorTarget(vendor.name, 'targetValue', value);
-                                    }}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
-                                  />
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nº Propostas Meta</label>
-                                  <input 
-                                    type="number" 
-                                    defaultValue={10}
-                                    onBlur={(e) => {
-                                      updateVendorTarget(vendor.name, 'targetProposals', e.target.value);
-                                    }}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                  />
-                                </div>
-                                
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Bônus (Editável)</label>
-                                  <input 
-                                    type="text" 
-                                    defaultValue={`R$ ${vendor.bonus.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-                                    onBlur={(e) => {
-                                      const value = e.target.value.replace(/[R$\s.]/g, '').replace(',', '.');
-                                      updateVendorTarget(vendor.name, 'bonus', value);
-                                    }}
-                                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500"
-                                  />
-                                </div>
+
                               </div>
                             </div>
                           );
