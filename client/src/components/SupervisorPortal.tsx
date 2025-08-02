@@ -3458,8 +3458,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Gráfico de Distribuição - SÓ APARECE SE TIVER DADOS REAIS */}
-        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && chartData.length > 0 && (
+        {/* Gráfico de Distribuição */}
+        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
               <h2 className="text-gray-900 dark:text-white text-lg font-medium">
@@ -3479,7 +3479,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPieChart>
                         <Pie
-                          data={chartData}
+                          data={(() => {
+                            console.log('🚨 PIE CHART - Data sendo passada para o gráfico:', chartData);
+                            console.log('🚨 PIE CHART - Tipo de dados:', typeof chartData, Array.isArray(chartData));
+                            console.log('🚨 PIE CHART - Length:', chartData?.length);
+                            return chartData;
+                          })()}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
