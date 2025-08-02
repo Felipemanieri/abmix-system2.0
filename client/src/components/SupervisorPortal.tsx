@@ -2545,17 +2545,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           });
         }
         
-        // Contar por status
-        const statusCounts = Object.entries(STATUS_CONFIG).map(([key, config]) => {
-          const count = filteredProposals.filter(p => p.status === key).length;
-          console.log(`   Status ${key}: ${count} propostas`);
-          return {
-            name: config.label,
-            value: count,
-            color: getStatusColor(key),
-            fill: getStatusColor(key)
-          };
-        }).filter(item => item.value > 0);
+        // Contar por status APENAS se há propostas
+        if (filteredProposals.length === 0) {
+          console.log('🎯 CHART DATA - Nenhuma proposta encontrada para o vendedor');
+          return [];
+        }
+        
+        const statusCounts = filteredProposals.reduce((acc: any[], proposal) => {
+          const existingStatus = acc.find(item => item.status === proposal.status);
+          if (existingStatus) {
+            existingStatus.value++;
+          } else {
+            const config = STATUS_CONFIG[proposal.status as keyof typeof STATUS_CONFIG];
+            acc.push({
+              name: config?.label || proposal.status.toUpperCase(),
+              status: proposal.status,
+              value: 1,
+              color: getStatusColor(proposal.status),
+              fill: getStatusColor(proposal.status)
+            });
+          }
+          return acc;
+        }, []);
         
         console.log('🎯 CHART DATA - Resultado status:', statusCounts);
         return statusCounts;
