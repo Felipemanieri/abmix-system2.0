@@ -3454,8 +3454,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Gráfico de Distribuição */}
-        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && (
+        {/* Gráfico de Distribuição - SÓ APARECE SE TIVER DADOS REAIS */}
+        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && chartData.length > 0 && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
               <h2 className="text-gray-900 dark:text-white text-lg font-medium">
@@ -3468,11 +3468,6 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               </h2>
             </div>
             <div className="p-6">
-              {chartData.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">Nenhum dado encontrado para os filtros selecionados.</p>
-                </div>
-              ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gráfico Pizza */}
                 <div className="flex justify-center">
@@ -3548,7 +3543,6 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   ))}
                 </div>
               </div>
-              )}
             </div>
           </div>
         )}
