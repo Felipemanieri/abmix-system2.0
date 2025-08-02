@@ -2611,6 +2611,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     };
     
     const chartData = getChartData();
+    
+    console.log('🔥 CHART DEBUG - chartData final:', chartData);
+    console.log('🔥 CHART DEBUG - chartData.length:', chartData.length);
+    console.log('🔥 CHART DEBUG - Condição render:', (analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && chartData.length > 0);
 
     // Dados para gráfico de barras por status
     const statusBarData = statusData.map(item => ({
