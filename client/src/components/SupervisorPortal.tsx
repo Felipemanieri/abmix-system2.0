@@ -73,6 +73,24 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [activeView, setActiveView] = useState<SupervisorView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const getMotivationalMessage = (progress: number) => {
+    if (progress >= 100) {
+      return "🎉 Parabéns! Meta alcançada!";
+    } else if (progress >= 90) {
+      return "💪 Quase lá! Força total!";
+    } else if (progress >= 70) {
+      return "🚀 Ótimo ritmo! Continue!";
+    } else if (progress >= 50) {
+      return "⭐ Bom progresso! Vamos lá!";
+    } else if (progress >= 30) {
+      return "📈 Acelere o passo!";
+    } else if (progress >= 10) {
+      return "🎯 Foque na meta!";
+    } else {
+      return "💪 Comece com tudo!";
+    }
+  };
+
   // Função local para notificações
   const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     console.log(`${type.toUpperCase()}: ${message}`);

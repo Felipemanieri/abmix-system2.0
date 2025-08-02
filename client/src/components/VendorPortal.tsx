@@ -791,6 +791,24 @@ Vendedor Abmix`;
     
     console.log('Valor total calculado:', totalValue);
     return totalValue;
+  }
+
+  const getMotivationalMessage = (progress: number) => {
+    if (progress >= 100) {
+      return "🎉 Parabéns! Meta alcançada!";
+    } else if (progress >= 90) {
+      return "💪 Quase lá! Força total!";
+    } else if (progress >= 70) {
+      return "🚀 Ótimo ritmo! Continue!";
+    } else if (progress >= 50) {
+      return "⭐ Bom progresso! Vamos lá!";
+    } else if (progress >= 30) {
+      return "📈 Acelere o passo!";
+    } else if (progress >= 10) {
+      return "🎯 Foque na meta!";
+    } else {
+      return "💪 Comece com tudo!";
+    }
   };
 
   // Função para calcular progresso das metas
@@ -1105,13 +1123,9 @@ Vendedor Abmix`;
                               className="w-full h-2"
                             />
                           </div>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                            overallProgress >= 100 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                            overallProgress >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          }`}>
-                            {overallProgress.toFixed(0)}%
-                          </span>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                            {getMotivationalMessage(overallProgress)}
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -1214,7 +1228,7 @@ Vendedor Abmix`;
                         <div className="flex items-center space-x-3">
                           <div className="flex-1">
                             <div className="flex justify-between text-xs text-gray-600 dark:text-gray-300 mb-1">
-                              <span>Progresso</span>
+                              <span>Progresso da Equipe</span>
                               <span>{teamOverallProgress.toFixed(0)}%</span>
                             </div>
                             <SimpleProgressBar 
@@ -1224,13 +1238,9 @@ Vendedor Abmix`;
                               className="w-full h-2"
                             />
                           </div>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                            teamOverallProgress >= 100 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                            teamOverallProgress >= 70 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          }`}>
-                            {teamOverallProgress.toFixed(0)}%
-                          </span>
+                          <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            {getMotivationalMessage(teamOverallProgress)}
+                          </div>
                         </div>
                       </td>
                     </tr>
