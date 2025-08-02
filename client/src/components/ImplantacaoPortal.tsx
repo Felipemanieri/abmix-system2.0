@@ -491,20 +491,32 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={proposal.numeroProposta || ''}
-                      onChange={(e) => handleNumeroPropostaUpdate(proposal.id, e.target.value ? parseInt(e.target.value) : null)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+                        handleNumeroPropostaUpdate(proposal.id, value ? parseInt(value) : null);
+                      }}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
                       placeholder="Digite o número"
+                      style={{ minWidth: '120px' }}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={proposal.numeroApolice || ''}
-                      onChange={(e) => handleNumeroApoliceUpdate(proposal.id, e.target.value ? parseInt(e.target.value) : null)}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+                        handleNumeroApoliceUpdate(proposal.id, value ? parseInt(value) : null);
+                      }}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
                       placeholder="Digite o número"
+                      style={{ minWidth: '120px' }}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
