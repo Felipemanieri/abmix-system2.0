@@ -2624,9 +2624,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const teamMetrics = {
       totalPropostas: finalAnalyticsData.length,
       totalFaturamento: finalAnalyticsData.filter(p => p.status === 'implantado').reduce((sum, p) => {
-        // Converter valores corretamente: "1.000,00" -> 1000.00
+        // Usar contractData.valor que é onde está o valor real no banco
         const valor = p.contractData?.valor || '0';
-        const valorNumerico = parseFloat(valor.replace(/\./g, '').replace(',', '.'));
+        // Converter corretamente: "1.000,00" -> 1000.00 ou "5.000,00" -> 5000.00
+        const valorNumerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
         return sum + valorNumerico;
       }, 0),
       totalConvertidas: finalAnalyticsData.filter(p => p.status === 'implantado').length,
@@ -3205,12 +3206,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           // Calcular dados reais de vendas por vendedor (apenas implantados)
                           const realVendorSales = vendors?.map(vendor => {
                             const vendorImplantedProposals = filteredProposals?.filter(p => 
-                              p.vendorId === vendor.id && p.status === 'implantado'
+                              p.vendor_id === vendor.id && p.status === 'implantado'
                             ) || [];
                             
                             const totalValue = vendorImplantedProposals.reduce((sum, p) => {
                               const valor = p.contractData?.valor || '0';
-                              const numerico = parseFloat(valor.replace(/[R$\s.]/g, '').replace(',', '.')) || 0;
+                              // Converter corretamente: "5.000,00" -> 5000.00
+                              const numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
                               return sum + numerico;
                             }, 0);
                             
