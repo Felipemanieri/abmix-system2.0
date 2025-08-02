@@ -2481,53 +2481,96 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
     // Dados para gráfico pizza (baseado nos filtros selecionados)
     const getChartData = () => {
-      if (!analyticsFilters.selectedStatus && !analyticsFilters.selectedVendor) return [];
+      console.log('🎯 CHART DATA - Filtros atuais:', {
+        selectedVendor: analyticsFilters.selectedVendor,
+        selectedStatus: analyticsFilters.selectedStatus
+      });
       
-      let filteredData = finalAnalyticsData;
-      
-      // Filtrar por status
-      if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') {
-        filteredData = filteredData.filter(p => p.status === analyticsFilters.selectedStatus);
+      if (!analyticsFilters.selectedStatus && !analyticsFilters.selectedVendor) {
+        console.log('🎯 CHART DATA - Sem filtros, retornando array vazio');
+        return [];
       }
       
-      // Filtrar por vendedor
-      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
-        filteredData = filteredData.filter(p => p.vendorName === analyticsFilters.selectedVendor);
-      }
+      console.log('🎯 CHART DATA - Propostas disponíveis:', proposals?.length || 0);
       
-      // Se vendedor específico selecionado, mostrar distribuição por status
+      // Se vendedor específico selecionado, mostrar distribuição por status desse vendedor
       if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
-        return Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-          name: config.label,
-          value: filteredData.filter(p => p.status === key).length,
-          color: getStatusColor(key),
-          fill: getStatusColor(key)
-        })).filter(item => item.value > 0);
+        console.log('🎯 CHART DATA - Modo: Distribuição por STATUS do vendedor selecionado');
+        
+        // Encontrar o vendedor selecionado
+        const selectedVendor = vendors?.find(v => v.name === analyticsFilters.selectedVendor);
+        if (!selectedVendor) {
+          console.log('🎯 CHART DATA - Vendedor não encontrado');
+          return [];
+        }
+        
+        // Pegar TODAS as propostas desse vendedor
+        const vendorProposals = proposals?.filter(p => p.vendor_id === selectedVendor.id) || [];
+        console.log(`🎯 CHART DATA - Propostas do vendedor ${selectedVendor.name}:`, vendorProposals.length);
+        
+        // Aplicar filtros de data se existirem
+        let filteredProposals = vendorProposals;
+        if (analyticsFilters.dataInicio || analyticsFilters.dataFim) {
+          filteredProposals = vendorProposals.filter(p => {
+            const proposalDate = new Date(p.createdAt || Date.now());
+            if (analyticsFilters.dataInicio && proposalDate < new Date(analyticsFilters.dataInicio)) return false;
+            if (analyticsFilters.dataFim && proposalDate > new Date(analyticsFilters.dataFim)) return false;
+            return true;
+          });
+        }
+        
+        // Contar por status
+        const statusCounts = Object.entries(STATUS_CONFIG).map(([key, config]) => {
+          const count = filteredProposals.filter(p => p.status === key).length;
+          console.log(`   Status ${key}: ${count} propostas`);
+          return {
+            name: config.label,
+            value: count,
+            color: getStatusColor(key),
+            fill: getStatusColor(key)
+          };
+        }).filter(item => item.value > 0);
+        
+        console.log('🎯 CHART DATA - Resultado status:', statusCounts);
+        return statusCounts;
       }
       
       // Se status específico selecionado (sem vendedor), mostrar distribuição por vendedores desse status
       if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') {
-        return uniqueVendors.map(vendor => {
-          const count = filteredData.filter(p => p.vendorName === vendor).length;
+        console.log('🎯 CHART DATA - Modo: Distribuição por VENDEDORES do status selecionado');
+        
+        // Pegar todas as propostas com o status selecionado
+        let statusProposals = proposals?.filter(p => p.status === analyticsFilters.selectedStatus) || [];
+        console.log(`🎯 CHART DATA - Propostas com status ${analyticsFilters.selectedStatus}:`, statusProposals.length);
+        
+        // Aplicar filtros de data se existirem  
+        if (analyticsFilters.dataInicio || analyticsFilters.dataFim) {
+          statusProposals = statusProposals.filter(p => {
+            const proposalDate = new Date(p.createdAt || Date.now());
+            if (analyticsFilters.dataInicio && proposalDate < new Date(analyticsFilters.dataInicio)) return false;
+            if (analyticsFilters.dataFim && proposalDate > new Date(analyticsFilters.dataFim)) return false;
+            return true;
+          });
+        }
+        
+        // Contar por vendedor
+        const vendorCounts = vendors?.map(vendor => {
+          const count = statusProposals.filter(p => p.vendor_id === vendor.id).length;
+          console.log(`   Vendedor ${vendor.name}: ${count} propostas`);
           return {
-            name: vendor,
+            name: vendor.name,
             value: count,
-            color: getVendorColor(vendor),
-            fill: getVendorColor(vendor)
+            color: getVendorColor(vendor.name),
+            fill: getVendorColor(vendor.name)
           };
-        }).filter(item => item.value > 0);
+        }).filter(item => item.value > 0) || [];
+        
+        console.log('🎯 CHART DATA - Resultado vendedores:', vendorCounts);
+        return vendorCounts;
       }
       
-      // Caso contrário, mostrar distribuição por vendedores
-      return uniqueVendors.map(vendor => {
-        const count = filteredData.filter(p => p.vendorName === vendor).length;
-        return {
-          name: vendor,
-          value: count,
-          color: getVendorColor(vendor),
-          fill: getVendorColor(vendor)
-        };
-      }).filter(item => item.value > 0);
+      console.log('🎯 CHART DATA - Nenhuma condição atendida, retornando vazio');
+      return [];
     };
     
     const chartData = getChartData();
@@ -3085,16 +3128,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           : vendors || [];
 
                         return filteredVendors.map(vendor => {
-                          // Pegar TODAS as propostas implantadas do vendedor - SEM FILTROS
-                          const vendorImplantedProposals = proposals?.filter(p => 
-                            p.vendor_id === vendor.id && p.status === 'implantado'
-                          ) || [];
+                          // DEBUG: Verificar propostas do vendedor
+                          console.log(`🔍 PERFORMANCE INDIVIDUAL - Vendedor: ${vendor.name} (ID: ${vendor.id})`);
+                          const allVendorProposals = proposals?.filter(p => p.vendor_id === vendor.id) || [];
+                          console.log(`   Total propostas: ${allVendorProposals.length}`);
+                          
+                          const vendorImplantedProposals = allVendorProposals.filter(p => p.status === 'implantado');
+                          console.log(`   Propostas implantadas: ${vendorImplantedProposals.length}`);
                           
                           const totalValue = vendorImplantedProposals.reduce((sum, p) => {
-                            const valor = p.contractData?.valor || '0';
-                            const numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                            const valor = p.contract_data?.valor || p.contractData?.valor || '0';
+                            console.log(`     Proposta ${p.id}: valor = ${valor}`);
+                            const numerico = parseFloat(valor.toString().replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                            console.log(`     Valor numérico: ${numerico}`);
                             return sum + numerico;
                           }, 0);
+                          
+                          console.log(`   TOTAL VALUE: R$ ${totalValue}`);
                           
                           // Buscar a meta mais recente do vendedor
                           const vendorTargetsList = vendorTargets?.filter(t => t.vendorId === vendor.id) || [];
@@ -3192,49 +3242,58 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         <h4 className="font-medium text-gray-700 dark:text-gray-300">Vendas por Vendedor (Apenas Implantados)</h4>
                         {(() => {
                           // Calcular dados reais de vendas por vendedor (apenas implantados)
-                          const realVendorSales = vendors?.map(vendor => {
-                            // Pegar propostas implantadas do vendedor - APLICAR FILTROS AQUI TAMBÉM
-                            let vendorImplantedProposals = proposals?.filter(p => 
-                              p.vendor_id === vendor.id && p.status === 'implantado'
-                            ) || [];
+                          let vendorsToShow = vendors || [];
+                          
+                          // APLICAR FILTRO DE VENDEDOR PRIMEIRO
+                          if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
+                            vendorsToShow = vendors?.filter(v => v.name === analyticsFilters.selectedVendor) || [];
+                          }
+                          
+                          const realVendorSales = vendorsToShow.map(vendor => {
+                            console.log(`🔥 BARRA PROGRESSO - Vendedor: ${vendor.name} (ID: ${vendor.id})`);
+                            
+                            // Pegar TODAS as propostas do vendedor
+                            let allVendorProposals = proposals?.filter(p => p.vendor_id === vendor.id) || [];
+                            console.log(`   Total propostas: ${allVendorProposals.length}`);
+                            
+                            // APLICAR FILTRO DE STATUS
+                            if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') {
+                              allVendorProposals = allVendorProposals.filter(p => p.status === analyticsFilters.selectedStatus);
+                              console.log(`   Após filtro status (${analyticsFilters.selectedStatus}): ${allVendorProposals.length}`);
+                            } else {
+                              // Se não há filtro de status, usar apenas implantados
+                              allVendorProposals = allVendorProposals.filter(p => p.status === 'implantado');
+                              console.log(`   Apenas implantados: ${allVendorProposals.length}`);
+                            }
 
-                            // APLICAR FILTROS DO ANALYTICS
+                            // APLICAR FILTROS DE DATA
                             if (analyticsFilters.dataInicio || analyticsFilters.dataFim) {
-                              vendorImplantedProposals = vendorImplantedProposals.filter(p => {
+                              allVendorProposals = allVendorProposals.filter(p => {
                                 const proposalDate = new Date(p.createdAt || Date.now());
                                 if (analyticsFilters.dataInicio && proposalDate < new Date(analyticsFilters.dataInicio)) return false;
                                 if (analyticsFilters.dataFim && proposalDate > new Date(analyticsFilters.dataFim)) return false;
                                 return true;
                               });
-                            }
-
-                            // APLICAR FILTRO DE VENDEDOR
-                            if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
-                              // Se há filtro de vendedor, só mostra esse vendedor
-                              if (vendor.name !== analyticsFilters.selectedVendor) {
-                                vendorImplantedProposals = [];
-                              }
-                            }
-
-                            // APLICAR FILTRO DE STATUS
-                            if (analyticsFilters.selectedStatus) {
-                              vendorImplantedProposals = vendorImplantedProposals.filter(p => p.status === analyticsFilters.selectedStatus);
+                              console.log(`   Após filtro data: ${allVendorProposals.length}`);
                             }
                             
-                            const totalValue = vendorImplantedProposals.reduce((sum, p) => {
-                              const valor = p.contractData?.valor || '0';
-                              // Converter corretamente: "5.000,00" -> 5000.00
-                              const numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                            const totalValue = allVendorProposals.reduce((sum, p) => {
+                              const valor = p.contract_data?.valor || p.contractData?.valor || '0';
+                              console.log(`     Proposta ${p.id}: valor = ${valor}`);
+                              const numerico = parseFloat(valor.toString().replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                              console.log(`     Valor numérico: ${numerico}`);
                               return sum + numerico;
                             }, 0);
+                            
+                            console.log(`   TOTAL VALUE BARRA: R$ ${totalValue}`);
                             
                             return {
                               id: vendor.id,
                               name: vendor.name,
                               value: totalValue,
-                              count: vendorImplantedProposals.length
+                              count: allVendorProposals.length
                             };
-                          }).sort((a, b) => b.value - a.value) || []; // Mostrar TODOS os vendedores, ordenados por valor
+                          }).sort((a, b) => b.value - a.value); // Mostrar vendedores ordenados por valor
                           
                           const maxValue = Math.max(...realVendorSales.map(v => v.value), 1);
                           const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#f97316', '#84cc16'];
