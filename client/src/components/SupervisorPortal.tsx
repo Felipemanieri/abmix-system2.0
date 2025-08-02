@@ -2318,8 +2318,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const operadoras = ['SulAmérica', 'Bradesco', 'Amil', 'Unimed', 'NotreDame'];
     const tiposPlano = ['Individual', 'Familiar', 'Empresarial', 'PME'];
 
-    // Aplicar todos os filtros avançados
-    const analyticsData = filteredProposals.filter(proposal => {
+    // Usar os dados já filtrados (finalAnalyticsData) para consistência
+    const finalAnalyticsData = filteredProposals.filter(proposal => {
       // Filtro de vendedores
       if (selectedVendors.length > 0 && !selectedVendors.includes(proposal.vendorName || '')) return false;
       
@@ -2330,9 +2330,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       if (selectedOperadora && proposal.contractData?.planoContratado !== selectedOperadora) return false;
       
       // Filtro de valor
-      const valor = parseFloat(proposal.contractData?.valor || '0');
-      if (valorMin && valor < parseFloat(valorMin)) return false;
-      if (valorMax && valor > parseFloat(valorMax)) return false;
+      const valor = parseFloat(proposal.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
+      if (valorMin && valor < parseFloat(valorMin.replace(/\./g, '').replace(',', '.'))) return false;
+      if (valorMax && valor > parseFloat(valorMax.replace(/\./g, '').replace(',', '.'))) return false;
       
       // Filtro de período
       if (dataInicio || dataFim) {
@@ -2359,7 +2359,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     // Dados para gráfico de pizza por status
     const statusData = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
       name: config.label,
-      value: analyticsData.filter(p => p.status === key).length,
+      value: finalAnalyticsData.filter(p => p.status === key).length,
       color: config.color,
       fill: config.color
     })).filter(item => item.value > 0);
@@ -2407,7 +2407,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const getChartData = () => {
       if (!selectedStatusForChart && !selectedVendorForChart) return [];
       
-      let filteredData = analyticsData;
+      let filteredData = finalAnalyticsData;
       
       // Filtrar por status
       if (selectedStatusForChart && selectedStatusForChart !== 'all') {
@@ -2450,22 +2450,6 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       fill: item.color
     }));
 
-    // Aplicar os filtros do Analytics também no vendorAnalysis
-    const finalAnalyticsData = (() => {
-      let data = analyticsData;
-      
-      // Aplicar filtros adicionais do analytics
-      if (selectedVendorForChart && selectedVendorForChart !== 'all') {
-        data = data.filter(p => p.vendorName === selectedVendorForChart);
-      }
-      
-      if (selectedStatusForChart && selectedStatusForChart !== 'all') {
-        data = data.filter(p => p.status === selectedStatusForChart);
-      }
-      
-      return data;
-    })();
-
     // Gerar dados mensais para gráfico de ondas (comparação de meses)
     const generateMonthlyData = () => {
       const now = new Date();
@@ -2478,7 +2462,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         const monthName = month.toLocaleDateString('pt-BR', { month: 'short' });
         
         // Filtrar propostas do mês
-        const monthProposals = analyticsData.filter(proposal => {
+        const monthProposals = finalAnalyticsData.filter(proposal => {
           const proposalDate = new Date(proposal.createdAt || Date.now());
           return proposalDate.toISOString().slice(0, 7) === monthKey;
         });
