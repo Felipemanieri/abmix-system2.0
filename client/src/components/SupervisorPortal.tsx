@@ -151,6 +151,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       const isVendaDupla = internalData.vendaDupla || false;
       const vendedor2Name = internalData.nomeVendaDupla || '';
       const nomeReuniao = internalData.nomeReuniao || '';
+      const desconto = internalData.desconto || '0%';
+      const autorizadorDesconto = internalData.autorizadorDesconto || '';
       
       const reportItem = {
         abmId: proposal.abmId || proposal.id || 'N/A',
@@ -161,7 +163,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
         valor: proposal.contractData?.valor || proposal.valor || '0',
         plano: proposal.contractData?.planoContratado || proposal.plano || 'N/A',
         status: proposal.status || 'pendente',
-        desconto: '0%',
+        desconto: desconto,
+        autorizadorDesconto: autorizadorDesconto,
         observacoes: proposal.observacoes || '',
         vendedor: vendorName,
         // Dados de venda dupla vindos dos controles internos
@@ -325,7 +328,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
 
   const downloadReport = () => {
     const csvContent = [
-      ['ID', 'Nº Proposta', 'Nº Apólice', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Observações'].join(';'),
+      ['ID', 'Nº Proposta', 'Nº Apólice', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Desconto', 'Autorizador do Desconto', 'Observações'].join(';'),
       ...reportData.map(item => [
         item.abmId,
         (item as any).numeroProposta || '-',
@@ -336,6 +339,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
         `R$ ${item.valor}`,
         item.plano,
         item.status.toUpperCase(),
+        (item as any).desconto || '0%',
+        (item as any).autorizadorDesconto || '-',
         reportObservations[item.abmId] || ''
       ].join(';'))
     ].join('\n');
@@ -3415,6 +3420,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">VENDEDOR</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">PLANO</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">VALOR</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">DESCONTO</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">AUTORIZADOR DO DESCONTO</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">STATUS</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">PRIORIDADE</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-white">PROGRESSO</th>
@@ -3470,6 +3477,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     </td>
                     <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                       {contractData.valor || 'R$ 0,00'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {(proposal as any).internalData?.desconto || '0%'}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {(proposal as any).internalData?.autorizadorDesconto || '-'}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <StatusBadge 
