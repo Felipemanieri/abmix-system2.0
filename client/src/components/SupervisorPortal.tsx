@@ -2347,25 +2347,26 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       12: 'Sara Mattos'
     };
 
-    // Dados específicos para gráfico de pizza por vendedor (TODOS os vendedores)
+    // Dados específicos para gráfico de pizza por vendedor usando propostas reais
     const vendorPieData = realVendors.map(vendor => {
-      // Contar propostas por vendorId mapeado para nome
-      const vendorIdKey = Object.keys(vendorIdToNameMap).find(
-        key => vendorIdToNameMap[parseInt(key)] === vendor
-      );
+      // Contar propostas REAIS - filtrando por vendorName das propostas no banco
+      const count = filteredProposals.filter(p => {
+        // Buscar o vendedor pelo ID se existir vendorId
+        if (p.vendorId && vendors?.length > 0) {
+          const vendorFromDb = vendors.find(v => v.id === p.vendorId);
+          return vendorFromDb?.name === vendor;
+        }
+        // Fallback para vendorName direto
+        return p.vendorName === vendor;
+      }).length;
       
-      const count = vendorIdKey 
-        ? analyticsData.filter(p => p.vendorId === parseInt(vendorIdKey)).length
-        : 0;
-      
-      // Garantir que vendedores sem vendas tenham valor mínimo para aparecer
       return {
         name: vendor,
-        value: count > 0 ? count : 0.1, // Traço pequeno para vendedores sem vendas
-        realValue: count, // Valor real para exibição
+        value: count, // Valor real das propostas
+        realValue: count,
         fill: getVendorColor(vendor)
       };
-    });
+    }).filter(item => item.value > 0); // Só mostrar vendedores com propostas
 
 
 
