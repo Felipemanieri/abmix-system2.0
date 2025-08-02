@@ -2240,11 +2240,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     </div>
   );
 
+
+
   // Analytics Reformulado com Dados Reais e Melhorias Avançadas
   const renderAnalytics = () => {
-    const [selectedPeriod, setSelectedPeriod] = useState('30d');
-    const [drilldownStatus, setDrilldownStatus] = useState<string | null>(null);
-    const [comparisonMode, setComparisonMode] = useState(false);
     
     // Filtros temporais específicos
     const getDateFilter = (period: string) => {
