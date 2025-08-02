@@ -70,7 +70,8 @@ export function useProposals() {
           titulares: proposal.titulares || [],
           dependentes: proposal.dependentes || [],
           clientAttachments: proposal.clientAttachments || [],
-          clientCompleted: proposal.clientCompleted || false
+          contractData: proposal.contractData,
+          status: proposal.status
         }).overallProgress,
         priority: proposal.priority || 'medium' // Garantir que priority existe
       }));
