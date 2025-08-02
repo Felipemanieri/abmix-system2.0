@@ -497,6 +497,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       value={(proposal as any).numeroProposta || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+                        console.log(`🔢 Digitando numeroProposta: "${value}" para ${proposal.id}`);
                         handleNumeroPropostaUpdate(proposal.id, value ? parseInt(value) : null);
                       }}
                       className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
@@ -512,6 +513,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       value={(proposal as any).numeroApolice || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+                        console.log(`🔢 Digitando numeroApolice: "${value}" para ${proposal.id}`);
                         handleNumeroApoliceUpdate(proposal.id, value ? parseInt(value) : null);
                       }}
                       className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
