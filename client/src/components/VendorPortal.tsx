@@ -1153,9 +1153,9 @@ Vendedor Abmix`;
               </thead>
               <tbody>
                 {teamTargets.map((target) => {
-                  // Calcular progresso da equipe baseado nas propostas implantadas do período específico da meta
+                  // Calcular progresso da equipe baseado em TODAS as propostas implantadas de TODOS os vendedores
                   const targetDate = { month: target.month, year: target.year };
-                  const periodImplantedProposals = realProposals?.filter((p: any) => {
+                  const periodImplantedProposals = allProposals?.filter((p: any) => {
                     const proposalDate = new Date(p.createdAt);
                     return (
                       p.status === 'implantado' &&
