@@ -25,6 +25,7 @@ import { useSupervisorReport } from '@/hooks/useSupervisorReport';
 import { getDynamicGreeting } from '../utils/greetingHelper';
 import { globalSyncConfig } from '@/utils/globalSyncConfig';
 import { useSupervisorWebSocket } from '@/hooks/useWebSocket';
+import { useProposals } from '@/hooks/useProposals';
 
 interface SupervisorPortalProps {
   user: any;
@@ -89,13 +90,12 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   
-  // Buscar propostas com tratamento robusto
-  const { data: proposals = [], isLoading: proposalsLoading } = useQuery({
-    queryKey: ['/api/proposals'],
-    queryFn: () => apiRequest('/api/proposals'),
-    refetchInterval: 1000, // 1 segundo - resposta imediata
-    retry: false, // Sem retry para evitar erros
-  });
+  // Buscar propostas usando o hook correto que processa os dados
+  const { 
+    proposalsWithVendor: proposals = [], 
+    isLoading: proposalsLoading,
+    updateProposalPriority 
+  } = useProposals();
 
   // Buscar vendedores com tratamento robusto
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery({
@@ -534,16 +534,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   // Estados para gerenciamento de vendedores
   const [showAddVendorForm, setShowAddVendorForm] = useState(false);
   
-  // Estado para prioridades das propostas com persistência
-  const [proposalPriorities, setProposalPriorities] = useState<Record<string, 'alta' | 'media' | 'baixa'>>(() => {
-    const saved = localStorage.getItem('supervisor_proposalPriorities');
-    return saved ? JSON.parse(saved) : {};
-  });
 
-  // Salvar prioridades no localStorage quando alteradas
-  useEffect(() => {
-    localStorage.setItem('supervisor_proposalPriorities', JSON.stringify(proposalPriorities));
-  }, [proposalPriorities]);
   
   // Estados para Analytics (movidos para o nível do componente)
   const [selectedVendorAnalytics, setSelectedVendorAnalytics] = useState('');
@@ -587,27 +578,8 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
       // Converter para formato do backend
       const backendPriority = priority === 'alta' ? 'high' : priority === 'media' ? 'medium' : 'low';
       
-      // Enviar para o backend
-      const response = await fetch(`/api/proposals/${proposalId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ priority: backendPriority }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Falha ao atualizar prioridade');
-      }
-
-      // Atualizar estado local
-      setProposalPriorities(prev => ({
-        ...prev,
-        [proposalId]: priority
-      }));
-
-      // Invalidar cache usando React Query para forçar recarregamento dos dados
-      queryClientInstance.invalidateQueries({ queryKey: ["/api/proposals"] });
+      // Usar a função do hook useProposals
+      await updateProposalPriority(proposalId, backendPriority);
       
       showNotification(`Prioridade alterada para ${getPriorityText(priority)}`, 'success');
     } catch (error) {
