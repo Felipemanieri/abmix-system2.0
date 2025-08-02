@@ -3396,7 +3396,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       </button>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900 dark:text-white">{contractData.empresa || proposal.cliente || 'Empresa não informada'}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{contractData.nomeEmpresa || proposal.cliente || 'Empresa não informada'}</div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="text-sm text-gray-900 dark:text-white">{contractData.cnpj || 'CNPJ não informado'}</div>
@@ -3412,7 +3412,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       </div>
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-900 dark:text-white">
-                      {contractData.plano || proposal.plano || 'Plano não informado'}
+                      {contractData.planoContratado || proposal.plano || 'Plano não informado'}
                     </td>
                     <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">
                       {contractData.valor || 'R$ 0,00'}
