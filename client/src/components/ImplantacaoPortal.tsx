@@ -82,6 +82,10 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
   const [showProposalSelector, setShowProposalSelector] = useState(false);
   const [editingProposalId, setEditingProposalId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados locais para os campos editáveis
+  const [localNumeros, setLocalNumeros] = useState<{ [key: string]: { proposta?: string, apolice?: string } }>({});
+  
   // StatusManager já está importado como statusManager
   const [proposalStatuses, setProposalStatuses] = useState<Map<string, ProposalStatus>>(new Map());
   
@@ -164,36 +168,73 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
     }
   };
 
-  const handleNumeroPropostaUpdate = async (proposalId: string, numeroProposta: number | null) => {
-    try {
-      console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroProposta: ${proposalId} -> ${numeroProposta}`);
-      
-      await (updateProposal as any).mutateAsync({ 
-        id: proposalId, 
-        numeroProposta: numeroProposta 
-      });
-      
-      showInternalNotification(`Número da Proposta atualizado - Sincronizado em todos os portais!`, 'success');
-    } catch (error) {
-      console.error('Erro ao atualizar número da proposta:', error);
-      showInternalNotification('Erro ao atualizar número da proposta', 'error');
+  // Debounce para evitar múltiplas chamadas
+  const debounceTimeouts = React.useRef<{ [key: string]: any }>({});
+
+  const handleNumeroPropostaUpdate = (proposalId: string, value: string) => {
+    console.log(`🔢 Digitando numeroProposta: "${value}" para ${proposalId}`);
+    
+    // Atualiza o estado local imediatamente para mostrar na tela
+    setLocalNumeros(prev => ({
+      ...prev,
+      [proposalId]: { ...prev[proposalId], proposta: value }
+    }));
+    
+    // Cancela timeout anterior se existir  
+    if (debounceTimeouts.current[`proposta-${proposalId}`]) {
+      clearTimeout(debounceTimeouts.current[`proposta-${proposalId}`]);
     }
+    
+    // Cria novo timeout para salvar após 1 segundo sem digitação
+    debounceTimeouts.current[`proposta-${proposalId}`] = setTimeout(async () => {
+      try {
+        const numeroProposta = value ? parseInt(value) : null;
+        console.log(`💾 Salvando numeroProposta: ${proposalId} -> ${numeroProposta}`);
+        
+        await (updateProposal as any).mutateAsync({ 
+          id: proposalId, 
+          numeroProposta: numeroProposta 
+        });
+        
+        showInternalNotification(`Número da Proposta salvo!`, 'success');
+      } catch (error) {
+        console.error('Erro ao salvar número da proposta:', error);
+        showInternalNotification('Erro ao salvar número da proposta', 'error');
+      }
+    }, 1000);
   };
 
-  const handleNumeroApoliceUpdate = async (proposalId: string, numeroApolice: number | null) => {
-    try {
-      console.log(`🎯 IMPLEMENTATION PORTAL - Updating numeroApolice: ${proposalId} -> ${numeroApolice}`);
-      
-      await (updateProposal as any).mutateAsync({ 
-        id: proposalId, 
-        numeroApolice: numeroApolice 
-      });
-      
-      showInternalNotification(`Número da Apólice atualizado - Sincronizado em todos os portais!`, 'success');
-    } catch (error) {
-      console.error('Erro ao atualizar número da apólice:', error);
-      showInternalNotification('Erro ao atualizar número da apólice', 'error');
+  const handleNumeroApoliceUpdate = (proposalId: string, value: string) => {
+    console.log(`🔢 Digitando numeroApolice: "${value}" para ${proposalId}`);
+    
+    // Atualiza o estado local imediatamente para mostrar na tela
+    setLocalNumeros(prev => ({
+      ...prev,
+      [proposalId]: { ...prev[proposalId], apolice: value }
+    }));
+    
+    // Cancela timeout anterior se existir
+    if (debounceTimeouts.current[`apolice-${proposalId}`]) {
+      clearTimeout(debounceTimeouts.current[`apolice-${proposalId}`]);
     }
+    
+    // Cria novo timeout para salvar após 1 segundo sem digitação
+    debounceTimeouts.current[`apolice-${proposalId}`] = setTimeout(async () => {
+      try {
+        const numeroApolice = value ? parseInt(value) : null;
+        console.log(`💾 Salvando numeroApolice: ${proposalId} -> ${numeroApolice}`);
+        
+        await (updateProposal as any).mutateAsync({ 
+          id: proposalId, 
+          numeroApolice: numeroApolice 
+        });
+        
+        showInternalNotification(`Número da Apólice salvo!`, 'success');
+      } catch (error) {
+        console.error('Erro ao salvar número da apólice:', error);
+        showInternalNotification('Erro ao salvar número da apólice', 'error');
+      }
+    }, 1000);
   };
 
   // Função removida - prioridade agora é controlada apenas pelo Supervisor
@@ -494,11 +535,10 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={(proposal as any).numeroProposta || ''}
+                      value={localNumeros[proposal.id]?.proposta ?? (proposal as any).numeroProposta ?? ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
-                        console.log(`🔢 Digitando numeroProposta: "${value}" para ${proposal.id}`);
-                        handleNumeroPropostaUpdate(proposal.id, value ? parseInt(value) : null);
+                        handleNumeroPropostaUpdate(proposal.id, value);
                       }}
                       className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
                       placeholder="Digite o número"
@@ -510,11 +550,10 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={(proposal as any).numeroApolice || ''}
+                      value={localNumeros[proposal.id]?.apolice ?? (proposal as any).numeroApolice ?? ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
-                        console.log(`🔢 Digitando numeroApolice: "${value}" para ${proposal.id}`);
-                        handleNumeroApoliceUpdate(proposal.id, value ? parseInt(value) : null);
+                        handleNumeroApoliceUpdate(proposal.id, value);
                       }}
                       className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-700 dark:text-white bg-white"
                       placeholder="Digite o número"
