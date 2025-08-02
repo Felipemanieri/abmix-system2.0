@@ -92,17 +92,33 @@ export function calculatePersonProgress(person: PersonData, isTitular: boolean =
  * Calcula o progresso dos dados contratuais
  */
 export function calculateContractProgress(contractData: ContractData = {}): number {
+  if (!contractData) {
+    console.log('⚠️ CONTRACT: contractData é undefined/null');
+    return 0;
+  }
+  
   const requiredContractFields = ['nomeEmpresa', 'cnpj', 'planoContratado', 'valor'];
   let filledFields = 0;
   
+  console.log('🔍 CONTRACT: Verificando campos:', {
+    contractData,
+    fields: requiredContractFields
+  });
+  
   for (const field of requiredContractFields) {
     const value = contractData[field as keyof ContractData];
-    if (value && value.toString().trim() !== '') {
+    const isValid = value && value.toString().trim() !== '';
+    console.log(`  - ${field}: "${value}" -> ${isValid ? 'VÁLIDO' : 'INVÁLIDO'}`);
+    
+    if (isValid) {
       filledFields++;
     }
   }
   
-  return Math.round((filledFields / requiredContractFields.length) * 100);
+  const progress = Math.round((filledFields / requiredContractFields.length) * 100);
+  console.log(`📊 CONTRACT: ${filledFields}/${requiredContractFields.length} campos = ${progress}%`);
+  
+  return progress;
 }
 
 /**
@@ -121,7 +137,8 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
   
   // Log detalhado para debug FORÇADO
   console.log(`🔍 CALCULATOR - Dados recebidos:`, {
-    contractData,
+    contractData: contractData || "UNDEFINED!",
+    contractDataKeys: contractData ? Object.keys(contractData) : "NO KEYS",
     titularesCount: titulares.length,
     dependentesCount: dependentes.length,
     attachmentsCount: clientAttachments.length,

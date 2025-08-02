@@ -209,11 +209,18 @@ export function useVendorProposals(vendorId: number) {
         plano: proposal.contractData?.planoContratado || 'N/A',
         valor: proposal.contractData?.valor || '0',
         progresso: (() => {
+          // Log dos dados ANTES de chamar a função
+          console.log(`🔍 HOOK ${proposal.abmId} - Dados ANTES da função:`, {
+            contractData: proposal.contractData,
+            contractDataExists: !!proposal.contractData,
+            titularesLength: (proposal.titulares || []).length,
+            status: proposal.status
+          });
+          
           const progressData = calculateProposalProgress({
             titulares: proposal.titulares || [],
             dependentes: proposal.dependentes || [],
             clientAttachments: proposal.clientAttachments || [],
-            clientCompleted: proposal.clientCompleted || false,
             contractData: proposal.contractData,
             status: proposal.status
           });
