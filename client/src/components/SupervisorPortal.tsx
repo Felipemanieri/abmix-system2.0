@@ -2248,7 +2248,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       'Ana Caroline Terto',
       'Bruna Garcia', 
       'Fabiana Ferreira',
-      'Fabiana Godinho',
+      'Fabiana Godinho Santos',
       'Fernanda Batista',
       'Gabrielle Fernandes',
       'Isabela Velasquez',
@@ -2265,7 +2265,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         'Ana Caroline Terto': '#3B82F6',
         'Bruna Garcia': '#EF4444',
         'Fabiana Ferreira': '#10B981',
-        'Fabiana Godinho': '#F59E0B',
+        'Fabiana Godinho Santos': '#F59E0B',
         'Fernanda Batista': '#8B5CF6',
         'Gabrielle Fernandes': '#EC4899',
         'Isabela Velasquez': '#6366F1',
@@ -2336,7 +2336,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       1: 'Ana Caroline Terto',
       2: 'Bruna Garcia', 
       3: 'Fabiana Ferreira',
-      4: 'Fabiana Godinho',
+      4: 'Fabiana Godinho Santos',
       5: 'Fernanda Batista',
       6: 'Gabrielle Fernandes',
       7: 'Isabela Velasquez',
@@ -2808,7 +2808,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
                 {/* Legenda */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-slate- dark:text-white700 dark:text-white dark:text-white mb-4">Legenda</h3>
+                  <h3 className="font-medium text-white mb-4">Legenda</h3>
                   {chartData.map((item, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -2816,11 +2816,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: item.color }}
                         ></div>
-                        <span className="text-white dark:text-white sm text-slate- dark:text-white700 dark:text-white dark:text-white">{item.name}</span>
+                        <span className="text-white text-sm font-medium">{item.name}</span>
                       </div>
-                      <div className="text-white dark:text-white right">
-                        <div className="text-white dark:text-white sm font-medium text-slate- dark:text-white800 dark:text-white dark:text-white">{item.value}</div>
-                        <div className="text-white dark:text-white xs text-slate- dark:text-white500 dark:text-white">
+                      <div className="text-right">
+                        <div className="text-white text-sm font-medium">{item.value}</div>
+                        <div className="text-gray-300 text-xs">
                           {chartData.reduce((sum, d) => sum + d.value, 0) > 0 
                             ? ((item.value / chartData.reduce((sum, d) => sum + d.value, 0)) * 100).toFixed(1)
                             : 0}%
