@@ -583,12 +583,17 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   
 
   
-  // Estados para Analytics (movidos para o nível do componente)
-  const [selectedVendorAnalytics, setSelectedVendorAnalytics] = useState('');
-  const [dateRangeAnalytics, setDateRangeAnalytics] = useState('');
-  const [selectedStatusForChart, setSelectedStatusForChart] = useState<string>('');
-  const [selectedVendorForChart, setSelectedVendorForChart] = useState<string>('');
-  const [showChart, setShowChart] = useState(false);
+  // Estados para Analytics - COMPLETAMENTE ISOLADOS de outras abas
+  const [analyticsFilters, setAnalyticsFilters] = useState({
+    selectedVendor: '',
+    selectedStatus: '',
+    dataInicio: '',
+    dataFim: '',
+    selectedOperadora: '',
+    valorMin: '',
+    valorMax: '',
+    searchQuery: ''
+  });
 
   const [visualMode, setVisualMode] = useState<'individual' | 'equipe'>('equipe');
   const [selectedPeriod, setSelectedPeriod] = useState('todos');
@@ -612,7 +617,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
 
       if (response.ok) {
         console.log('Meta atualizada com sucesso');
-        queryClient.invalidateQueries({ queryKey: ['/api/vendor-targets'] });
+        queryClientInstance.invalidateQueries({ queryKey: ['/api/vendor-targets'] });
       } else {
         console.error('Erro ao atualizar meta');
       }
@@ -2377,32 +2382,32 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     const operadoras = ['SulAmérica', 'Bradesco', 'Amil', 'Unimed', 'NotreDame'];
     const tiposPlano = ['Individual', 'Familiar', 'Empresarial', 'PME'];
 
-    // Usar os dados já filtrados (finalAnalyticsData) para consistência
-    const finalAnalyticsData = filteredProposals.filter(proposal => {
-      // Filtro de vendedores (usando o estado correto do Analytics)
-      if (selectedVendorForChart && selectedVendorForChart !== 'all' && proposal.vendorName !== selectedVendorForChart) return false;
+    // Dados filtrados do Analytics - ISOLADOS das outras abas
+    const finalAnalyticsData = (proposals || []).filter(proposal => {
+      // Filtro de vendedores
+      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all' && proposal.vendorName !== analyticsFilters.selectedVendor) return false;
       
-      // Filtro de status (usando o estado correto do Analytics)
-      if (selectedStatusForChart && selectedStatusForChart !== 'all' && proposal.status !== selectedStatusForChart) return false;
+      // Filtro de status
+      if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all' && proposal.status !== analyticsFilters.selectedStatus) return false;
       
-      // Filtro de operadora (mock)
-      if (selectedOperadora && proposal.contractData?.planoContratado !== selectedOperadora) return false;
+      // Filtro de operadora
+      if (analyticsFilters.selectedOperadora && proposal.contractData?.planoContratado !== analyticsFilters.selectedOperadora) return false;
       
       // Filtro de valor
       const valor = parseFloat(proposal.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
-      if (valorMin && valor < parseFloat(valorMin.replace(/\./g, '').replace(',', '.'))) return false;
-      if (valorMax && valor > parseFloat(valorMax.replace(/\./g, '').replace(',', '.'))) return false;
+      if (analyticsFilters.valorMin && valor < parseFloat(analyticsFilters.valorMin.replace(/\./g, '').replace(',', '.'))) return false;
+      if (analyticsFilters.valorMax && valor > parseFloat(analyticsFilters.valorMax.replace(/\./g, '').replace(',', '.'))) return false;
       
       // Filtro de período
-      if (dataInicio || dataFim) {
+      if (analyticsFilters.dataInicio || analyticsFilters.dataFim) {
         const proposalDate = new Date(proposal.createdAt || Date.now());
-        if (dataInicio && proposalDate < new Date(dataInicio)) return false;
-        if (dataFim && proposalDate > new Date(dataFim)) return false;
+        if (analyticsFilters.dataInicio && proposalDate < new Date(analyticsFilters.dataInicio)) return false;
+        if (analyticsFilters.dataFim && proposalDate > new Date(analyticsFilters.dataFim)) return false;
       }
       
       // Filtro de busca
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase();
+      if (analyticsFilters.searchQuery) {
+        const searchLower = analyticsFilters.searchQuery.toLowerCase();
         const matches = [
           proposal.contractData?.nomeEmpresa,
           proposal.contractData?.cnpj,
@@ -2476,22 +2481,22 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
     // Dados para gráfico pizza (baseado nos filtros selecionados)
     const getChartData = () => {
-      if (!selectedStatusForChart && !selectedVendorForChart) return [];
+      if (!analyticsFilters.selectedStatus && !analyticsFilters.selectedVendor) return [];
       
       let filteredData = finalAnalyticsData;
       
       // Filtrar por status
-      if (selectedStatusForChart && selectedStatusForChart !== 'all') {
-        filteredData = filteredData.filter(p => p.status === selectedStatusForChart);
+      if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') {
+        filteredData = filteredData.filter(p => p.status === analyticsFilters.selectedStatus);
       }
       
       // Filtrar por vendedor
-      if (selectedVendorForChart && selectedVendorForChart !== 'all') {
-        filteredData = filteredData.filter(p => p.vendorName === selectedVendorForChart);
+      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
+        filteredData = filteredData.filter(p => p.vendorName === analyticsFilters.selectedVendor);
       }
       
       // Se vendedor específico selecionado, mostrar distribuição por status
-      if (selectedVendorForChart && selectedVendorForChart !== 'all') {
+      if (analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') {
         return Object.entries(STATUS_CONFIG).map(([key, config]) => ({
           name: config.label,
           value: filteredData.filter(p => p.status === key).length,
@@ -2651,7 +2656,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Analytics & Performance</h2>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">Análise de {finalAnalyticsData.length} propostas{(selectedVendorForChart && selectedVendorForChart !== 'all') || (selectedStatusForChart && selectedStatusForChart !== 'all') ? ' (filtradas)' : ''}</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">Análise de {finalAnalyticsData.length} propostas{(analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all') || (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') || analyticsFilters.dataInicio || analyticsFilters.dataFim ? ' (filtradas)' : ''}</p>
             </div>
             <div className="text-white dark:text-white right">
               <span className="text-sm text-gray-600 dark:text-gray-300">{new Date().toLocaleDateString('pt-BR')}</span>
@@ -2670,9 +2675,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               <div>
                 <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Vendedores</label>
                 <select
-                  value={selectedVendorForChart}
+                  value={analyticsFilters.selectedVendor}
                   onChange={(e) => {
-                    setSelectedVendorForChart(e.target.value);
+                    setAnalyticsFilters(prev => ({...prev, selectedVendor: e.target.value}));
                   }}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
                 >
@@ -2689,8 +2694,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Data Início</label>
                 <input
                   type="date"
-                  value={dataInicio}
-                  onChange={(e) => setDataInicio(e.target.value)}
+                  value={analyticsFilters.dataInicio}
+                  onChange={(e) => setAnalyticsFilters(prev => ({...prev, dataInicio: e.target.value}))}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
                 />
               </div>
@@ -2700,8 +2705,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Data Fim</label>
                 <input
                   type="date"
-                  value={dataFim}
-                  onChange={(e) => setDataFim(e.target.value)}
+                  value={analyticsFilters.dataFim}
+                  onChange={(e) => setAnalyticsFilters(prev => ({...prev, dataFim: e.target.value}))}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"  
                 />
               </div>
@@ -2714,11 +2719,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => {
-                  setSelectedVendorForChart('');
-                  setSelectedStatusForChart('');
-                  setDataInicio('');
-                  setDataFim('');
-                  setShowChart(false);
+                  setAnalyticsFilters({
+                    selectedVendor: '',
+                    selectedStatus: '',
+                    dataInicio: '',
+                    dataFim: '',
+                    selectedOperadora: '',
+                    valorMin: '',
+                    valorMax: '',
+                    searchQuery: ''
+                  });
                 }}
                 className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm border border-gray-200 rounded-md"
               >
@@ -3113,10 +3123,35 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <h3 className="text-lg font-semibold mb-6 text-gray-800 dark:text-white">Performance Individual</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {vendorData
-                        .filter(vendor => !selectedVendor || vendor.name === selectedVendor)
-                        .map((vendor, index) => {
-                          const performance = (vendor.value / vendor.meta) * 100;
+                      {(() => {
+                        // Calcular performance individual usando dados reais e metas do banco
+                        return vendors?.map(vendor => {
+                          // Pegar propostas implantadas do vendedor
+                          const vendorImplantedProposals = proposals?.filter(p => 
+                            p.vendor_id === vendor.id && p.status === 'implantado'
+                          ) || [];
+                          
+                          const totalValue = vendorImplantedProposals.reduce((sum, p) => {
+                            const valor = p.contractData?.valor || '0';
+                            const numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                            return sum + numerico;
+                          }, 0);
+                          
+                          // Buscar a meta mais recente do vendedor
+                          const vendorTargetsList = vendorTargets?.filter(t => t.vendorId === vendor.id) || [];
+                          const latestTarget = vendorTargetsList.sort((a, b) => {
+                            if (a.year !== b.year) return b.year - a.year;
+                            return b.month - a.month;
+                          })[0];
+                          
+                          // Calcular performance usando a função existente ou fallback
+                          let performance = 0;
+                          if (latestTarget) {
+                            performance = calculateMetaProgress(vendor.id, latestTarget);
+                          } else if (totalValue > 0) {
+                            // Fallback: usar 10.000 como meta padrão se não houver meta definida
+                            performance = Math.min((totalValue / 10000) * 100, 100);
+                          }
                           
                           return (
                             <div key={vendor.id} className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
@@ -3153,7 +3188,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Vendas</label>
                                   <input 
                                     type="number" 
-                                    value={vendor.sales}
+                                    value={vendorImplantedProposals.length}
                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                     readOnly
                                   />
@@ -3163,17 +3198,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor Total</label>
                                   <input 
                                     type="text" 
-                                    value={`R$ ${vendor.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                                    value={`R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                                     className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                     readOnly
                                   />
                                 </div>
                                 
-
+                                {latestTarget && (
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Meta</label>
+                                    <input 
+                                      type="text" 
+                                      value={`R$ ${parseFloat(latestTarget.targetValue.toString().replace(/[R$.\s]/g, '').replace(',', '.')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500"
+                                      readOnly
+                                    />
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );
-                        })}
+                        }) || [];
+                      })()}
                     </div>
                   </div>
 
@@ -3304,14 +3350,14 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         </div>
 
         {/* Gráfico de Distribuição */}
-        {showChart && (selectedStatusForChart || selectedVendorForChart) && (
+        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
               <h2 className="text-gray-900 dark:text-white text-lg font-medium">
-                {selectedVendorForChart && selectedVendorForChart !== 'all' 
-                  ? `Distribuição de Status - ${selectedVendorForChart}`
-                  : selectedStatusForChart && selectedStatusForChart !== 'all'
-                  ? `Distribuição por Vendedores - ${STATUS_CONFIG[selectedStatusForChart as keyof typeof STATUS_CONFIG]?.label}`
+                {analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all' 
+                  ? `Distribuição de Status - ${analyticsFilters.selectedVendor}`
+                  : analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all'
+                  ? `Distribuição por Vendedores - ${STATUS_CONFIG[analyticsFilters.selectedStatus as keyof typeof STATUS_CONFIG]?.label}`
                   : 'Distribuição Geral'
                 }
               </h2>
