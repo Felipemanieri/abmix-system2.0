@@ -1265,14 +1265,21 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     }, 0);
 
     // Extrair valor numérico da meta com verificação de segurança
-    const targetValue = target.targetValue ? parseFloat(target.targetValue.toString().replace(/[^\d]/g, '')) || 1 : 1;
+    const targetValue = target.targetValue ? parseFloat(target.targetValue.toString().replace(/[R$\s\.]/g, '').replace(',', '.')) || 1 : 1;
     const targetProposals = target.targetProposals || 1;
 
-    // Calcular progresso baseado APENAS no valor das vendas
+    // Calcular progressos individuais
     const valueProgress = Math.min((totalValue / targetValue) * 100, 100);
+    const proposalProgress = Math.min((vendorProposals.length / targetProposals) * 100, 100);
 
-    // Retornar apenas o progresso por valor das vendas
-    return Math.round(valueProgress);
+    // Priorizar valor das vendas, mas permitir que propostas compensem se valor for baixo
+    // Se o progresso por valor for maior que 50%, usar apenas valor
+    // Se o progresso por valor for menor, usar o maior entre os dois
+    if (valueProgress >= 50) {
+      return Math.round(valueProgress);
+    } else {
+      return Math.round(Math.max(valueProgress, proposalProgress));
+    }
   };
 
   const renderDashboard = () => (
