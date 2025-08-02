@@ -3135,7 +3135,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           
                           const allVendorProposals = proposals?.filter(p => {
                             console.log(`     Checking proposal: ${p.id}, vendor_id: ${p.vendor_id}, vendorId: ${p.vendorId}`);
-                            return p.vendor_id === vendor.id || p.vendorId === vendor.id;
+                            return p.vendorId === vendor.id || p.vendor_id === vendor.id;
                           }) || [];
                           console.log(`   Total propostas for ${vendor.name}: ${allVendorProposals.length}`);
                           
@@ -3143,13 +3143,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           console.log(`   Propostas implantadas: ${vendorImplantedProposals.length}`);
                           
                           const totalValue = vendorImplantedProposals.reduce((sum, p) => {
-                            // Usar contract_data primeiro, depois contractData como fallback
-                            const contractData = p.contract_data || p.contractData;
+                            // Usar contractData primeiro (formato correto visto nos logs)
+                            const contractData = p.contractData || p.contract_data;
                             const valor = contractData?.valor || '0';
                             console.log(`     Proposta ${p.id}:`);
-                            console.log(`       contract_data:`, p.contract_data);
                             console.log(`       contractData:`, p.contractData);
-                            console.log(`       valor final:`, valor);
+                            console.log(`       contract_data:`, p.contract_data);
+                            console.log(`       valor extraído:`, valor);
                             
                             // Converter string do tipo "1.000,00" para número
                             let numerico = 0;
@@ -3270,8 +3270,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           const realVendorSales = vendorsToShow.map(vendor => {
                             console.log(`🔥 BARRA PROGRESSO - Vendedor: ${vendor.name} (ID: ${vendor.id})`);
                             
-                            // Pegar TODAS as propostas do vendedor
-                            let allVendorProposals = proposals?.filter(p => p.vendor_id === vendor.id) || [];
+                            // Pegar TODAS as propostas do vendedor (usar vendorId primeiro)
+                            let allVendorProposals = proposals?.filter(p => p.vendorId === vendor.id || p.vendor_id === vendor.id) || [];
                             console.log(`   Total propostas: ${allVendorProposals.length}`);
                             
                             // APLICAR FILTRO DE STATUS
@@ -3296,10 +3296,19 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             }
                             
                             const totalValue = allVendorProposals.reduce((sum, p) => {
-                              const valor = p.contract_data?.valor || p.contractData?.valor || '0';
-                              console.log(`     Proposta ${p.id}: valor = ${valor}`);
-                              const numerico = parseFloat(valor.toString().replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
-                              console.log(`     Valor numérico: ${numerico}`);
+                              // Usar contractData primeiro (formato correto visto nos logs)
+                              const contractData = p.contractData || p.contract_data;
+                              const valor = contractData?.valor || '0';
+                              console.log(`     Proposta ${p.id}: contractData =`, contractData);
+                              console.log(`     Valor extraído: ${valor}`);
+                              
+                              let numerico = 0;
+                              if (valor && typeof valor === 'string') {
+                                numerico = parseFloat(valor.replace(/[R$.\s]/g, '').replace(',', '.')) || 0;
+                              } else if (typeof valor === 'number') {
+                                numerico = valor;
+                              }
+                              console.log(`     Valor numérico final: ${numerico}`);
                               return sum + numerico;
                             }, 0);
                             
