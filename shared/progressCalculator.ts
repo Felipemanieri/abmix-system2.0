@@ -155,34 +155,20 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
   // Progresso dos anexos (consideramos 100% se existir pelo menos 1 anexo)
   const attachmentsProgress = clientAttachments.length > 0 ? 100 : 0;
   
-  // Cálculo do progresso geral com NOVOS PESOS incluindo contratos
+  // Cálculo do progresso geral - CADA CAMPO PREENCHIDO CONTA
   let overallProgress = 0;
-  let weightSum = 0;
   
-  // Dados contratuais sempre contam (peso 0.3 - importante base)
-  overallProgress += contractProgress * 0.3;
-  weightSum += 0.3;
+  // PESO FIXO para cada seção (sempre contribui, mesmo vazia)
+  const contractWeight = 0.3;  // 30% para dados contratuais
+  const titularWeight = 0.5;   // 50% para titulares
+  const dependenteWeight = 0.15; // 15% para dependentes
+  const attachmentWeight = 0.05; // 5% para anexos
   
-  // Titulares sempre contam (peso 0.5 - mais importante)
-  if (titulares.length > 0) {
-    overallProgress += totalTitularesProgress * 0.5;
-    weightSum += 0.5;
-  }
-  
-  // Dependentes contam se existirem (peso 0.15)
-  if (dependentes.length > 0) {
-    overallProgress += totalDependentesProgress * 0.15;
-    weightSum += 0.15;
-  }
-  
-  // Anexos sempre contam (peso 0.05)
-  overallProgress += attachmentsProgress * 0.05;
-  weightSum += 0.05;
-  
-  // Normalizar se necessário
-  if (weightSum > 0) {
-    overallProgress = overallProgress / weightSum;
-  }
+  // Cada seção contribui com seu peso * progresso
+  overallProgress += contractProgress * contractWeight;
+  overallProgress += totalTitularesProgress * titularWeight;
+  overallProgress += totalDependentesProgress * dependenteWeight;
+  overallProgress += attachmentsProgress * attachmentWeight;
   
   // CALIBRAÇÃO FINAL: Máximo 99% até ser aprovado na implantação
   if (overallProgress >= 99 && status !== 'implantado') {
