@@ -3466,8 +3466,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Gráfico de Distribuição */}
-        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && (
+        {/* Gráfico de Distribuição - SÓ APARECE SE HÁ DADOS REAIS */}
+        {(analyticsFilters.selectedStatus || analyticsFilters.selectedVendor) && finalAnalyticsData.length > 0 && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
               <h2 className="text-gray-900 dark:text-white text-lg font-medium">
