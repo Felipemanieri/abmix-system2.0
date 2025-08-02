@@ -2505,6 +2505,19 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         })).filter(item => item.value > 0);
       }
       
+      // Se status específico selecionado (sem vendedor), mostrar distribuição por vendedores desse status
+      if (analyticsFilters.selectedStatus && analyticsFilters.selectedStatus !== 'all') {
+        return uniqueVendors.map(vendor => {
+          const count = filteredData.filter(p => p.vendorName === vendor).length;
+          return {
+            name: vendor,
+            value: count,
+            color: getVendorColor(vendor),
+            fill: getVendorColor(vendor)
+          };
+        }).filter(item => item.value > 0);
+      }
+      
       // Caso contrário, mostrar distribuição por vendedores
       return uniqueVendors.map(vendor => {
         const count = filteredData.filter(p => p.vendorName === vendor).length;
@@ -3066,7 +3079,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       {(() => {
                         // Calcular performance individual usando dados reais e metas do banco
-                        return vendors?.map(vendor => {
+                        // FILTRAR VENDEDORES BASEADO NO FILTRO SELECIONADO
+                        const filteredVendors = analyticsFilters.selectedVendor && analyticsFilters.selectedVendor !== 'all' 
+                          ? vendors?.filter(v => v.name === analyticsFilters.selectedVendor) || []
+                          : vendors || [];
+
+                        return filteredVendors.map(vendor => {
                           // Pegar TODAS as propostas implantadas do vendedor - SEM FILTROS
                           const vendorImplantedProposals = proposals?.filter(p => 
                             p.vendor_id === vendor.id && p.status === 'implantado'
