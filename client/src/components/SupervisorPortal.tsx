@@ -71,6 +71,7 @@ interface Award {
 
 export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   const [activeView, setActiveView] = useState<SupervisorView>('dashboard');
+  const [activeTab, setActiveTab] = useState('analytics');
   const [showNotifications, setShowNotifications] = useState(false);
 
   const getMotivationalMessage = (progress: number) => {
