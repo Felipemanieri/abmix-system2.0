@@ -1282,6 +1282,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     }
   };
 
+  // Função para calcular valor acumulado de vendas de cada vendedor
+  const calculateVendorAccumulatedValue = (vendorId: number) => {
+    if (!proposals) {
+      return 0;
+    }
+
+    // Buscar TODAS as propostas implantadas do vendedor
+    const vendorProposals = proposals.filter((p: any) => 
+      p.vendorId === vendorId && p.status === 'implantado'
+    );
+
+    // Calcular valor total acumulado
+    const totalAccumulated = vendorProposals.reduce((sum: number, p: any) => {
+      const value = p.contractData?.valor || "0";
+      const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+      const numericValue = parseFloat(cleanValue) || 0;
+      return sum + numericValue;
+    }, 0);
+
+    return totalAccumulated;
+  };
+
   const renderDashboard = () => (
     <div className="space-y-6">
       {/* Header com botão de reset */}
@@ -1482,6 +1504,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <th className="text-left py-2 text-gray-900 dark:text-white">Vendedor</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Período</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Meta Valor</th>
+                <th className="text-left py-2 text-gray-900 dark:text-white">Valor Acumulado</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Meta Propostas</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Bônus</th>
                 <th className="text-left py-2 text-gray-900 dark:text-white">Progresso</th>
@@ -1508,6 +1531,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     return b.month - a.month;
                   })[0];
 
+                  // Calcular valor acumulado do vendedor
+                  const accumulatedValue = calculateVendorAccumulatedValue(latestTarget.vendorId);
+
                   return (
                     <tr key={`vendor-${vendorId}`} className="border-b border-gray-200 dark:border-gray-600">
                       <td className="py-2 text-gray-900 dark:text-white">
@@ -1522,6 +1548,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         )}
                       </td>
                       <td className="py-2 text-gray-900 dark:text-white">{formatCurrency(latestTarget.targetValue)}</td>
+                      <td className="py-2 text-gray-900 dark:text-white font-semibold text-green-600">
+                        {formatCurrency(accumulatedValue)}
+                      </td>
                       <td className="py-2 text-gray-900 dark:text-white">{latestTarget.targetProposals}</td>
                       <td className="py-2 text-gray-900 dark:text-white">{formatCurrency(latestTarget.bonus)}</td>
                       <td className="py-2">
