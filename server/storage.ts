@@ -205,9 +205,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVendorProposals(vendorId: number): Promise<any[]> {
-    return await db.select().from(proposals)
+    const proposalResults = await db.select().from(proposals)
       .where(eq(proposals.vendorId, vendorId))
       .orderBy(proposals.createdAt); // Manter ordem cronológica de criação
+      
+    // Log detalhado para debug
+    console.log(`📊 STORAGE - Propostas do vendedor ${vendorId}:`, proposalResults.map(p => ({
+      abmId: p.abmId,
+      contractData: p.contractData,
+      titulares: p.titulares?.length || 0,
+      dependentes: p.dependentes?.length || 0,
+      status: p.status
+    })));
+    
+    return proposalResults;
   }
 
   async getAllProposals(): Promise<any[]> {

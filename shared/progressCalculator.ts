@@ -119,6 +119,15 @@ export function calculateProposalProgress(proposal: ProposalData & { status?: st
 } {
   const { titulares = [], dependentes = [], clientAttachments = [], contractData, status } = proposal;
   
+  // Log detalhado para debug FORÇADO
+  console.log(`🔍 CALCULATOR - Dados recebidos:`, {
+    contractData,
+    titularesCount: titulares.length,
+    dependentesCount: dependentes.length,
+    attachmentsCount: clientAttachments.length,
+    status
+  });
+  
   // SE JÁ FOI APROVADO NA IMPLANTAÇÃO = 100%
   if (status === 'implantado') {
     return {
