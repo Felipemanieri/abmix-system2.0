@@ -1973,9 +1973,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <div 
                       className={`h-2 rounded-full transition-all duration-300 ${
                         progress >= 100 ? 'bg-green-500' :
-                        progress >= 75 ? 'bg-blue-500' :
-                        progress >= 50 ? 'bg-yellow-500' :
-                        'bg-gray-400'
+                        progress >= 70 ? 'bg-yellow-500' :
+                        progress >= 50 ? 'bg-orange-500' :
+                        'bg-red-500'
                       }`}
                       style={{ width: `${progress}%` }}
                     ></div>
@@ -1985,6 +1985,18 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         {formatCurrency(superPremium)}
                       </span>
                     </div>
+                  </div>
+                  
+                  {/* Mensagem motivacional */}
+                  <div className="mt-2 text-center">
+                    <span className={`text-xs font-medium ${
+                      progress >= 100 ? 'text-green-600' :
+                      progress >= 70 ? 'text-yellow-600' :
+                      progress >= 50 ? 'text-orange-600' :
+                      'text-red-600'
+                    }`}>
+                      {getMotivationalMessage(progress)}
+                    </span>
                   </div>
                 </div>
 
