@@ -94,6 +94,12 @@ const VendorPortal: React.FC<VendorPortalProps> = ({ user, onLogout }) => {
   const { proposals: realProposals, isLoading: proposalsLoading } = useVendorProposals(user?.id || 0);
   // useRealTimeProposals(user?.id); // DESABILITADO - causando erros repetidos
   
+  // Hook para buscar TODAS as propostas (necessário para calcular metas da equipe)
+  const { data: allProposals = [] } = useQuery({
+    queryKey: ['/api/proposals'],
+    enabled: activeView === 'metas' // Só buscar quando estiver na aba de metas
+  });
+  
   // Hook para exclusão de propostas
   const deleteProposal = useDeleteProposal();
 
