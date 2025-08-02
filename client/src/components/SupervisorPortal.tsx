@@ -2905,248 +2905,190 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
           </div>
         </div>
 
-        {/* Performance Individual dos Vendedores - Simples e Clara */}
+        {/* Torres de Performance Mensal */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Performance Individual dos Vendedores</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Propostas por vendedor (dados reais do sistema)</p>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Torres de Performance Mensal</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Valor total vendido por mês - últimos 12 meses (apenas status implantado)</p>
           </div>
           <div className="p-6">
-            {/* Gráfico de Barras - Performance Individual */}
-            {uniqueVendors.filter(vendor => {
-              const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
-              return hasProposals;
-            }).length > 0 ? (
-              <div className="mb-8">
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                  <canvas
-                    ref={(canvas) => {
-                      if (!canvas) return;
-                      
-                      const ctx = canvas.getContext('2d');
-                      if (!ctx) return;
-
-                      // Destruir gráfico existente se houver
-                      if (canvas.chart) {
-                        canvas.chart.destroy();
-                      }
-
-                      // Preparar dados dos vendedores filtrados
-                      const vendorsWithData = uniqueVendors.filter(vendor => {
-                        const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
-                        return hasProposals;
-                      });
-
-                      const chartData = vendorsWithData.map(vendor => {
-                        const vendorProposals = finalAnalyticsData.filter(p => p.vendorName === vendor);
-                        const convertidas = vendorProposals.filter(p => p.status === 'implantado').length;
-                        const faturamento = vendorProposals
-                          .filter(p => p.status === 'implantado')
-                          .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0);
-                        
-                        return {
-                          vendor: vendor,
-                          total: vendorProposals.length,
-                          convertidas: convertidas,
-                          taxaConversao: vendorProposals.length > 0 ? (convertidas / vendorProposals.length) * 100 : 0,
-                          faturamento: faturamento / 1000, // Converter para milhares
-                          color: getVendorColor(vendor)
-                        };
-                      });
-
-                      // Criar gráfico de barras
-                      canvas.chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                          labels: chartData.map(d => d.vendor.length > 15 ? d.vendor.substring(0, 15) + '...' : d.vendor),
-                          datasets: [
-                            {
-                              label: 'Total Propostas',
-                              data: chartData.map(d => d.total),
-                              backgroundColor: chartData.map(d => d.color + '80'),
-                              borderColor: chartData.map(d => d.color),
-                              borderWidth: 2,
-                              yAxisID: 'y'
-                            },
-                            {
-                              label: 'Convertidas',
-                              data: chartData.map(d => d.convertidas),
-                              backgroundColor: chartData.map(d => '#10b981' + '80'),
-                              borderColor: '#10b981',
-                              borderWidth: 2,
-                              yAxisID: 'y'
-                            },
-                            {
-                              label: 'Taxa Conversão (%)',
-                              data: chartData.map(d => d.taxaConversao),
-                              backgroundColor: '#3b82f6' + '60',
-                              borderColor: '#3b82f6',
-                              borderWidth: 2,
-                              type: 'line',
-                              yAxisID: 'y1',
-                              tension: 0.4
-                            }
-                          ]
-                        },
-                        options: {
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            title: {
-                              display: true,
-                              text: 'Performance Individual dos Vendedores - Dados Filtrados',
-                              font: { size: 16, weight: 'bold' },
-                              color: '#374151'
-                            },
-                            legend: {
-                              position: 'top',
-                              labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                color: '#374151'
-                              }
-                            },
-                            tooltip: {
-                              callbacks: {
-                                afterLabel: function(context) {
-                                  const dataIndex = context.dataIndex;
-                                  const vendorData = chartData[dataIndex];
-                                  if (context.datasetIndex === 0) {
-                                    return `Faturamento: R$ ${(vendorData.faturamento * 1000).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                                  }
-                                  return '';
-                                }
-                              }
-                            }
-                          },
-                          scales: {
-                            x: {
-                              grid: { display: false },
-                              ticks: { 
-                                color: '#6b7280',
-                                maxRotation: 45
-                              }
-                            },
-                            y: {
-                              type: 'linear',
-                              display: true,
-                              position: 'left',
-                              title: {
-                                display: true,
-                                text: 'Número de Propostas',
-                                color: '#374151'
-                              },
-                              grid: { color: '#e5e7eb' },
-                              ticks: { 
-                                color: '#6b7280',
-                                stepSize: 1
-                              }
-                            },
-                            y1: {
-                              type: 'linear',
-                              display: true,
-                              position: 'right',
-                              title: {
-                                display: true,
-                                text: 'Taxa de Conversão (%)',
-                                color: '#374151'
-                              },
-                              grid: { drawOnChartArea: false },
-                              ticks: { 
-                                color: '#6b7280',
-                                callback: function(value) {
-                                  return value + '%';
-                                }
-                              },
-                              max: 100
-                            }
-                          },
-                          interaction: {
-                            intersect: false,
-                            mode: 'index'
-                          }
-                        }
-                      });
-                    }}
-                    height="400"
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            ) : null}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {uniqueVendors.filter(vendor => {
-                // Só mostrar vendedores que têm propostas no período filtrado
-                const hasProposals = finalAnalyticsData.filter(p => p.vendorName === vendor).length > 0;
-                return hasProposals;
-              }).map(vendor => {
-                // Calcular dados REAIS do banco
-                const vendorProposals = finalAnalyticsData.filter(p => p.vendorName === vendor);
-                const convertidas = vendorProposals.filter(p => p.status === 'implantado').length;
-                const faturamento = vendorProposals
-                  .filter(p => p.status === 'implantado')
-                  .reduce((sum, p) => sum + parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0'), 0);
-                
-                const vendorData = {
-                  total: vendorProposals.length,
-                  convertidas: convertidas,
-                  taxaConversao: vendorProposals.length > 0 ? (convertidas / vendorProposals.length) * 100 : 0,
-                  faturamento: faturamento
-                };
-
-                const vendorColor = getVendorColor(vendor);
-                
+            {(() => {
+              // Preparar dados mensais simplificados para gráfico de torres
+              const now = new Date();
+              const monthsLabels = [];
+              
+              // Criar últimos 12 meses
+              for (let i = 11; i >= 0; i--) {
+                const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                monthsLabels.push(month.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
+              }
+              
+              // Filtrar vendedores com vendas implantadas
+              const vendorsWithSales = uniqueVendors.filter(vendor => 
+                finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado').length > 0
+              );
+              
+              if (vendorsWithSales.length === 0) {
                 return (
-                  <div key={vendor} className="p-4 rounded-lg border-2" style={{ borderColor: vendorColor, backgroundColor: `${vendorColor}15` }}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: vendorColor }}
-                      ></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{vendor}</span>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Total Propostas</span>
-                        <span className="text-lg font-bold text-gray-900 dark:text-white">{vendorData.total}</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Convertidas</span>
-                        <span className="text-sm font-semibold text-green-600">{vendorData.convertidas}</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Taxa Conversão</span>
-                        <span className="text-sm font-semibold text-blue-600">{vendorData.taxaConversao.toFixed(1)}%</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Faturamento</span>
-                        <span className="text-sm font-semibold text-purple-600">R$ {vendorData.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                      </div>
-                      
-                      {/* Barra de progresso baseada no total */}
-                      <div className="mt-3 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full transition-all duration-500"
-                          style={{ 
-                            backgroundColor: vendorColor,
-                            width: `${Math.min((vendorData.total / Math.max(...uniqueVendors.map(v => finalAnalyticsData.filter(p => p.vendorName === v).length))) * 100, 100)}%`
-                          }}
-                        ></div>
-                      </div>
-                    </div>
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <p>Nenhuma venda implantada encontrada</p>
+                    <p className="text-sm mt-2">Aguarde propostas serem marcadas como implantadas</p>
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div className="space-y-6">
+                  {/* Gráfico de Torres (Chart.js) */}
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                    <canvas
+                      ref={(canvas) => {
+                        if (!canvas) return;
+                        
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return;
+
+                        // Destruir gráfico existente
+                        if (canvas.chart) {
+                          canvas.chart.destroy();
+                        }
+
+                        // Criar datasets para cada vendedor
+                        const datasets = vendorsWithSales.map(vendor => {
+                          const monthlyValues = [];
+                          
+                          for (let i = 11; i >= 0; i--) {
+                            const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                            const monthKey = month.toISOString().slice(0, 7);
+                            
+                            const monthSales = finalAnalyticsData.filter(proposal => {
+                              const proposalDate = new Date(proposal.createdAt || Date.now());
+                              const proposalMonth = proposalDate.toISOString().slice(0, 7);
+                              return proposal.vendorName === vendor && 
+                                     proposal.status === 'implantado' && 
+                                     proposalMonth === monthKey;
+                            });
+                            
+                            const totalValue = monthSales.reduce((sum, p) => {
+                              const value = parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
+                              return sum + value;
+                            }, 0);
+                            
+                            monthlyValues.push(totalValue / 1000); // Converter para milhares
+                          }
+                          
+                          return {
+                            label: vendor,
+                            data: monthlyValues,
+                            backgroundColor: getVendorColor(vendor) + '80',
+                            borderColor: getVendorColor(vendor),
+                            borderWidth: 2
+                          };
+                        });
+
+                        // Criar gráfico
+                        canvas.chart = new Chart(ctx, {
+                          type: 'bar',
+                          data: {
+                            labels: monthsLabels,
+                            datasets: datasets
+                          },
+                          options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              title: {
+                                display: true,
+                                text: 'Torres de Performance - Valor Vendido Mensal (R$ mil)',
+                                font: { size: 16, weight: 'bold' },
+                                color: '#374151'
+                              },
+                              legend: {
+                                position: 'top',
+                                labels: {
+                                  usePointStyle: true,
+                                  padding: 15,
+                                  color: '#374151'
+                                }
+                              },
+                              tooltip: {
+                                callbacks: {
+                                  label: function(context) {
+                                    const value = context.parsed.y * 1000;
+                                    return `${context.dataset.label}: R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                                  }
+                                }
+                              }
+                            },
+                            scales: {
+                              x: {
+                                grid: { display: false },
+                                ticks: { 
+                                  color: '#6b7280',
+                                  maxRotation: 45
+                                }
+                              },
+                              y: {
+                                grid: { color: '#f3f4f6' },
+                                ticks: { 
+                                  color: '#6b7280',
+                                  callback: function(value) {
+                                    return 'R$ ' + (value * 1000).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+                                  }
+                                },
+                                title: {
+                                  display: true,
+                                  text: 'Valor Vendido (R$ mil)',
+                                  color: '#374151'
+                                }
+                              }
+                            }
+                          }
+                        });
+                      }}
+                      height="400"
+                    />
+                  </div>
+
+                  {/* Resumo por Vendedor */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {vendorsWithSales.map(vendor => {
+                      const vendorSales = finalAnalyticsData.filter(p => p.vendorName === vendor && p.status === 'implantado');
+                      const totalValue = vendorSales.reduce((sum, p) => {
+                        const value = parseFloat(p.contractData?.valor?.replace(/\./g, '').replace(',', '.') || '0');
+                        return sum + value;
+                      }, 0);
+                      
+                      return (
+                        <div 
+                          key={vendor} 
+                          className="text-center p-4 rounded-lg border-2" 
+                          style={{ 
+                            borderColor: getVendorColor(vendor), 
+                            backgroundColor: getVendorColor(vendor) + '15' 
+                          }}
+                        >
+                          <div 
+                            className="text-xl font-bold mb-1"
+                            style={{ color: getVendorColor(vendor) }}
+                          >
+                            R$ {totalValue.toLocaleString('pt-BR')}
+                          </div>
+                          <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                            {vendor}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {vendorSales.length} vendas
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
-
-
 
 
         {/* Gráfico de Distribuição */}
