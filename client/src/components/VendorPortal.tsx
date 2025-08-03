@@ -764,7 +764,7 @@ Vendedor Abmix`;
     // Se vendorId é fornecido, filtrar apenas propostas desse vendedor
     // Se não, calcular para toda a equipe
     const filteredProposals = vendorId 
-      ? realProposals.filter(p => p.vendorId === vendorId && p.status === 'implantado')
+      ? realProposals.filter(p => Number(p.vendorId) === Number(vendorId) && p.status === 'implantado')
       : realProposals.filter(p => p.status === 'implantado');
     
     console.log('💰 DEBUG VALOR ACUMULADO:');
