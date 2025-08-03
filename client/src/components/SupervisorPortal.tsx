@@ -6017,7 +6017,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           // CAIXA 5: TOTAL COM DESCONTOS (valor líquido após desconto)
                           const totalComDescontos = vendasImplantadas.reduce((sum, item) => {
                             const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                            const descontoStr = reportDesconto[item.abmId] || '0%';
+                            // Usar o desconto direto dos dados do item
+                            const descontoStr = item.desconto || '0%';
                             const desconto = parseFloat(descontoStr.replace('%', '')) / 100;
                             const valorComDesconto = valor * (1 - desconto);
                             return sum + valorComDesconto;
