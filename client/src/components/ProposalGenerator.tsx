@@ -996,44 +996,9 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           }
         }
         
-        // 5. Preencher Endereço se disponível
-        if (d.logradouro && d.municipio_residencia) {
-          const enderecoCompleto = formatarEndereco(dados);
-          if (enderecoCompleto) {
-            console.log('📝 Preenchendo endereço:', enderecoCompleto);
-            if (type === 'titular') {
-              updateTitular(index, 'enderecoCompleto', enderecoCompleto);
-            } else {
-              updateDependente(index, 'enderecoCompleto', enderecoCompleto);
-            }
-          }
-        }
+
         
-        // 6. Preencher Telefone se disponível
-        if (d.telefone_ddd && d.telefone_numero) {
-          const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-          if (telefoneFormatado) {
-            console.log('📝 Preenchendo telefone:', telefoneFormatado);
-            if (type === 'titular') {
-              updateTitular(index, 'telefonePessoal', telefoneFormatado);
-            } else {
-              updateDependente(index, 'telefonePessoal', telefoneFormatado);
-            }
-          }
-        }
-        
-        // 7. Preencher CEP se disponível
-        if (d.cep) {
-          console.log('📝 Preenchendo CEP:', d.cep);
-          if (type === 'titular') {
-            updateTitular(index, 'cep', d.cep);
-          } else {
-            updateDependente(index, 'cep', d.cep);
-          }
-        }
-        
-        console.log('✅ Todos os campos preenchidos automaticamente!');
-        showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
+        showNotification(`Dados de ${d.nome} preenchidos!`, 'success');
       } else {
         console.log('❌ CPF não encontrado na base de dados');
         showNotification('CPF não encontrado na base de dados', 'warning');
