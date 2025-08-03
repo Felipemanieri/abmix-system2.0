@@ -5723,38 +5723,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           </div>
                         </div>
 
-                        {/* SEÇÃO SEPARADA PARA SUPERVISORES */}
-                        <div className="mt-8 border-t-4 border-purple-500 pt-6">
-                          <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-2xl font-bold text-purple-900 dark:text-purple-100 flex items-center gap-2">
-                              👑 COMISSÕES DE SUPERVISORES
-                            </h3>
-                            <div className="text-sm text-purple-700 dark:text-purple-300">
-                              Filtro exclusivo: 5% de todas as propostas
-                            </div>
-                          </div>
 
-                          <div className="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <span className="font-bold text-purple-900 dark:text-purple-100">
-                                  COMISSÃO SUPERVISOR GERAL:
-                                </span>
-                                <div className="text-sm text-purple-800 dark:text-purple-200 mt-1">
-                                  5% sobre {reportData.length} propostas filtradas
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-bold text-purple-900 dark:text-purple-100 text-xl">
-                                  R$ {totalSupervisorComissions.toFixed(2).replace('.', ',')}
-                                </div>
-                                <div className="text-sm text-purple-700 dark:text-purple-300">
-                                  Base: R$ {totalGeralValor.toFixed(2).replace('.', ',')} × 5%
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
                       </div>
                     );
                   })()}
