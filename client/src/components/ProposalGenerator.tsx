@@ -950,29 +950,56 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // SINGLE UPDATE para evitar conflitos de estado
-        const updates = { cpf: cpfFormatado }; // SEMPRE preservar CPF
+        // ATUALIZAÇÃO COM LOGS PARA DEBUG
+        const updates: any = { cpf: cpfFormatado };
         
-        if (d.nome) updates.nomeCompleto = d.nome;
-        if (d.mae) updates.nomeMae = d.mae;
-        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        console.log('🔧 Construindo updates com CPF preservado:', cpfFormatado);
+        
+        if (d.nome) {
+          updates.nomeCompleto = d.nome;
+          console.log('✅ Adicionado nome:', d.nome);
+        }
+        if (d.mae) {
+          updates.nomeMae = d.mae;
+          console.log('✅ Adicionado mãe:', d.mae);
+        }
+        if (d.sexo) {
+          updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          console.log('✅ Adicionado sexo:', updates.sexo);
+        }
         if (d.data_nascimento) {
           const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
           if (match) {
             const [, dia, mes, ano] = match;
             updates.dataNascimento = `${ano}-${mes}-${dia}`;
+            console.log('✅ Adicionado data:', updates.dataNascimento);
           }
         }
         
-        // ÚNICA atualização para evitar conflitos
+        console.log('🔧 Updates finais:', updates);
+        console.log('🔧 Tipo:', type, 'Index:', index);
+        
+        // APLICAR ATUALIZAÇÃO
         if (type === 'titular') {
-          setProposalData(prev => ({
-            ...prev,
-            titulares: prev.titulares.map((t, i) => 
-              i === index ? { ...t, ...updates } : t
-            )
-          }));
+          console.log('🔧 Atualizando titular...');
+          setProposalData(prev => {
+            const newData = {
+              ...prev,
+              titulares: prev.titulares.map((t, i) => {
+                if (i === index) {
+                  console.log('🔧 Dados antes:', t);
+                  const updated = { ...t, ...updates };
+                  console.log('🔧 Dados depois:', updated);
+                  return updated;
+                }
+                return t;
+              })
+            };
+            console.log('🔧 Estado completo atualizado');
+            return newData;
+          });
         } else {
+          console.log('🔧 Atualizando dependente...');
           setProposalData(prev => ({
             ...prev,
             dependentes: prev.dependentes.map((dep, i) => 
