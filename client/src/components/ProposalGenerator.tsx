@@ -346,14 +346,20 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   };
 
   const updateTitular = (index: number, field: keyof PersonData, value: string) => {
+    console.log('🔧 updateTitular chamado:', { index, field, value });
     const newTitulares = [...titulares];
     newTitulares[index] = { ...newTitulares[index], [field]: value };
+    console.log('🔧 Estado antes:', titulares[index]?.[field]);
+    console.log('🔧 Estado depois:', newTitulares[index]?.[field]);
     setTitulares(newTitulares);
   };
 
   const updateDependente = (index: number, field: keyof PersonData, value: string) => {
+    console.log('🔧 updateDependente chamado:', { index, field, value });
     const newDependentes = [...dependentes];
     newDependentes[index] = { ...newDependentes[index], [field]: value };
+    console.log('🔧 Estado antes:', dependentes[index]?.[field]);
+    console.log('🔧 Estado depois:', newDependentes[index]?.[field]);
     setDependentes(newDependentes);
   };
 

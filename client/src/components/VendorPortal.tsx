@@ -813,27 +813,44 @@ Vendedor Abmix`;
 
   // Função para calcular progresso das metas
   const calculateMetaProgress = (targetValue: string, targetProposals: number, vendorId: number) => {
-    if (!realProposals || realProposals.length === 0) return { valueProgress: 0, proposalProgress: 0 };
+    console.log('🎯 CALCULANDO PROGRESSO META INDIVIDUAL:');
+    console.log('Target Value:', targetValue);
+    console.log('Target Proposals:', targetProposals);
+    console.log('Vendor ID:', vendorId);
     
-    // Filtrar propostas implantadas do vendedor específico
-    const vendorImplantedProposals = realProposals.filter(p => 
-      p.vendorId === vendorId && p.status === 'implantado'
+    if (!realProposals || realProposals.length === 0) {
+      return { valueProgress: 0, proposalProgress: 0, currentValue: 0, currentProposals: 0 };
+    }
+    
+    // Calcular valor atual das vendas do vendedor
+    const currentValue = calculateAccumulatedValue(vendorId);
+    console.log('Current Value calculado:', currentValue);
+    
+    // Calcular propostas do vendedor
+    const vendorProposals = realProposals.filter(p => 
+      Number(p.vendorId) === Number(vendorId) && 
+      p.status === 'implantado'
     );
+    const currentProposals = vendorProposals.length;
+    console.log('Current Proposals calculadas:', currentProposals);
     
-    // Calcular valor total das vendas implantadas
-    const totalValue = vendorImplantedProposals.reduce((sum, proposal) => {
-      const value = parseFloat(proposal.contractData?.valor?.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
-      return sum + value;
-    }, 0);
+    // Converter target value para número
+    const targetVal = parseFloat(targetValue.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+    console.log('Target Value convertido:', targetVal);
     
-    // Calcular progresso de valor (%)
-    const targetValueNumber = parseFloat(targetValue.replace(/[^0-9,]/g, '').replace(',', '.') || '0');
-    const valueProgress = targetValueNumber > 0 ? Math.min((totalValue / targetValueNumber) * 100, 100) : 0;
+    // Calcular progresso baseado em valor E número de propostas
+    const valueProgress = targetVal > 0 ? Math.min((currentValue / targetVal) * 100, 100) : 0;
+    const proposalProgress = targetProposals > 0 ? Math.min((currentProposals / targetProposals) * 100, 100) : 0;
     
-    // Calcular progresso de propostas (%)
-    const proposalProgress = targetProposals > 0 ? Math.min((vendorImplantedProposals.length / targetProposals) * 100, 100) : 0;
+    console.log('Value Progress:', valueProgress);
+    console.log('Proposal Progress:', proposalProgress);
     
-    return { valueProgress, proposalProgress };
+    return {
+      valueProgress: Math.round(valueProgress),
+      proposalProgress: Math.round(proposalProgress),
+      currentValue,
+      currentProposals
+    };
   };
 
   // Função para renderizar premiações do vendedor
