@@ -306,40 +306,87 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     showNotification('Novo relatório recebido do supervisor', 'success');
   };
 
-  // Função para solicitar relatório completo do supervisor
-  const handleRequestSupervisorReport = async () => {
+  // Sistema completo de relatórios do supervisor
+  const handleViewSupervisorReports = async () => {
     try {
-      setIsLoading(true);
-      showNotification('Gerando relatório completo do supervisor...', 'info');
+      showNotification('Carregando relatórios do supervisor...', 'info');
       
-      // Buscar dados reais das propostas com todos os dados
-      const supervisorReportData = await apiRequest('/api/supervisor-report-complete');
+      // Buscar dados reais de todas as propostas implantadas
+      const { data: allProposals } = await fetch('/api/proposals').then(r => r.json());
+      const implantedProposals = allProposals.filter((p: any) => p.status === 'implantado');
       
-      const completeReport = {
-        id: `supervisor-report-${Date.now()}`,
-        title: 'Relatório Completo do Supervisor',
-        status: 'received',
-        receivedAt: new Date().toISOString(),
-        type: 'complete',
-        data: supervisorReportData,
-        editableFields: ['statusPagamentoPremiacao', 'statusPagamento', 'dataPagamento'],
-        summary: supervisorReportData.summary,
-        totals: supervisorReportData.totals,
-        rawData: supervisorReportData.proposals || []
+      // Buscar dados dos vendedores
+      const { data: allVendors } = await fetch('/api/vendors').then(r => r.json());
+      
+      // Processar dados para relatório completo
+      const processedReports = implantedProposals.map((proposal: any) => {
+        const vendor = allVendors.find((v: any) => v.id === proposal.vendorId);
+        const valor = parseFloat(proposal.contractData?.valor?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+        
+        return {
+          abmId: proposal.abmId,
+          empresa: proposal.contractData?.nomeEmpresa || '',
+          cnpj: proposal.contractData?.cnpj || '',
+          vendedor: vendor?.name || 'Vendedor não encontrado',
+          valor: proposal.contractData?.valor || 'R$ 0,00',
+          plano: proposal.contractData?.planoContratado || '',
+          status: proposal.status,
+          statusPagamentoPremiacao: '', // Editável
+          statusPagamento: '', // Editável  
+          dataPagamento: '', // Editável
+          premiacao: 'R$ 0,00',
+          metaIndividual: 'R$ 0,00', 
+          metaEquipe: 'R$ 0,00',
+          superPremiacao: 'R$ 0,00'
+        };
+      });
+      
+      // Calcular resumo por vendedor
+      const vendorSummary = allVendors.map((vendor: any) => {
+        const vendorProposals = implantedProposals.filter((p: any) => p.vendorId === vendor.id);
+        const totalVendas = vendorProposals.reduce((sum: number, p: any) => {
+          const valor = parseFloat(p.contractData?.valor?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+          return sum + valor;
+        }, 0);
+        
+        return {
+          vendedorNome: vendor.name,
+          totalVendas,
+          totalPropostas: vendorProposals.length,
+          percentualMeta: Math.round((totalVendas / 15000) * 100),
+          premiacao: totalVendas * 0.05 // 5% de comissão
+        };
+      });
+      
+      // Calcular totais gerais
+      const totals = {
+        totalPropostasImplantadas: implantedProposals.length,
+        valorTotalImplantado: processedReports.reduce((sum: number, item: any) => {
+          const valor = parseFloat(item.valor.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+          return sum + valor;
+        }, 0),
+        totalVendedores: allVendors.length,
+        totalPremiacao: vendorSummary.reduce((sum: number, v: any) => sum + v.premiacao, 0)
       };
       
-      setReceivedReports(prev => [completeReport, ...prev]);
-      showNotification('Relatório completo gerado com sucesso!', 'success');
+      // Configurar dados do relatório
+      const supervisorReport = {
+        id: `supervisor-complete-${Date.now()}`,
+        title: 'Relatórios do Supervisor',
+        type: 'complete',
+        rawData: processedReports,
+        summary: vendorSummary,
+        totals: totals,
+        receivedAt: new Date().toISOString()
+      };
       
-      // Salvar no localStorage para persistência
-      const updatedReports = [completeReport, ...receivedReports];
-      localStorage.setItem('financialReports', JSON.stringify(updatedReports));
+      setSelectedReport(supervisorReport);
+      setShowReportModal(true);
+      showNotification('Relatórios do supervisor carregados!', 'success');
       
     } catch (error) {
-      console.error('Erro ao gerar relatório do supervisor:', error);
-      showNotification('Erro ao gerar relatório. Tente novamente.', 'error');
-    } finally {
-      setIsLoading(false);
+      console.error('Erro ao carregar relatórios:', error);
+      showNotification('Erro ao carregar relatórios do supervisor', 'error');
     }
   };
 
@@ -493,11 +540,11 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
             {/* Botão para solicitar relatório do supervisor */}
             <div className="mb-6">
               <button
-                onClick={handleRequestSupervisorReport}
+                onClick={handleViewSupervisorReports}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
               >
-                <Download className="h-5 w-5" />
-                <span>Solicitar Relatório Completo do Supervisor</span>
+                <BarChart3 className="h-5 w-5" />
+                <span>Relatórios do Supervisor</span>
               </button>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                 Inclui todas as colunas editáveis: Status Pagamento Premiação, Status Pagamento, Data Pagamento
