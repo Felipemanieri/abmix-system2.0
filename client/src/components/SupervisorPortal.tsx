@@ -4400,24 +4400,24 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         </div>
 
         {/* Tabela de propostas */}
-        <div className="overflow-x-auto">
-          <table className="w-full border border-gray-300 dark:border-gray-600">
+        <div className="overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg">
+          <table className="w-full table-fixed">
             <thead>
-              <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">ID</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Nº PROPOSTA</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">Nº APÓLICE</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">CLIENTE</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">CNPJ</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">VENDEDOR</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">PLANO</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">VALOR</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">DESCONTO</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">AUTORIZADOR</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">STATUS</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">PRIORIDADE</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">PROGRESSO</th>
-                <th className="text-left py-2 px-2 text-xs font-semibold text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">AÇÕES</th>
+              <tr className="bg-gray-100 dark:bg-gray-800">
+                <th className="w-16 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">ID</th>
+                <th className="w-24 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">Nº PROP</th>
+                <th className="w-24 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">Nº APÓLICE</th>
+                <th className="w-32 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">CLIENTE</th>
+                <th className="w-28 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">CNPJ</th>
+                <th className="w-28 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">VENDEDOR</th>
+                <th className="w-32 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">PLANO</th>
+                <th className="w-20 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">VALOR</th>
+                <th className="w-16 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">DESC</th>
+                <th className="w-24 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">AUTORIZA</th>
+                <th className="w-20 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">STATUS</th>
+                <th className="w-20 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">PRIOR</th>
+                <th className="w-20 text-left py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">PROG</th>
+                <th className="w-16 text-center py-3 px-3 text-xs font-semibold text-gray-900 dark:text-white">AÇÕES</th>
               </tr>
             </thead>
             <tbody>
@@ -4428,56 +4428,56 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 const abmId = proposal.abmId || `ABM${proposal.id.slice(-3)}`;
                 
                 return (
-                  <tr key={proposal.id} className="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="py-1 px-2 text-xs border border-gray-300 dark:border-gray-600">
+                  <tr key={proposal.id} className="even:bg-gray-50 dark:even:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900">
+                    <td className="py-3 px-3 text-xs border-r border-gray-300 dark:border-gray-600">
                       <button
                         onClick={() => window.open(`https://drive.google.com/drive/folders/${proposal.id}`, '_blank')}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium text-xs"
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
                         title="Ver Drive"
                       >
                         {abmId}
                       </button>
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate">
                       {(proposal as any).numeroProposta || '-'}
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate">
                       {(proposal as any).numeroApolice || '-'}
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate" title={contractData.nomeEmpresa || proposal.cliente || 'Empresa não informada'}>
                       {contractData.nomeEmpresa || proposal.cliente || 'Empresa não informada'}
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate">
                       {contractData.cnpj || 'CNPJ não informado'}
                     </td>
-                    <td className="py-1 px-2 text-xs border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs border-r border-gray-300 dark:border-gray-600 truncate" title={getVendorName(proposal.vendorId)}>
                       <div className="flex items-center space-x-1">
-                        <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-green-600 dark:text-green-400 text-xs font-medium">
                             {getVendorName(proposal.vendorId).charAt(0)}
                           </span>
                         </div>
-                        <span className="text-xs text-gray-900 dark:text-white">{getVendorName(proposal.vendorId)}</span>
+                        <span className="text-xs text-gray-900 dark:text-white truncate">{getVendorName(proposal.vendorId)}</span>
                       </div>
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate" title={contractData.planoContratado || proposal.plano || 'Plano não informado'}>
                       {contractData.planoContratado || proposal.plano || 'Plano não informado'}
                     </td>
-                    <td className="py-1 px-2 text-xs font-medium text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs font-medium text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">
                       {contractData.valor || 'R$ 0,00'}
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">
                       {(proposal as any).internalData?.desconto || '0%'}
                     </td>
-                    <td className="py-1 px-2 text-xs text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 text-xs text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600 truncate">
                       {(proposal as any).internalData?.autorizadorDesconto || '-'}
                     </td>
-                    <td className="py-1 px-2 border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 border-r border-gray-300 dark:border-gray-600">
                       <StatusBadge 
                         status={currentStatus}
                       />
                     </td>
-                    <td className="py-1 px-2 border border-gray-300 dark:border-gray-600">
+                    <td className="py-3 px-3 border-r border-gray-300 dark:border-gray-600">
                       <select
                         value={(() => {
                           // Converter priority do backend para formato do frontend
@@ -4486,7 +4486,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                  backendPriority === 'low' ? 'baixa' : 'media';
                         })()}
                         onChange={(e) => handlePriorityChange(proposal.id, e.target.value as 'alta' | 'media' | 'baixa')}
-                        className={`px-1 py-1 rounded text-xs font-medium border-0 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                        className={`w-full px-2 py-1 rounded text-xs font-medium border-0 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
                           getPriorityColor((() => {
                             const backendPriority = proposal.priority || 'medium';
                             return backendPriority === 'high' ? 'alta' : 
@@ -4499,11 +4499,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         <option className="text-black bg-white" value="baixa">Baixa</option>
                       </select>
                     </td>
-                    <td className="py-1 px-2 border border-gray-300 dark:border-gray-600">
-                      <div className="flex items-center space-x-1 max-w-20">
-                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                    <td className="py-3 px-3 border-r border-gray-300 dark:border-gray-600">
+                      <div className="flex items-center space-x-1">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
-                            className="bg-blue-600 h-1 rounded-full transition-all duration-300"
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                             style={{ 
                               width: `${Math.min(100, Math.max(0, proposal.progresso || calculateProgress(proposal)))}%` 
                             }}
@@ -4514,85 +4514,68 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         </span>
                       </div>
                     </td>
-                    <td className="py-1 px-2 border border-gray-300 dark:border-gray-600">
-                      <div className="flex flex-wrap gap-1">
-                        {/* INDICADORES DE APROVAÇÃO/REJEIÇÃO SINCRONIZADOS */}
-                        {proposal.approved ? (
-                          <span
-                            className="inline-flex items-center justify-center w-4 h-4 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors cursor-pointer"
-                            title="Proposta Aprovada"
+                    <td className="py-3 px-3 text-center">
+                      <div className="flex flex-col items-center space-y-1">
+                        {/* Status Indicator */}
+                        <div className="flex justify-center">
+                          {proposal.approved ? (
+                            <span
+                              className="inline-flex items-center justify-center w-5 h-5 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors cursor-pointer"
+                              title="Proposta Aprovada"
+                            >
+                              <CheckCircle className="w-3 h-3" />
+                            </span>
+                          ) : proposal.rejected ? (
+                            <span
+                              className="inline-flex items-center justify-center w-5 h-5 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors cursor-pointer"
+                              title="Proposta Rejeitada"
+                            >
+                              <XCircle className="w-3 h-3" />
+                            </span>
+                          ) : (
+                            <span
+                              className="inline-flex items-center justify-center w-5 h-5 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 transition-colors cursor-pointer"
+                              title="Aguardando Aprovação"
+                            >
+                              <AlertCircle className="w-3 h-3" />
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap justify-center gap-1">
+                          <button
+                            onClick={() => {
+                              const proposalUrl = `/proposal-details/${proposal.id}`;
+                              window.open(proposalUrl, '_blank');
+                              showNotification('Abrindo detalhes da proposta', 'success');
+                            }}
+                            className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-800 rounded"
+                            title="Ver Proposta"
                           >
-                            <CheckCircle className="w-2 h-2" />
-                          </span>
-                        ) : proposal.rejected ? (
-                          <span
-                            className="inline-flex items-center justify-center w-4 h-4 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors cursor-pointer"
-                            title="Proposta Rejeitada"
+                            <Eye size={12} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const clientUrl = `${window.location.origin}/client/${proposal.clientToken}`;
+                              window.open(clientUrl, '_blank');
+                              showNotification('Abrindo formulário do cliente', 'success');
+                            }}
+                            className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-800 rounded"
+                            title="Link do Cliente"
                           >
-                            <XCircle className="w-2 h-2" />
-                          </span>
-                        ) : (
-                          <span
-                            className="inline-flex items-center justify-center w-4 h-4 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200 transition-colors cursor-pointer"
-                            title="Aguardando Aprovação"
+                            <ExternalLink size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleSendInternalMessage(proposal)}
+                            className="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-800 rounded"
+                            title="Mensagem Interna"
                           >
-                            <AlertCircle className="w-2 h-2" />
-                          </span>
-                        )}
-                        <button
-                          onClick={() => {
-                            // Abrir detalhes da proposta em modal ou nova aba
-                            const proposalUrl = `/proposal-details/${proposal.id}`;
-                            window.open(proposalUrl, '_blank');
-                            showNotification('Abrindo detalhes da proposta', 'success');
-                          }}
-                          className="p-0.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-800 rounded"
-                          title="Ver Proposta"
-                        >
-                          <Eye size={10} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const clientUrl = `${window.location.origin}/client/${proposal.clientToken}`;
-                            window.open(clientUrl, '_blank');
-                            showNotification('Abrindo formulário do cliente', 'success');
-                          }}
-                          className="p-0.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-800 rounded"
-                          title="Link do Cliente"
-                        >
-                          <ExternalLink size={10} />
-                        </button>
-                        <button
-                          onClick={() => handleSendInternalMessage(proposal)}
-                          className="p-0.5 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-800 rounded"
-                          title="Mensagem Interna"
-                        >
-                          <MessageSquare size={10} />
-                        </button>
-                        <button
-                          onClick={() => handleSendEmail(proposal)}
-                          className="p-0.5 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-800 rounded"
-                          title="Enviar Email"
-                        >
-                          <Mail size={10} />
-                        </button>
-                        <button
-                          onClick={() => handleSendWhatsApp(proposal)}
-                          className="p-0.5 text-green-700 dark:text-green-500 hover:bg-green-50 dark:hover:bg-green-800 rounded"
-                          title="Enviar WhatsApp"
-                        >
-                          <MessageCircle size={10} />
-                        </button>
-                        <button
-                          onClick={() => handleCopyLink(proposal)}
-                          className="p-0.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-800 rounded"
-                          title="Copiar Link"
-                        >
-                          <Copy size={10} />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadProposal(proposal)}
-                          className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-800 rounded"
+                            <MessageSquare size={12} />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadProposal(proposal)}
+                            className="p-1 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-800 rounded"
                           title="Download"
                         >
                           <Download size={14} />
