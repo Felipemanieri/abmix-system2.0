@@ -950,74 +950,52 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // Mapeamento EXATO dos campos da API para o formulário
-        const updates = {};
+        // APENAS OS 4 CAMPOS SOLICITADOS com preenchimento direto
+        console.log('🔧 Iniciando preenchimento dos 4 campos...');
         
-        // 1. nome -> nomeCompleto
+        // 1. Nome Completo
         if (d.nome) {
-          updates.nomeCompleto = d.nome;
+          console.log('📝 Preenchendo nome:', d.nome);
+          if (type === 'titular') {
+            updateTitular(index, 'nomeCompleto', d.nome);
+          } else {
+            updateDependente(index, 'nomeCompleto', d.nome);
+          }
         }
         
-        // 2. mae -> nomeMae  
+        // 2. Nome da Mãe
         if (d.mae) {
-          updates.nomeMae = d.mae;
+          console.log('📝 Preenchendo nome da mãe:', d.mae);
+          if (type === 'titular') {
+            updateTitular(index, 'nomeMae', d.mae);
+          } else {
+            updateDependente(index, 'nomeMae', d.mae);
+          }
         }
         
-        // 3. sexo -> sexo (convertido)
+        // 3. Sexo
         if (d.sexo) {
-          updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          console.log('📝 Preenchendo sexo:', sexo);
+          if (type === 'titular') {
+            updateTitular(index, 'sexo', sexo);
+          } else {
+            updateDependente(index, 'sexo', sexo);
+          }
         }
         
-        // 4. data_nascimento -> dataNascimento (convertido)
+        // 4. Data de Nascimento
         if (d.data_nascimento) {
           const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
           if (match) {
             const [, dia, mes, ano] = match;
-            updates.dataNascimento = `${ano}-${mes}-${dia}`;
-          }
-        }
-        
-        // 5. telefone_ddd + telefone_numero -> telefonePessoal
-        if (d.telefone_ddd && d.telefone_numero) {
-          updates.telefonePessoal = `(${d.telefone_ddd}) ${d.telefone_numero}`;
-        }
-        
-        // 6. cep -> cep
-        if (d.cep) {
-          updates.cep = d.cep;
-        }
-        
-        // 7. endereço completo -> enderecoCompleto
-        if (d.logradouro && d.municipio_residencia) {
-          const endereco = [
-            d.tipo_logradouro,
-            d.logradouro,
-            d.numero !== '---' ? d.numero : '',
-            d.bairro,
-            d.municipio_residencia
-          ].filter(Boolean).join(', ');
-          
-          if (endereco) {
-            updates.enderecoCompleto = endereco;
-          }
-        }
-        
-        // APLICAR TODAS AS ATUALIZAÇÕES DE UMA VEZ
-        if (Object.keys(updates).length > 0) {
-          if (type === 'titular') {
-            setProposalData(prev => ({
-              ...prev,
-              titulares: prev.titulares.map((t, i) => 
-                i === index ? { ...t, ...updates } : t
-              )
-            }));
-          } else {
-            setProposalData(prev => ({
-              ...prev,
-              dependentes: prev.dependentes.map((dep, i) => 
-                i === index ? { ...dep, ...updates } : dep
-              )
-            }));
+            const data = `${ano}-${mes}-${dia}`;
+            console.log('📝 Preenchendo data de nascimento:', data);
+            if (type === 'titular') {
+              updateTitular(index, 'dataNascimento', data);
+            } else {
+              updateDependente(index, 'dataNascimento', data);
+            }
           }
         }
         
