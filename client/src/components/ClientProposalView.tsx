@@ -432,6 +432,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           
           // 4. DATA DE NASCIMENTO
           if (d.data_nascimento) {
+            // Formato: "12/07/1984 (41 anos)" - extrair apenas a data
             const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
             if (match) {
               const [, dia, mes, ano] = match;
@@ -443,7 +444,8 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           
           // 5. TELEFONE PESSOAL
           if (d.telefone_ddd && d.telefone_numero) {
-            const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
+            // Formato: DDD + número (11 + 98486-6794)
+            const telefoneFormatado = `(${d.telefone_ddd}) ${d.telefone_numero}`;
             console.log('📝 Preenchendo telefone:', telefoneFormatado);
             updatePerson('titular', personId, 'telefonePessoal', telefoneFormatado);
           }
@@ -455,8 +457,8 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           }
           
           // 7. ENDEREÇO COMPLETO
-          const enderecoCompleto = formatarEndereco(dados);
-          if (enderecoCompleto) {
+          if (d.logradouro && d.numero && d.bairro && d.municipio_residencia) {
+            const enderecoCompleto = `${d.logradouro}, ${d.numero} - ${d.bairro}, ${d.municipio_residencia}`;
             console.log('📝 Preenchendo endereço:', enderecoCompleto);
             updatePerson('titular', personId, 'enderecoCompleto', enderecoCompleto);
           }
