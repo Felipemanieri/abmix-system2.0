@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Building, FileText, User, Upload, Camera, CheckCircle, Lock, Save, Download, Eye, EyeOff, Plus, Trash2, Users, Phone, Mail, MapPin, Calendar, Shield, Check, Image, X } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
-import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
+import { buscarCEP, buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
 import { consultarCPF, formatarCPF, preencherCamposComCPF } from '../utils/cpfApi';
 
 interface ClientProposalViewProps {
@@ -390,89 +390,44 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
     }
   };
 
-  const handleCPFChange = async (personId: string, cpf: string) => {
-    console.log('🔍 Mudança de CPF detectada:', { personId, cpf });
-
-    // Aplicar formatação automática
-    const cpfFormatado = formatarCPF(cpf);
-    updatePerson('titular', personId, 'cpf', cpfFormatado);
-
-    // Se CPF tem 11 dígitos (sem formatação), consultar API
-    const cpfLimpo = cpf.replace(/\D/g, '');
-    if (cpfLimpo.length === 11) {
-      console.log('🔍 CPF completo, consultando API:', cpfLimpo);
-
-      try {
-        const dados = await consultarCPF(cpfLimpo);
-        
-        if (dados?.dados) {
-          const d = dados.dados;
-          console.log('✅ Dados recebidos da API:', d);
-          
-          // APLICAR PREENCHIMENTO DIRETO CAMPO POR CAMPO
-          
-          // 1. NOME COMPLETO
-          if (d.nome) {
-            console.log('📝 Preenchendo nome:', d.nome);
-            updatePerson('titular', personId, 'nomeCompleto', d.nome);
-          }
-          
-          // 2. NOME DA MÃE
-          if (d.mae) {
-            console.log('📝 Preenchendo nome da mãe:', d.mae);
-            updatePerson('titular', personId, 'nomeMae', d.mae);
-          }
-          
-          // 3. SEXO
-          if (d.sexo) {
-            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-            console.log('📝 Preenchendo sexo:', sexoFormatado);
-            updatePerson('titular', personId, 'sexo', sexoFormatado);
-          }
-          
-          // 4. DATA DE NASCIMENTO
-          if (d.data_nascimento) {
-            // Formato: "12/07/1984 (41 anos)" - extrair apenas a data
-            const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-            if (match) {
-              const [, dia, mes, ano] = match;
-              const dataFormatada = `${ano}-${mes}-${dia}`;
-              console.log('📝 Preenchendo data de nascimento:', dataFormatada);
-              updatePerson('titular', personId, 'dataNascimento', dataFormatada);
-            }
-          }
-          
-          // 5. TELEFONE PESSOAL
-          if (d.telefone_ddd && d.telefone_numero) {
-            // Formato: DDD + número (11 + 98486-6794)
-            const telefoneFormatado = `(${d.telefone_ddd}) ${d.telefone_numero}`;
-            console.log('📝 Preenchendo telefone:', telefoneFormatado);
-            updatePerson('titular', personId, 'telefonePessoal', telefoneFormatado);
-          }
-          
-          // 6. CEP
-          if (d.cep) {
-            console.log('📝 Preenchendo CEP:', d.cep);
-            updatePerson('titular', personId, 'cep', d.cep);
-          }
-          
-          // 7. ENDEREÇO COMPLETO
-          if (d.logradouro && d.numero && d.bairro && d.municipio_residencia) {
-            const enderecoCompleto = `${d.logradouro}, ${d.numero} - ${d.bairro}, ${d.municipio_residencia}`;
-            console.log('📝 Preenchendo endereço:', enderecoCompleto);
-            updatePerson('titular', personId, 'enderecoCompleto', enderecoCompleto);
-          }
-          
-          console.log('✅ Todos os campos preenchidos automaticamente!');
-          showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
-        } else {
-          console.log('❌ CPF não encontrado na base de dados');
-          showNotification('CPF não encontrado na base de dados', 'warning');
+  // Função para consultar CPF e preencher campos - COPIADO DO ProposalGenerator QUE FUNCIONA
+  const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number, cpfFormatado: string) => {
+    console.log('🚀 Consultando CPF:', cpfLimpo);
+    
+    const dados = await consultarCPF(cpfLimpo);
+    
+    if (dados?.dados) {
+      const d = dados.dados;
+      console.log('✅ Dados recebidos:', d.nome);
+      
+      // Preparar atualizações
+      const updates: any = { cpf: cpfFormatado };
+      
+      if (d.nome) updates.nomeCompleto = d.nome;
+      if (d.mae) updates.nomeMae = d.mae;
+      if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+      if (d.data_nascimento) {
+        const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (match) {
+          const [, dia, mes, ano] = match;
+          updates.dataNascimento = `${ano}-${mes}-${dia}`;
         }
-      } catch (error) {
-        console.error('❌ Erro ao consultar CPF:', error);
-        showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
       }
+      
+      console.log('📝 Atualizações:', updates);
+      
+      // Aplicar usando os setters corretos
+      if (type === 'titular') {
+        setTitulares(prev => prev.map((titular, i) => 
+          i === index ? { ...titular, ...updates } : titular
+        ));
+      } else {
+        setDependentes(prev => prev.map((dependente, i) => 
+          i === index ? { ...dependente, ...updates } : dependente
+        ));
+      }
+      
+      showNotification(`✅ Dados de ${d.nome} preenchidos!`, 'success');
     }
   };
 
@@ -536,8 +491,21 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
             type="text"
             value={person.cpf}
             onChange={(e) => {
-              const cpfValue = e.target.value;
-              type === 'titular' ? handleCPFChange(person.id, cpfValue) : updateDependente(index, 'cpf', cpfValue);
+              const valor = e.target.value;
+              const cpfFormatado = formatarCPF(valor);
+              
+              // Atualizar CPF formatado SEMPRE primeiro
+              if (type === 'titular') {
+                updateTitular(index, 'cpf', cpfFormatado);
+              } else {
+                updateDependente(index, 'cpf', cpfFormatado);
+              }
+              
+              // Consultar API se CPF completo
+              const cpfLimpo = valor.replace(/\D/g, '');
+              if (cpfLimpo.length === 11) {
+                handleCpfConsulta(cpfLimpo, type, index, cpfFormatado);
+              }
             }}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="000.000.000-00"
@@ -656,19 +624,28 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               const formattedCep = formatarCEP(e.target.value);
               type === 'titular' ? updateTitular(index, 'cep', formattedCep) : updateDependente(index, 'cep', formattedCep);
             }}
-            onBlur={(e) => {
-              // Handler melhorado que não gera erro
+            onBlur={async (e) => {
+              // Handler com API ViaCEP - COPIADO DO ProposalGenerator QUE FUNCIONA
               const cepValue = e.target.value;
               const cepLimpo = cepValue.replace(/\D/g, '');
 
               // Só executa se CEP tem 8 dígitos
               if (cepLimpo.length === 8) {
-                const endereco = buscarCEPLocal(cepValue);
-                if (endereco && endereco.enderecoCompleto) {
-                  type === 'titular' ? updateTitular(index, 'enderecoCompleto', endereco.enderecoCompleto) : updateDependente(index, 'enderecoCompleto', endereco.enderecoCompleto);
-                  showNotification('CEP encontrado! Endereço preenchido automaticamente.', 'success');
-                } else {
-                  showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'info');
+                try {
+                  const endereco = await buscarCEP(cepValue);
+                  if (endereco && endereco.enderecoCompleto) {
+                    if (type === 'titular') {
+                      updateTitular(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                    } else {
+                      updateDependente(index, 'enderecoCompleto', endereco.enderecoCompleto);
+                    }
+                    showNotification('CEP encontrado! Endereço preenchido automaticamente.', 'success');
+                  } else {
+                    showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'error');
+                  }
+                } catch (error) {
+                  console.error('Erro ao buscar CEP:', error);
+                  showNotification('Erro ao buscar CEP. Preencha o endereço manualmente.', 'error');
                 }
               }
             }}
