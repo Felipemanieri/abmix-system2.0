@@ -226,6 +226,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     reportVendedor2Percent,
     reportComissaoReuniao,
     reportPremiacao,
+    reportMetaIndividual,
+    reportMetaEquipe,
+    reportSuperPremiacao,
     reportComissaoSupervisor,
     reportSupervisor,
     reportSupervisorPercent,
@@ -241,6 +244,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     setReportVendedor2Percent,
     setReportComissaoReuniao,
     setReportPremiacao,
+    setReportMetaIndividual,
+    setReportMetaEquipe,
+    setReportSuperPremiacao,
     setReportComissaoSupervisor,
     setReportSupervisor,
     setReportSupervisorPercent,
@@ -5457,6 +5463,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           comissaoVendedor1 += valorPremiacao;
                         }
                         
+                        // Adicionar Meta Individual
+                        const metaIndividual = reportMetaIndividual[item.abmId];
+                        if (metaIndividual && metaIndividual.includes('R$')) {
+                          const valorMetaIndividual = parseFloat(metaIndividual.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                          comissaoVendedor1 += valorMetaIndividual;
+                        }
+                        
+                        // Adicionar Meta de Equipe
+                        const metaEquipe = reportMetaEquipe[item.abmId];
+                        if (metaEquipe && metaEquipe.includes('R$')) {
+                          const valorMetaEquipe = parseFloat(metaEquipe.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                          comissaoVendedor1 += valorMetaEquipe;
+                        }
+                        
+                        // Adicionar Super Premiação
+                        const superPremiacao = reportSuperPremiacao[item.abmId];
+                        if (superPremiacao && superPremiacao.includes('R$')) {
+                          const valorSuperPremiacao = parseFloat(superPremiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                          comissaoVendedor1 += valorSuperPremiacao;
+                        }
+                        
                         acc[vendedor1].subtotalComissaoVendedor += comissaoVendedor1;
                       }
                       
@@ -5598,6 +5625,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                     comissao1 += valorPremiacao;
                                   }
                                   
+                                  // Adicionar Meta Individual SE HOUVER
+                                  const metaIndividual = reportMetaIndividual[item.abmId] || '';
+                                  if (metaIndividual && metaIndividual !== '-' && metaIndividual.includes('R$')) {
+                                    const valorMetaIndividual = parseFloat(metaIndividual.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    comissao1 += valorMetaIndividual;
+                                  }
+                                  
+                                  // Adicionar Meta de Equipe SE HOUVER
+                                  const metaEquipe = reportMetaEquipe[item.abmId] || '';
+                                  if (metaEquipe && metaEquipe !== '-' && metaEquipe.includes('R$')) {
+                                    const valorMetaEquipe = parseFloat(metaEquipe.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    comissao1 += valorMetaEquipe;
+                                  }
+                                  
+                                  // Adicionar Super Premiação SE HOUVER
+                                  const superPremiacao = reportSuperPremiacao[item.abmId] || '';
+                                  if (superPremiacao && superPremiacao !== '-' && superPremiacao.includes('R$')) {
+                                    const valorSuperPremiacao = parseFloat(superPremiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    comissao1 += valorSuperPremiacao;
+                                  }
+                                  
                                   // Outras comissões são SEPARADAS
                                   comissao2 = valor * (percentual2 / 100);
                                   comissaoReun = valor * (percentualReun / 100);
@@ -5625,21 +5673,110 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               })}
                             </div>
                             
-                            {/* Subtotal do vendedor */}
+                            {/* Subtotal do vendedor - AMPLIADO COM PREMIAÇÕES */}
                             <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-2">
-                              <div className="flex justify-between items-center">
-                                <span className="font-bold text-green-800 dark:text-green-200 text-xs">
-                                  TOTAL {vendedor.toUpperCase()}:
-                                </span>
-                                <div className="text-right">
-                                  <div className="font-bold text-green-800 dark:text-green-200 text-xs">
-                                    R$ {group.subtotalValor.toFixed(2).replace('.', ',')}
+                              {(() => {
+                                // CALCULAR TODOS OS VALORES EXTRAS DO VENDEDOR
+                                let totalPremiacao = 0;
+                                let totalMetaIndividual = 0;
+                                let totalMetaEquipe = 0;
+                                let totalSuperPremiacao = 0;
+                                let totalComissaoReuniao = 0;
+                                
+                                // Somar valores das colunas de premiação para este vendedor
+                                group.items.forEach(item => {
+                                  if (item.status === 'implantado') {
+                                    const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    
+                                    // PREMIAÇÃO
+                                    const premiacao = reportPremiacao[item.abmId] || '';
+                                    if (premiacao && premiacao !== '-' && premiacao.includes('R$')) {
+                                      totalPremiacao += parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    }
+                                    
+                                    // META INDIVIDUAL  
+                                    const metaIndividual = reportMetaIndividual[item.abmId] || '';
+                                    if (metaIndividual && metaIndividual !== '-' && metaIndividual.includes('R$')) {
+                                      totalMetaIndividual += parseFloat(metaIndividual.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    }
+                                    
+                                    // META DE EQUIPE
+                                    const metaEquipe = reportMetaEquipe[item.abmId] || '';
+                                    if (metaEquipe && metaEquipe !== '-' && metaEquipe.includes('R$')) {
+                                      totalMetaEquipe += parseFloat(metaEquipe.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    }
+                                    
+                                    // SUPER PREMIAÇÃO
+                                    const superPremiacao = reportSuperPremiacao[item.abmId] || '';
+                                    if (superPremiacao && superPremiacao !== '-' && superPremiacao.includes('R$')) {
+                                      totalSuperPremiacao += parseFloat(superPremiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    }
+                                    
+                                    // COMISSÃO DE REUNIÃO (se vendedor for organizador)
+                                    const organizadorReuniao = reportReuniao[item.abmId] || '';
+                                    if (organizadorReuniao === vendedor) {
+                                      const percentualReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
+                                      totalComissaoReuniao += valor * percentualReuniao;
+                                    }
+                                  }
+                                });
+                                
+                                // TOTAL FINAL = Comissão Vendedor + Premiações + Comissão Reunião
+                                const totalFinal = group.subtotalComissaoVendedor + totalPremiacao + totalMetaIndividual + totalMetaEquipe + totalSuperPremiacao + totalComissaoReuniao;
+                                
+                                return (
+                                  <div>
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="font-bold text-green-800 dark:text-green-200 text-xs">
+                                        TOTAL {vendedor.toUpperCase()}:
+                                      </span>
+                                      <div className="text-right">
+                                        <div className="font-bold text-green-800 dark:text-green-200 text-sm">
+                                          R$ {totalFinal.toFixed(2).replace('.', ',')}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* DETALHAMENTO DOS VALORES */}
+                                    <div className="text-xs text-green-700 dark:text-green-300 space-y-0">
+                                      <div className="flex justify-between">
+                                        <span>• Comissão Vendedor:</span>
+                                        <span>R$ {group.subtotalComissaoVendedor.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      {totalPremiacao > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Premiação:</span>
+                                          <span>R$ {totalPremiacao.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
+                                      {totalMetaIndividual > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Meta Individual:</span>
+                                          <span>R$ {totalMetaIndividual.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
+                                      {totalMetaEquipe > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Meta de Equipe:</span>
+                                          <span>R$ {totalMetaEquipe.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
+                                      {totalSuperPremiacao > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Super Premiação:</span>
+                                          <span>R$ {totalSuperPremiacao.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
+                                      {totalComissaoReuniao > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Comissão Reunião:</span>
+                                          <span>R$ {totalComissaoReuniao.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-green-700 dark:text-green-300">
-                                    Comissão: R$ {group.subtotalComissaoVendedor.toFixed(2).replace('.', ',')}
-                                  </div>
-                                </div>
-                              </div>
+                                );
+                              })()}
                             </div>
                           </div>
                         ))}

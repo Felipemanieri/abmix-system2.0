@@ -14,6 +14,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
   const [reportVendedor2Percent, setReportVendedor2Percent] = useState<{[key: string]: string}>({});
   const [reportComissaoReuniao, setReportComissaoReuniao] = useState<{[key: string]: string}>({});
   const [reportPremiacao, setReportPremiacao] = useState<{[key: string]: string}>({});
+  const [reportMetaIndividual, setReportMetaIndividual] = useState<{[key: string]: string}>({});
+  const [reportMetaEquipe, setReportMetaEquipe] = useState<{[key: string]: string}>({});
+  const [reportSuperPremiacao, setReportSuperPremiacao] = useState<{[key: string]: string}>({});
   const [reportComissaoSupervisor, setReportComissaoSupervisor] = useState<{[key: string]: string}>({});
   const [reportSupervisor, setReportSupervisor] = useState<{[key: string]: string}>({});
   const [reportSupervisorPercent, setReportSupervisorPercent] = useState<{[key: string]: string}>({});
@@ -32,9 +35,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         vendorPercent2: reportVendedor2Percent[abmId] || '',
         reuniaoPercent: reportComissaoReuniao[abmId] || '',
         premiacao: reportPremiacao[abmId] || '',
-        metaIndividual: '', // Será implementado conforme necessário
-        metaEquipe: '', // Será implementado conforme necessário
-        superPremiacao: '', // Será implementado conforme necessário
+        metaIndividual: reportMetaIndividual[abmId] || '',
+        metaEquipe: reportMetaEquipe[abmId] || '',
+        superPremiacao: reportSuperPremiacao[abmId] || '',
         supervisor: reportSupervisor[abmId] || '',
         statusPagamentoPremiacao: '', // Será implementado conforme necessário
         statusPagamento: reportStatusPagamento[abmId] || '',
@@ -58,7 +61,7 @@ export const useSupervisorReport = (reportId: string = 'current') => {
     } finally {
       setIsLoading(false);
     }
-  }, [reportVendedor1Percent, reportVendedor2Percent, reportComissaoReuniao, reportPremiacao, reportSupervisor, reportStatusPagamento, reportPaymentDates, reportObservations]);
+  }, [reportVendedor1Percent, reportVendedor2Percent, reportComissaoReuniao, reportPremiacao, reportMetaIndividual, reportMetaEquipe, reportSuperPremiacao, reportSupervisor, reportStatusPagamento, reportPaymentDates, reportObservations]);
 
   // Função para carregar configuração de uma proposta específica
   const loadReportConfiguration = useCallback(async (abmId: string) => {
@@ -81,6 +84,15 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         }
         if (config.premiacao) {
           setReportPremiacao(prev => ({...prev, [abmId]: config.premiacao}));
+        }
+        if (config.metaIndividual) {
+          setReportMetaIndividual(prev => ({...prev, [abmId]: config.metaIndividual}));
+        }
+        if (config.metaEquipe) {
+          setReportMetaEquipe(prev => ({...prev, [abmId]: config.metaEquipe}));
+        }
+        if (config.superPremiacao) {
+          setReportSuperPremiacao(prev => ({...prev, [abmId]: config.superPremiacao}));
         }
         if (config.supervisor) {
           setReportSupervisor(prev => ({...prev, [abmId]: config.supervisor}));
@@ -120,6 +132,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         const vendedor2PercentData: {[key: string]: string} = {};
         const comissaoReuniaoData: {[key: string]: string} = {};
         const premiacaoData: {[key: string]: string} = {};
+        const metaIndividualData: {[key: string]: string} = {};
+        const metaEquipeData: {[key: string]: string} = {};
+        const superPremiacaoData: {[key: string]: string} = {};
         const supervisorData: {[key: string]: string} = {};
         const statusPagamentoData: {[key: string]: string} = {};
         const paymentDatesData: {[key: string]: string} = {};
@@ -130,6 +145,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
           if (config.vendorPercent2) vendedor2PercentData[abmId] = config.vendorPercent2;
           if (config.reuniaoPercent) comissaoReuniaoData[abmId] = config.reuniaoPercent;
           if (config.premiacao) premiacaoData[abmId] = config.premiacao;
+          if (config.metaIndividual) metaIndividualData[abmId] = config.metaIndividual;
+          if (config.metaEquipe) metaEquipeData[abmId] = config.metaEquipe;
+          if (config.superPremiacao) superPremiacaoData[abmId] = config.superPremiacao;
           if (config.supervisor) supervisorData[abmId] = config.supervisor;
           if (config.statusPagamento) statusPagamentoData[abmId] = config.statusPagamento;
           if (config.dataPagamento) paymentDatesData[abmId] = config.dataPagamento;
@@ -141,6 +159,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         setReportVendedor2Percent(prev => ({...prev, ...vendedor2PercentData}));
         setReportComissaoReuniao(prev => ({...prev, ...comissaoReuniaoData}));
         setReportPremiacao(prev => ({...prev, ...premiacaoData}));
+        setReportMetaIndividual(prev => ({...prev, ...metaIndividualData}));
+        setReportMetaEquipe(prev => ({...prev, ...metaEquipeData}));
+        setReportSuperPremiacao(prev => ({...prev, ...superPremiacaoData}));
         setReportSupervisor(prev => ({...prev, ...supervisorData}));
         setReportStatusPagamento(prev => ({...prev, ...statusPagamentoData}));
         setReportPaymentDates(prev => ({...prev, ...paymentDatesData}));
@@ -175,6 +196,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         ...Object.keys(reportVendedor2Percent),
         ...Object.keys(reportComissaoReuniao),
         ...Object.keys(reportPremiacao),
+        ...Object.keys(reportMetaIndividual),
+        ...Object.keys(reportMetaEquipe),
+        ...Object.keys(reportSuperPremiacao),
         ...Object.keys(reportSupervisor),
         ...Object.keys(reportStatusPagamento),
         ...Object.keys(reportPaymentDates),
@@ -191,7 +215,7 @@ export const useSupervisorReport = (reportId: string = 'current') => {
     }, 2000); // Salvar após 2 segundos de inatividade
 
     return () => clearTimeout(timer);
-  }, [reportVendedor1Percent, reportVendedor2Percent, reportComissaoReuniao, reportPremiacao, reportSupervisor, reportStatusPagamento, reportPaymentDates, reportObservations, saveReportConfiguration]);
+  }, [reportVendedor1Percent, reportVendedor2Percent, reportComissaoReuniao, reportPremiacao, reportMetaIndividual, reportMetaEquipe, reportSuperPremiacao, reportSupervisor, reportStatusPagamento, reportPaymentDates, reportObservations, saveReportConfiguration]);
 
   return {
     reportData,
@@ -204,6 +228,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
     reportVendedor2Percent,
     reportComissaoReuniao,
     reportPremiacao,
+    reportMetaIndividual,
+    reportMetaEquipe,
+    reportSuperPremiacao,
     reportComissaoSupervisor,
     reportSupervisor,
     reportSupervisorPercent,
@@ -219,6 +246,9 @@ export const useSupervisorReport = (reportId: string = 'current') => {
     setReportVendedor2Percent,
     setReportComissaoReuniao,
     setReportPremiacao,
+    setReportMetaIndividual,
+    setReportMetaEquipe,
+    setReportSuperPremiacao,
     setReportComissaoSupervisor,
     setReportSupervisor,
     setReportSupervisorPercent,
