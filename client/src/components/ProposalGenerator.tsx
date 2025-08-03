@@ -3,6 +3,7 @@ import { ArrowLeft, Building, FileText, DollarSign, Check, Copy, Plus, Trash2, U
 import { showNotification } from '../utils/notifications';
 import { useRealTimeNotifications } from '../utils/realTimeSync';
 import { buscarCEP, buscarCEPLocal, formatarCEP, buscarCNPJ, formatarCNPJ } from '../utils/cepHandler';
+import { consultarCPF, formatarTelefone, formatarEndereco } from '../utils/cpfApi';
 import ProposalProgressTracker from './ProposalProgressTracker';
 import ProfessionalLinkShare from './ProfessionalLinkShare';
 import { useQuery } from '@tanstack/react-query';
@@ -908,6 +909,53 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  // Função para consultar CPF automaticamente
+  const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', index: number) => {
+    // Atualizar o campo CPF primeiro
+    if (type === 'titular') {
+      updateTitular(index, 'cpf', cpf);
+    } else {
+      updateDependente(index, 'cpf', cpf);
+    }
+
+    // Se CPF tem 11 dígitos (limpo), consultar API
+    const cpfLimpo = cpf.replace(/[^\d]/g, '');
+    if (cpfLimpo.length === 11) {
+      const dados = await consultarCPF(cpf);
+      
+      if (dados) {
+        // Preencher campos automaticamente
+        const updates: Partial<PersonData> = {};
+        
+        if (dados.nome) updates.nomeCompleto = dados.nome;
+        if (dados.mae) updates.nomeMae = dados.mae;
+        if (dados.sexo) updates.sexo = dados.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        if (dados.data_nascimento) updates.dataNascimento = dados.data_nascimento;
+        
+        // Montar endereço completo
+        const endereco = formatarEndereco(dados);
+        if (endereco) updates.enderecoCompleto = endereco;
+        
+        // Montar telefone
+        const telefone = formatarTelefone(dados.telefone_ddd, dados.telefone_numero);
+        if (telefone) updates.telefonePessoal = telefone;
+        
+        if (dados.cep) updates.cep = dados.cep;
+
+        // Aplicar as atualizações
+        Object.entries(updates).forEach(([campo, valor]) => {
+          if (type === 'titular') {
+            updateTitular(index, campo as keyof PersonData, valor);
+          } else {
+            updateDependente(index, campo as keyof PersonData, valor);
+          }
+        });
+
+        showNotification('Dados preenchidos automaticamente via CPF', 'success');
+      }
+    }
+  };
+
   const renderPersonForm = (person: PersonData, type: 'titular' | 'dependente', index: number) => (
     <div key={person.id} className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg space-y-4">
       <div className="flex items-center justify-between">
@@ -952,14 +1000,8 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           <input
             type="text"
             value={person.cpf}
-            onChange={(e) => {
-              if (type === 'titular') {
-                updateTitular(index, 'cpf', e.target.value);
-              } else {
-                updateDependente(index, 'cpf', e.target.value);
-              }
-            }}
-            className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+            onChange={(e) => handleCPFChange(e.target.value, type, index)}
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="000.000.000-00"
           />
         </div>

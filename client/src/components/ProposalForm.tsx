@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building, FileText, User, Phone, Mail, MapPin, Calendar, Plus, Trash2, Upload, Camera, Save, Send, Info, Users, Lock, Check } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
+import { consultarCPF, formatarTelefone, formatarEndereco } from '../utils/cpfApi';
 import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
 import ProposalProgressTracker from './ProposalProgressTracker';
 
@@ -245,6 +246,53 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
     showNotification('Proposta enviada com sucesso!', 'success');
   };
 
+  // Função para consultar CPF automaticamente
+  const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', index: number) => {
+    // Atualizar o campo CPF primeiro
+    if (type === 'titular') {
+      updateTitular(index, 'cpf', cpf);
+    } else {
+      updateDependente(index, 'cpf', cpf);
+    }
+
+    // Se CPF tem 11 dígitos (limpo), consultar API
+    const cpfLimpo = cpf.replace(/[^\d]/g, '');
+    if (cpfLimpo.length === 11) {
+      const dados = await consultarCPF(cpf);
+      
+      if (dados) {
+        // Preencher campos automaticamente
+        const updates: Partial<PersonData> = {};
+        
+        if (dados.nome) updates.nomeCompleto = dados.nome;
+        if (dados.mae) updates.nomeMae = dados.mae;
+        if (dados.sexo) updates.sexo = dados.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        if (dados.data_nascimento) updates.dataNascimento = dados.data_nascimento;
+        
+        // Montar endereço completo
+        const endereco = formatarEndereco(dados);
+        if (endereco) updates.enderecoCompleto = endereco;
+        
+        // Montar telefone
+        const telefone = formatarTelefone(dados.telefone_ddd, dados.telefone_numero);
+        if (telefone) updates.telefonePessoal = telefone;
+        
+        if (dados.cep) updates.cep = dados.cep;
+
+        // Aplicar as atualizações
+        Object.entries(updates).forEach(([campo, valor]) => {
+          if (type === 'titular') {
+            updateTitular(index, campo as keyof PersonData, valor);
+          } else {
+            updateDependente(index, campo as keyof PersonData, valor);
+          }
+        });
+
+        showNotification('Dados preenchidos automaticamente via CPF', 'success');
+      }
+    }
+  };
+
   const renderPersonForm = (person: PersonData, type: 'titular' | 'dependente', index: number) => (
     <div key={person.id} className="bg-gray-50 p-6 rounded-lg space-y-4">
       <div className="flex items-center justify-between">
@@ -289,13 +337,7 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
           <input
             type="text"
             value={person.cpf}
-            onChange={(e) => {
-              if (type === 'titular') {
-                updateTitular(index, 'cpf', e.target.value);
-              } else {
-                updateDependente(index, 'cpf', e.target.value);
-              }
-            }}
+            onChange={(e) => handleCPFChange(e.target.value, type, index)}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="000.000.000-00"
           />
