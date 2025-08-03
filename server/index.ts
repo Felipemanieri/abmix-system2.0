@@ -240,6 +240,27 @@ async function startServer() {
       }
     });
 
+    // ROTA CRÍTICA: Buscar proposta por token do cliente (DEVE ESTAR ANTES DO CATCH-ALL)
+    app.get('/api/proposals/client/:clientToken', async (req: Request, res: Response) => {
+      try {
+        const { clientToken } = req.params;
+        console.log(`🔍 Buscando proposta para token do cliente: ${clientToken}`);
+        
+        const proposal = await storage.getProposalByToken(clientToken);
+        
+        if (!proposal) {
+          console.log(`❌ Proposta não encontrada para token: ${clientToken}`);
+          return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+        
+        console.log(`✅ Proposta encontrada: ${proposal.id} - ${proposal.contractData?.nomeEmpresa}`);
+        res.json(proposal);
+      } catch (error) {
+        console.error('❌ Erro ao buscar proposta por token do cliente:', error);
+        res.status(500).json({ error: 'Falha ao buscar proposta' });
+      }
+    });
+
     console.log("✅ Rotas essenciais registradas com sucesso");
 
     // Portal visibility state
@@ -722,6 +743,8 @@ async function startServer() {
         res.status(500).json({ error: 'Erro ao buscar vendedores' });
       }
     });
+
+
 
     const distPath = path.resolve(__dirname, "public");
     app.use(express.static(distPath));
