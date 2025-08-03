@@ -232,6 +232,26 @@ export const grantedAwards = pgTable("granted_awards", {
   updatedAt: timestamp("updated_at").defaultNow()
 });
 
+// Tabela para salvar configurações editáveis dos relatórios
+export const reportConfigurations = pgTable("report_configurations", {
+  id: serial("id").primaryKey(),
+  abmId: varchar("abm_id").notNull(), // ID da proposta (ABM001, ABM002, etc)
+  vendorPercent: text("vendor_percent"), // % do vendedor
+  vendorPercent2: text("vendor_percent_2"), // % vendedor 2
+  reuniaoPercent: text("reuniao_percent"), // % Comissão Reunião
+  premiacao: text("premiacao"), // Premiação
+  metaIndividual: text("meta_individual"), // Meta Individual
+  metaEquipe: text("meta_equipe"), // Meta de Equipe
+  superPremiacao: text("super_premiacao"), // Super Premiação
+  supervisor: text("supervisor"), // Supervisor
+  statusPagamentoPremiacao: text("status_pagamento_premiacao"), // Status Pagamento Premiação
+  statusPagamento: text("status_pagamento"), // Status Pagamento
+  dataPagamento: text("data_pagamento"), // Data Pagamento
+  observacoes: text("observacoes"), // Observações
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
 
 
 export const insertAttachmentSchema = createInsertSchema(attachments);
@@ -240,6 +260,7 @@ export const insertSystemSettingSchema = createInsertSchema(systemSettings);
 export const insertCentralizedConfigSchema = createInsertSchema(centralizedConfigs);
 export const insertInternalMessageSchema = createInsertSchema(internalMessages);
 export const insertGrantedAwardSchema = createInsertSchema(grantedAwards);
+export const insertReportConfigurationSchema = createInsertSchema(reportConfigurations);
 
 export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
 export type Attachment = typeof attachments.$inferSelect;
@@ -253,4 +274,6 @@ export type InsertInternalMessage = z.infer<typeof insertInternalMessageSchema>;
 export type InternalMessage = typeof internalMessages.$inferSelect;
 export type InsertGrantedAward = z.infer<typeof insertGrantedAwardSchema>;
 export type GrantedAward = typeof grantedAwards.$inferSelect;
+export type InsertReportConfiguration = z.infer<typeof insertReportConfigurationSchema>;
+export type ReportConfiguration = typeof reportConfigurations.$inferSelect;
 

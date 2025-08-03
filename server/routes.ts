@@ -1269,5 +1269,41 @@ export function setupRoutes(app: any) {
     }
   });
 
+  // ROTAS PARA CONFIGURAÇÕES DE RELATÓRIOS
+  
+  // Salvar configuração de relatório
+  app.post('/api/report-configurations', async (req: Request, res: Response) => {
+    try {
+      const config = await storage.saveReportConfiguration(req.body);
+      res.json({ success: true, config });
+    } catch (error) {
+      console.error('❌ Erro ao salvar configuração de relatório:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Buscar configuração de relatório por abmId
+  app.get('/api/report-configurations/:abmId', async (req: Request, res: Response) => {
+    try {
+      const { abmId } = req.params;
+      const config = await storage.getReportConfiguration(abmId);
+      res.json(config || {});
+    } catch (error) {
+      console.error('❌ Erro ao buscar configuração de relatório:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Buscar todas as configurações de relatórios
+  app.get('/api/report-configurations', async (req: Request, res: Response) => {
+    try {
+      const configs = await storage.getAllReportConfigurations();
+      res.json(configs);
+    } catch (error) {
+      console.error('❌ Erro ao buscar todas as configurações de relatórios:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual, exclusão específica e limpeza de backups)');
 }

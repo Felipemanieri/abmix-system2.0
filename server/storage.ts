@@ -1,4 +1,4 @@
-import { users, vendors, proposals, vendorTargets, teamTargets, awards, systemUsers, attachments, driveConfigs, systemSettings, internalMessages, grantedAwards, type User, type InsertUser, type Vendor, type InsertVendor, type Proposal, type InsertProposal, type VendorTarget, type InsertVendorTarget, type TeamTarget, type InsertTeamTarget, type Award, type InsertAward, type SystemUser, type InsertSystemUser, type Attachment, type InsertAttachment, type DriveConfig, type InsertDriveConfig, type SystemSetting, type InsertSystemSetting, type InternalMessage, type InsertInternalMessage, type GrantedAward, type InsertGrantedAward } from "@shared/schema";
+import { users, vendors, proposals, vendorTargets, teamTargets, awards, systemUsers, attachments, driveConfigs, systemSettings, internalMessages, grantedAwards, reportConfigurations, type User, type InsertUser, type Vendor, type InsertVendor, type Proposal, type InsertProposal, type VendorTarget, type InsertVendorTarget, type TeamTarget, type InsertTeamTarget, type Award, type InsertAward, type SystemUser, type InsertSystemUser, type Attachment, type InsertAttachment, type DriveConfig, type InsertDriveConfig, type SystemSetting, type InsertSystemSetting, type InternalMessage, type InsertInternalMessage, type GrantedAward, type InsertGrantedAward, type ReportConfiguration, type InsertReportConfiguration } from "@shared/schema";
 import { db, isDatabaseAvailable } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -100,6 +100,11 @@ export interface IStorage {
   updateGrantedAward(id: number, award: Partial<InsertGrantedAward>): Promise<GrantedAward>;
   deleteGrantedAward(id: number): Promise<void>;
   getAllGrantedAwards(): Promise<GrantedAward[]>;
+
+  // Report Configuration operations
+  saveReportConfiguration(config: Partial<InsertReportConfiguration>): Promise<ReportConfiguration>;
+  getReportConfiguration(abmId: string): Promise<ReportConfiguration | undefined>;
+  getAllReportConfigurations(): Promise<ReportConfiguration[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -898,6 +903,63 @@ export class DatabaseStorage implements IStorage {
 
   async getAllGrantedAwards(): Promise<GrantedAward[]> {
     return await db.select().from(grantedAwards).orderBy(desc(grantedAwards.createdAt));
+  }
+
+  // Report Configuration operations
+  async saveReportConfiguration(config: Partial<InsertReportConfiguration>): Promise<ReportConfiguration> {
+    try {
+      // Verificar se já existe uma configuração para este abmId
+      const existing = await this.getReportConfiguration(config.abmId!);
+      
+      if (existing) {
+        // Atualizar configuração existente
+        const [updatedConfig] = await db
+          .update(reportConfigurations)
+          .set({ 
+            ...config, 
+            updatedAt: new Date() 
+          })
+          .where(eq(reportConfigurations.abmId, config.abmId!))
+          .returning();
+        return updatedConfig;
+      } else {
+        // Criar nova configuração
+        const [newConfig] = await db
+          .insert(reportConfigurations)
+          .values({
+            ...config,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          })
+          .returning();
+        return newConfig;
+      }
+    } catch (error) {
+      console.error('❌ STORAGE: Erro ao salvar configuração de relatório:', error);
+      throw error;
+    }
+  }
+
+  async getReportConfiguration(abmId: string): Promise<ReportConfiguration | undefined> {
+    try {
+      const [config] = await db
+        .select()
+        .from(reportConfigurations)
+        .where(eq(reportConfigurations.abmId, abmId));
+      return config || undefined;
+    } catch (error) {
+      console.error('❌ STORAGE: Erro ao buscar configuração de relatório:', error);
+      return undefined;
+    }
+  }
+
+  async getAllReportConfigurations(): Promise<ReportConfiguration[]> {
+    try {
+      return await db.select().from(reportConfigurations);
+    } catch (error) {
+      console.error('❌ STORAGE: Erro ao buscar todas as configurações de relatórios:', error);
+      return [];
+    }
   }
 }
 
