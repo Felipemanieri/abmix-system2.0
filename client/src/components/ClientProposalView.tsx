@@ -409,26 +409,28 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           const d = dados.dados;
           console.log('✅ Dados recebidos da API:', d);
           
-          // 1. Preencher Nome Completo
+          // APLICAR PREENCHIMENTO DIRETO CAMPO POR CAMPO
+          
+          // 1. NOME COMPLETO
           if (d.nome) {
             console.log('📝 Preenchendo nome:', d.nome);
             updatePerson('titular', personId, 'nomeCompleto', d.nome);
           }
           
-          // 2. Preencher Nome da Mãe
+          // 2. NOME DA MÃE
           if (d.mae) {
             console.log('📝 Preenchendo nome da mãe:', d.mae);
             updatePerson('titular', personId, 'nomeMae', d.mae);
           }
           
-          // 3. Preencher Sexo
+          // 3. SEXO
           if (d.sexo) {
             const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
             console.log('📝 Preenchendo sexo:', sexoFormatado);
             updatePerson('titular', personId, 'sexo', sexoFormatado);
           }
           
-          // 4. Preencher Data de Nascimento
+          // 4. DATA DE NASCIMENTO
           if (d.data_nascimento) {
             const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
             if (match) {
@@ -439,28 +441,24 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
             }
           }
           
-          // 5. Preencher Endereço se disponível
-          if (d.logradouro && d.municipio_residencia) {
-            const enderecoCompleto = formatarEndereco(dados);
-            if (enderecoCompleto) {
-              console.log('📝 Preenchendo endereço:', enderecoCompleto);
-              updatePerson('titular', personId, 'enderecoCompleto', enderecoCompleto);
-            }
-          }
-          
-          // 6. Preencher Telefone se disponível
+          // 5. TELEFONE PESSOAL
           if (d.telefone_ddd && d.telefone_numero) {
             const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-            if (telefoneFormatado) {
-              console.log('📝 Preenchendo telefone:', telefoneFormatado);
-              updatePerson('titular', personId, 'telefonePessoal', telefoneFormatado);
-            }
+            console.log('📝 Preenchendo telefone:', telefoneFormatado);
+            updatePerson('titular', personId, 'telefonePessoal', telefoneFormatado);
           }
           
-          // 7. Preencher CEP se disponível
+          // 6. CEP
           if (d.cep) {
             console.log('📝 Preenchendo CEP:', d.cep);
             updatePerson('titular', personId, 'cep', d.cep);
+          }
+          
+          // 7. ENDEREÇO COMPLETO
+          const enderecoCompleto = formatarEndereco(dados);
+          if (enderecoCompleto) {
+            console.log('📝 Preenchendo endereço:', enderecoCompleto);
+            updatePerson('titular', personId, 'enderecoCompleto', enderecoCompleto);
           }
           
           console.log('✅ Todos os campos preenchidos automaticamente!');
