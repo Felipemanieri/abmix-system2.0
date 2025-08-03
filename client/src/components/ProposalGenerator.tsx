@@ -354,6 +354,28 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     setTitulares(newTitulares);
   };
 
+  // Função para formatar valores monetários (R$ 1.234.567,89)
+  const formatarValorMonetario = (valor: string): string => {
+    // Remove tudo exceto números
+    let numeros = valor.replace(/\D/g, '');
+    
+    // Se não tem nada, retorna vazio
+    if (!numeros) return '';
+    
+    // Converte para número e formata
+    const numero = parseInt(numeros);
+    
+    // Adiciona os centavos (últimos 2 dígitos)
+    const centavos = numero % 100;
+    const reais = Math.floor(numero / 100);
+    
+    // Formata com pontos de milhares
+    const reaisFormatados = reais.toLocaleString('pt-BR');
+    const centavosFormatados = centavos.toString().padStart(2, '0');
+    
+    return `${reaisFormatados},${centavosFormatados}`;
+  };
+
   const updateDependente = (index: number, field: keyof PersonData, value: string) => {
     console.log('🔧 updateDependente chamado:', { index, field, value });
     const newDependentes = [...dependentes];
@@ -1025,7 +1047,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
         } else {
-          showNotification('❌ CPF não encontrado na base de dados', 'warning');
+          showNotification('❌ CPF não encontrado na base de dados', 'error');
         }
       } catch (error) {
         console.error('Erro na consulta CPF:', error);
@@ -1530,11 +1552,11 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                             }));
                             showNotification('CNPJ encontrado! Dados da empresa preenchidos automaticamente.', 'success');
                           } else {
-                            showNotification('CNPJ não encontrado. Preencha os dados manualmente.', 'warning');
+                            showNotification('CNPJ não encontrado. Preencha os dados manualmente.', 'info');
                           }
                         } catch (error) {
                           console.error('Erro ao buscar CNPJ:', error);
-                          showNotification('Erro ao buscar CNPJ. Preencha os dados manualmente.', 'warning');
+                          showNotification('Erro ao buscar CNPJ. Preencha os dados manualmente.', 'info');
                         }
                       }
                     }
@@ -1575,7 +1597,10 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 <input
                   type="text"
                   value={contractData.valor}
-                  onChange={(e) => setContractData(prev => ({ ...prev, valor: e.target.value }))}
+                  onChange={(e) => {
+                    const valorFormatado = formatarValorMonetario(e.target.value);
+                    setContractData(prev => ({ ...prev, valor: valorFormatado }));
+                  }}
                   readOnly={contractFieldsReadOnly}
                   className={`w-full p-3 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-lg ${
                     contractFieldsReadOnly 

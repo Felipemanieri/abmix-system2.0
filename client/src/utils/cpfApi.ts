@@ -74,6 +74,12 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
       return null;
     }
     
+    console.log('🔍 Verificando condições da API CPF:');
+    console.log('  - data.status:', data.status, typeof data.status);
+    console.log('  - data.resultado:', data.resultado, typeof data.resultado);
+    console.log('  - data.dados existe:', !!data.dados);
+    console.log('  - updateCallback existe:', !!updateCallback);
+    
     if (data.status === true && data.resultado === 'success' && data.dados && updateCallback) {
       console.log('✅ CPF encontrado com sucesso:', data.dados.nome);
       
