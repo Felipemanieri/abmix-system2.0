@@ -3,7 +3,7 @@ import { ArrowLeft, Building, FileText, DollarSign, Check, Copy, Plus, Trash2, U
 import { showNotification } from '../utils/notifications';
 import { useRealTimeNotifications } from '../utils/realTimeSync';
 import { buscarCEP, buscarCEPLocal, formatarCEP, buscarCNPJ, formatarCNPJ } from '../utils/cepHandler';
-import { consultarCPF, formatarTelefone, formatarEndereco, formatarCPF } from '../utils/cpfApi';
+import { consultarCPF, formatarTelefone, formatarEndereco, formatarCPF, preencherCamposComCPF } from '../utils/cpfApi';
 import ProposalProgressTracker from './ProposalProgressTracker';
 import ProfessionalLinkShare from './ProfessionalLinkShare';
 import { useQuery } from '@tanstack/react-query';
@@ -87,7 +87,7 @@ interface ProposalGeneratorProps {
 const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVendor }) => {
   // Hook para notificações em tempo real
   const { notifyCreated } = useRealTimeNotifications();
-  
+
   // Query para buscar vendedores em tempo real
   const { data: vendors = [] } = useQuery({
     queryKey: ['/api/vendors'],
@@ -98,7 +98,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     },
     refetchInterval: 3000 // Atualiza a cada 3 segundos
   });
-  
+
   const [contractData, setContractData] = useState<ContractData>({
     nomeEmpresa: '',
     cnpj: '',
@@ -155,8 +155,8 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   const [contractFieldsReadOnly, setContractFieldsReadOnly] = useState(false);
   const [showProfessionalModal, setShowProfessionalModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(new Date().toISOString());
-  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
-  const [isClearingDraft, setIsClearingDraft] = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft = useState(false);
+  const [isClearingDraft, setIsClearingDraft = useState(false);
 
   // Estados para cotação
   const [quotationData, setQuotationData] = useState<QuotationData>({
@@ -193,37 +193,37 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       setIsLoadingDraft(true);
       const draftKey = `proposal_draft_${currentVendor.id}`;
       const savedDraft = localStorage.getItem(draftKey);
-      
+
       if (savedDraft) {
         try {
           const draftData = JSON.parse(savedDraft);
-          
+
           // Verificar se há dados realmente preenchidos
           const hasData = draftData.contractData?.nomeEmpresa || 
                           draftData.titulares?.some((t: any) => t.nomeCompleto) ||
                           draftData.dependentes?.some((d: any) => d.nomeCompleto);
-          
+
           if (hasData) {
             // Restaurar dados do contrato
             if (draftData.contractData) {
               setContractData(draftData.contractData);
             }
-            
+
             // Restaurar titulares
             if (draftData.titulares && draftData.titulares.length > 0) {
               setTitulares(draftData.titulares);
             }
-            
+
             // Restaurar dependentes
             if (draftData.dependentes && draftData.dependentes.length > 0) {
               setDependentes(draftData.dependentes);
             }
-            
+
             // Restaurar dados internos
             if (draftData.internalData) {
               setInternalData(draftData.internalData);
             }
-            
+
             // Restaurar lastSaved
             if (draftData.lastSaved) {
               setLastSaved(draftData.lastSaved);
@@ -231,14 +231,14 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
           } else {
             // Se não há rascunho, definir um lastSaved inicial para mostrar o botão
             setLastSaved(new Date().toISOString());
-            
+
 
           }
         } catch (error) {
           console.error('Erro ao carregar rascunho:', error);
         }
       }
-      
+
       setIsLoadingDraft(false);
     }
   }, [currentVendor]);
@@ -251,7 +251,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   //       const hasData = contractData.nomeEmpresa || 
   //                       titulares.some(t => t.nomeCompleto) ||
   //                       dependentes.some(d => d.nomeCompleto);
-        
+
   //       if (hasData) {
   //         const now = new Date().toISOString();
   //         const draftData = {
@@ -369,7 +369,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       ...prev,
       [documentoKey]: received
     }));
-    
+
     showNotification(
       received 
         ? 'Documento marcado como recebido' 
@@ -402,13 +402,13 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
 
   const handleClearDraft = () => {
     if (!currentVendor) return;
-    
+
     setIsClearingDraft(true);
-    
+
     const draftKey = `proposal_draft_${currentVendor.id}`;
     localStorage.removeItem(draftKey);
     setLastSaved(null);
-    
+
     // Limpar todos os dados dos formulários
     setContractData({
       nomeEmpresa: '',
@@ -423,7 +423,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       periodoMinimo: '',
       aproveitamentoCongenere: false,
     });
-    
+
     setTitulares([{
       id: '1',
       nomeCompleto: '',
@@ -443,9 +443,9 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       enderecoCompleto: '',
       dadosReembolso: ''
     }]);
-    
+
     setDependentes([]);
-    
+
     setInternalData({
       reuniao: false,
       nomeReuniao: '',
@@ -457,11 +457,11 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       observacoesFinanceiras: '',
       observacoesCliente: ''
     });
-    
+
     setVendorAttachments([]);
-    
+
     showNotification('Rascunho limpo com sucesso', 'success');
-    
+
     setTimeout(() => {
       setIsClearingDraft(false);
     }, 1000);
@@ -540,21 +540,21 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
 
       const result = await response.json();
       console.log('Resultado da API:', result);
-      
+
       // Notificar criação da proposta para atualização em tempo real
       if (currentVendor?.id) {
         console.log('🚀 Notificando criação da proposta para atualização em tempo real');
         notifyCreated(currentVendor.id);
-        
+
         // Limpar rascunho salvo após envio bem-sucedido
         const draftKey = `proposal_draft_${currentVendor.id}`;
         localStorage.removeItem(draftKey);
       }
-      
+
       setGeneratedLink(result.clientFormLink);
       setShowProfessionalModal(true);
       showNotification('Link exclusivo da proposta gerado com sucesso!', 'success');
-      
+
       // Sincronização automática com Google Drive e Sheets
       try {
         // const realTimeIntegration = RealTimeIntegration.getInstance();
@@ -583,7 +583,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   const shareByEmail = () => {
     const subject = `Proposta de Plano de Saúde - ${contractData.nomeEmpresa}`;
     const body = `Olá!\n\nSegue o link para preenchimento da proposta de plano de saúde:\n\nEmpresa: ${contractData.nomeEmpresa}\nPlano: ${contractData.planoContratado}\nValor: R$ ${contractData.valor}\n\nLink: ${generatedLink}\n\nPor favor, acesse o link e preencha todos os dados solicitados.\n\nQualquer dúvida, estou à disposição.\n\nAtenciosamente,`;
-    
+
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl, '_blank');
     showNotification('Abrindo cliente de e-mail...', 'success');
@@ -591,7 +591,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
 
   const shareByWhatsApp = () => {
     const mensagem = `🏥 *Proposta de Plano de Saúde*\n\n📋 *Empresa:* ${contractData.nomeEmpresa}\n📊 *Plano:* ${contractData.planoContratado}\n💰 *Valor:* R$ ${contractData.valor}\n\n🔗 *Link para preenchimento:*\n${generatedLink}\n\nPor favor, acesse o link e preencha todos os dados solicitados. Qualquer dúvida, estou aqui para ajudar! 😊`;
-    
+
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
     window.open(whatsappUrl, '_blank');
     showNotification('Abrindo WhatsApp...', 'success');
@@ -622,9 +622,9 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       enderecoCompleto: '',
       dadosReembolso: ''
     }]);
-    
+
     setDependentes([]);
-    
+
     // Resetar dados internos, mantendo apenas observações padrão
     setInternalData({
       reuniao: false,
@@ -637,12 +637,12 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       observacoesFinanceiras: '',
       observacoesCliente: 'Lembre-se de enviar todos os documentos solicitados em boa qualidade. Para dúvidas sobre documentos específicos, entre em contato através do chat.'
     });
-    
+
     // Limpar anexos
     setVendorAttachments([]);
     setArquivosAnexados([]);
     setCotacoesCadastradas([]);
-    
+
     // Resetar cotação
     setQuotationData({
       numeroVidas: 1,
@@ -653,11 +653,11 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       dataEnvio: new Date().toISOString().split('T')[0],
       idades: [25]
     });
-    
+
     // Tornar campos do contrato somente leitura
     setContractFieldsReadOnly(true);
     setIsSubmitted(false);
-    
+
     showNotification('Nova proposta iniciada! Os dados do contrato foram mantidos como somente leitura.', 'success');
   };
 
@@ -772,7 +772,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       if (idade < 50) return acc + 1.5;
       return acc + 2;
     }, 0);
-    
+
     const totalValue = baseValue * ageMultiplier * quotationData.numeroVidas;
     showNotification(`Cotação gerada: R$ ${totalValue.toFixed(2)}`, 'success');
   };
@@ -796,12 +796,12 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       showNotification('Preencha a operadora e tipo de plano para gerar a cotação', 'error');
       return;
     }
-    
+
     // Simular cálculo de cotação baseado em dados
     const valorBase = 180;
     const multiplicador = quotationData.numeroVidas * (quotationData.tipoPlano === 'Empresarial' ? 0.8 : 1);
     const valorCalculado = (valorBase * multiplicador).toFixed(2);
-    
+
     setQuotationData(prev => ({ ...prev, valor: valorCalculado }));
     showNotification(`Cotação gerada: R$ ${valorCalculado}`, 'success');
   };
@@ -818,7 +818,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       dataHora: new Date().toISOString(),
       arquivos: arquivosAnexados.length
     };
-    
+
     // Aqui você poderia salvar no banco de dados
     localStorage.setItem(`cotacao_${Date.now()}`, JSON.stringify(cotacaoSalva));
     showNotification('Cotação salva com sucesso!', 'success');
@@ -850,7 +850,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     a.download = `Cotacao_${quotationData.operadora}_${Date.now()}.txt`;
     a.click();
     window.URL.revokeObjectURL(url);
-    
+
     showNotification('Cotação baixada com sucesso!', 'success');
   };
 
@@ -872,7 +872,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     };
 
     setCotacoesCadastradas(prev => [...prev, novaCotacao]);
-    
+
     // Limpar formulário após adicionar
     setQuotationData({
       numeroVidas: 1,
@@ -884,7 +884,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
       idades: [25]
     });
     setArquivosAnexados([]);
-    
+
     showNotification('Cotação salva com sucesso!', 'success');
   };
 
@@ -895,7 +895,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
 
   const enviarWhatsApp = (cotacao: any) => {
     const mensagem = `Olá! Segue cotação:\n\nOperadora: ${cotacao.operadora}\nTipo: ${cotacao.tipoPlano}\nNº de vidas: ${cotacao.numeroVidas}\nValor: R$ ${cotacao.valor}\nValidade: ${cotacao.validade}\nData de Envio: ${cotacao.dataEnvio}\nArquivos: ${cotacao.arquivos} anexo(s)\n\nQualquer dúvida, estou à disposição!`;
-    
+
     const numeroWhatsApp = '5511999999999';
     const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
@@ -922,7 +922,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
   const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', index: number) => {
     // Aplicar formatação automática no CPF
     const cpfFormatado = formatarCPF(cpf);
-    
+
     // Atualizar o campo CPF com formatação
     if (type === 'titular') {
       updateTitular(index, 'cpf', cpfFormatado);
@@ -936,14 +936,14 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
       try {
         showNotification('🔍 Consultando CPF...', 'info');
         const dados = await consultarCPF(cpf);
-        
-        if (dados && dados.status === true && dados.resultado === 'success' && dados.dados) {
+
+        if (dados && dados.status && dados.dados) {
           console.log('🔍 Iniciando preenchimento automático para:', dados.dados.nome);
           console.log('📋 Dados completos recebidos:', dados.dados);
-          
+
           // Preencher campos automaticamente
           const d = dados.dados;
-          
+
           // Preencher nome completo
           if (d.nome) {
             console.log('✏️ Preenchendo nome:', d.nome);
@@ -953,7 +953,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               updateDependente(index, 'nomeCompleto', d.nome);
             }
           }
-          
+
           // Preencher nome da mãe
           if (d.mae) {
             console.log('✏️ Preenchendo nome da mãe:', d.mae);
@@ -963,7 +963,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               updateDependente(index, 'nomeMae', d.mae);
             }
           }
-          
+
           // Preencher sexo
           if (d.sexo) {
             const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
@@ -974,7 +974,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               updateDependente(index, 'sexo', sexoFormatado);
             }
           }
-          
+
           // Processar data de nascimento (formato: "12/07/1984 (41 anos)" -> "1984-07-12")
           if (d.data_nascimento) {
             const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
@@ -989,7 +989,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               }
             }
           }
-          
+
           // Montar endereço completo
           const endereco = formatarEndereco(dados);
           if (endereco) {
@@ -1000,7 +1000,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               updateDependente(index, 'enderecoCompleto', endereco);
             }
           }
-          
+
           // Montar telefone
           const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
           if (telefone) {
@@ -1011,7 +1011,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               updateDependente(index, 'telefonePessoal', telefone);
             }
           }
-          
+
           // Preencher CEP
           if (d.cep) {
             console.log('✏️ Preenchendo CEP:', d.cep);
@@ -1081,7 +1081,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             onChange={(e) => {
               const valor = e.target.value;
               console.log('💡 CPF onChange disparado:', valor);
-              
+
               // Forçar chamada da função diretamente para debug
               setTimeout(() => {
                 console.log('⏰ Executando handleCPFChange após timeout...');
@@ -1346,7 +1346,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               // Handler com API ViaCEP
               const cepValue = e.target.value;
               const cepLimpo = cepValue.replace(/\D/g, '');
-              
+
               // Só executa se CEP tem 8 dígitos
               if (cepLimpo.length === 8) {
                 try {
@@ -1414,7 +1414,84 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     </div>
   );
 
+  // Função para atualizar os dados da pessoa (titular ou dependente)
+  const updatePerson = (type: 'titular' | 'dependente', personId: string, field: keyof PersonData, value: string) => {
+    if (type === 'titular') {
+      const titularIndex = titulares.findIndex(t => t.id === personId);
+      if (titularIndex !== -1) {
+        updateTitular(titularIndex, field, value);
+      }
+    } else {
+      const dependenteIndex = dependentes.findIndex(d => d.id === personId);
+      if (dependenteIndex !== -1) {
+        updateDependente(dependenteIndex, field, value);
+      }
+    }
+  };
 
+  const handleCPFChange = async (personId: string, cpf: string) => {
+    console.log('🔍 Mudança de CPF detectada:', { personId, cpf });
+
+    // Aplicar formatação automática
+    const cpfFormatado = formatarCPF(cpf);
+    updatePerson('titular', personId, 'cpf', cpfFormatado);
+
+    // Se CPF tem 11 dígitos (sem formatação), consultar API
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    if (cpfLimpo.length === 11) {
+      console.log('🔍 CPF completo, consultando API:', cpfLimpo);
+
+      try {
+        // Usar a função helper que já faz todo o preenchimento automaticamente
+        const sucesso = await preencherCamposComCPF(cpf, (campo: string, valor: string) => {
+          console.log(`🔄 Preenchendo campo ${campo} com valor:`, valor);
+
+          // Mapear os campos da API para os campos do formulário
+          switch (campo) {
+            case 'nomeCompleto':
+            case 'nome':
+              updatePerson('titular', personId, 'nomeCompleto', valor);
+              break;
+            case 'nomeMae':
+              updatePerson('titular', personId, 'nomeMae', valor);
+              break;
+            case 'sexo':
+              updatePerson('titular', personId, 'sexo', valor);
+              break;
+            case 'dataNascimento':
+              updatePerson('titular', personId, 'dataNascimento', valor);
+              break;
+            case 'enderecoCompleto':
+            case 'endereco':
+              updatePerson('titular', personId, 'enderecoCompleto', valor);
+              break;
+            case 'telefonePessoal':
+              updatePerson('titular', personId, 'telefonePessoal', valor);
+              break;
+            case 'cep':
+              updatePerson('titular', personId, 'cep', valor);
+              break;
+            case 'cpf':
+              updatePerson('titular', personId, 'cpf', valor);
+              break;
+            default:
+              console.log('Campo não mapeado:', campo, valor);
+          }
+        });
+
+        if (sucesso) {
+          console.log('✅ CPF consultado e campos preenchidos automaticamente!');
+          showNotification('CPF consultado com sucesso! Todos os 8 campos preenchidos automaticamente.', 'success');
+        } else {
+          console.log('❌ CPF não encontrado ou erro na consulta');
+          showNotification('CPF não encontrado na base de dados.', 'warning');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao consultar CPF:', error);
+        showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
+      }
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -1469,7 +1546,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 </div>
               )}
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1488,7 +1565,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                   placeholder="Ex: Empresa ABC Ltda"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   CNPJ *
@@ -1504,7 +1581,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                     if (!contractFieldsReadOnly) {
                       const cnpjValue = e.target.value;
                       const cnpjLimpo = cnpjValue.replace(/\D/g, '');
-                      
+
                       if (cnpjLimpo.length === 14) {
                         try {
                           const empresa = await buscarCNPJ(cnpjValue);
@@ -1552,7 +1629,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                   placeholder="Ex: Plano Empresarial Premium - Cobertura Nacional"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Valor Mensal (R$) *
@@ -1570,7 +1647,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                   placeholder="0,00"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Início da Vigência *
@@ -1609,7 +1686,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                   <option value="36 meses">36 meses</option>
                 </select>
               </div>
-              
+
               <div className="md:col-span-2 space-y-4">
                 <div className="flex items-center">
                   <input
@@ -1626,7 +1703,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                     Inclui cobertura odontológica
                   </label>
                 </div>
-                
+
                 <div className="flex items-center space-x-8">
                   <div className="flex items-center">
                     <input
@@ -1643,7 +1720,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                       Livre adesão
                     </label>
                   </div>
-                  
+
                   <div className="flex items-center">
                     <input
                       type="checkbox"
@@ -1660,7 +1737,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -1697,7 +1774,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 Adicionar Titular
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {titulares.map((titular, index) => 
                 renderPersonForm(titular, 'titular', index)
@@ -1722,7 +1799,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 Adicionar Dependente
               </button>
             </div>
-            
+
             {dependentes.length === 0 ? (
               <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg text-center">
                 <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white">Nenhum dependente adicionado</p>
@@ -1918,12 +1995,12 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 Observações para o Cliente
               </h2>
             </div>
-            
+
             <div className="space-y-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Escreva instruções específicas que aparecerão para o cliente ao completar a proposta.
               </p>
-              
+
               <textarea
                 value={internalData.observacoesCliente}
                 onChange={(e) => setInternalData(prev => ({ ...prev, observacoesCliente: e.target.value }))}
@@ -1931,7 +2008,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 rows={4}
                 placeholder="Exemplo: Lembre-se de enviar todos os documentos em boa qualidade. Para dúvidas específicas, entre em contato através do chat..."
               />
-              
+
               <div className="flex items-start space-x-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                 <Info className="w-4 h-4 text-gray-600 dark:text-gray-300 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-gray-700 dark:text-gray-300">

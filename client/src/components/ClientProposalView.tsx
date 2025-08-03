@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Building, FileText, User, Upload, Camera, CheckCircle, Lock, Save, Download, Eye, EyeOff, Plus, Trash2, Users, Phone, Mail, MapPin, Calendar, Shield, Check, Image, X } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
 import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
+import { consultarCPF, formatarCPF, preencherCamposComCPF } from '../utils/cpfApi';
 
 interface ClientProposalViewProps {
   token: string;
@@ -81,7 +82,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
   //       // Verificar se há dados realmente preenchidos antes de salvar
   //       const hasData = titulares.some(t => t.nomeCompleto) ||
   //                       dependentes.some(d => d.nomeCompleto);
-        
+
   //       if (hasData) {
   //         const now = new Date().toISOString();
   //         const draftData = {
@@ -107,7 +108,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
     } else {
       setTitulares([createEmptyPerson('1')]);
     }
-    
+
     if (proposalData.dependentes) {
       setDependentes(proposalData.dependentes);
     }
@@ -116,27 +117,27 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
   const fetchProposal = async () => {
     try {
       const response = await fetch(`/api/proposals/client/${token}`);
-      
+
       if (!response.ok) {
         throw new Error('Proposta não encontrada');
       }
 
       const proposalData = await response.json();
       setProposal(proposalData);
-      
+
       // Verificar se existe rascunho salvo no localStorage
       setIsLoadingDraft(true);
       const draftKey = `client_draft_${token}`;
       const savedDraft = localStorage.getItem(draftKey);
-      
+
       if (savedDraft) {
         try {
           const draftData = JSON.parse(savedDraft);
-          
+
           // Verificar se há dados realmente preenchidos
           const hasData = draftData.titulares?.some((t: any) => t.nomeCompleto) ||
                           draftData.dependentes?.some((d: any) => d.nomeCompleto);
-          
+
           if (hasData) {
             // Usar dados do rascunho se existirem
             if (draftData.titulares && draftData.titulares.length > 0) {
@@ -146,13 +147,13 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
             } else {
               setTitulares([createEmptyPerson('1')]);
             }
-            
+
             if (draftData.dependentes) {
               setDependentes(draftData.dependentes);
             } else if (proposalData.dependentes) {
               setDependentes(proposalData.dependentes);
             }
-            
+
             setLastSaved(draftData.lastSaved);
           } else {
             // Se não há rascunho, definir um lastSaved inicial para mostrar o botão
@@ -171,7 +172,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
         // Definir um lastSaved inicial para mostrar o botão
         setLastSaved(new Date().toISOString());
       }
-      
+
       setIsLoadingDraft(false);
 
       setLoading(false);
@@ -247,11 +248,11 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
         const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
         return isValidType && isValidSize;
       });
-      
+
       if (validFiles.length !== fileArray.length) {
         showNotification('Alguns arquivos foram ignorados por não atenderem aos requisitos', 'error');
       }
-      
+
       setClientAttachments(prev => [...prev, ...validFiles]);
       if (validFiles.length > 0) {
         showNotification(`${validFiles.length} arquivo(s) adicionado(s)`, 'success');
@@ -289,17 +290,17 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
 
   const handleClearDraft = () => {
     setIsClearingDraft(true);
-    
+
     const draftKey = `client_draft_${token}`;
     localStorage.removeItem(draftKey);
     setLastSaved(null);
-    
+
     // Limpar todos os dados dos formulários
     setTitulares([createEmptyPerson('1')]);
     setDependentes([]);
-    
+
     showNotification('Rascunho limpo com sucesso', 'success');
-    
+
     setTimeout(() => {
       setIsClearingDraft(false);
     }, 1000);
@@ -378,7 +379,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
       const draftKey = `client_draft_${token}`;
       localStorage.removeItem(draftKey);
       setLastSaved(null);
-      
+
       setIsCompleted(true);
       showNotification('Proposta enviada com sucesso!', 'success');
     } catch (error) {
@@ -386,6 +387,70 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
       showNotification('Erro ao enviar proposta', 'error');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCPFChange = async (personId: string, cpf: string) => {
+    console.log('🔍 Mudança de CPF detectada:', { personId, cpf });
+
+    // Aplicar formatação automática
+    const cpfFormatado = formatarCPF(cpf);
+    updatePerson('titular', personId, 'cpf', cpfFormatado);
+
+    // Se CPF tem 11 dígitos (sem formatação), consultar API
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    if (cpfLimpo.length === 11) {
+      console.log('🔍 CPF completo, consultando API:', cpfLimpo);
+
+      try {
+        // Usar a função helper que já faz todo o preenchimento automaticamente
+        const sucesso = await preencherCamposComCPF(cpf, (campo: string, valor: string) => {
+          console.log(`🔄 Preenchendo campo ${campo} com valor:`, valor);
+
+          // Mapear os campos da API para os campos do formulário
+          switch (campo) {
+            case 'nomeCompleto':
+            case 'nome':
+              updatePerson('titular', personId, 'nomeCompleto', valor);
+              break;
+            case 'nomeMae':
+              updatePerson('titular', personId, 'nomeMae', valor);
+              break;
+            case 'sexo':
+              updatePerson('titular', personId, 'sexo', valor);
+              break;
+            case 'dataNascimento':
+              updatePerson('titular', personId, 'dataNascimento', valor);
+              break;
+            case 'enderecoCompleto':
+            case 'endereco':
+              updatePerson('titular', personId, 'enderecoCompleto', valor);
+              break;
+            case 'telefonePessoal':
+              updatePerson('titular', personId, 'telefonePessoal', valor);
+              break;
+            case 'cep':
+              updatePerson('titular', personId, 'cep', valor);
+              break;
+            case 'cpf':
+              updatePerson('titular', personId, 'cpf', valor);
+              break;
+            default:
+              console.log('Campo não mapeado:', campo, valor);
+          }
+        });
+
+        if (sucesso) {
+          console.log('✅ CPF consultado e campos preenchidos automaticamente!');
+          showNotification('CPF consultado com sucesso! Todos os 8 campos preenchidos automaticamente.', 'success');
+        } else {
+          console.log('❌ CPF não encontrado ou erro na consulta');
+          showNotification('CPF não encontrado na base de dados.', 'warning');
+        }
+      } catch (error) {
+        console.error('❌ Erro ao consultar CPF:', error);
+        showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
+      }
     }
   };
 
@@ -448,7 +513,10 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           <input
             type="text"
             value={person.cpf}
-            onChange={(e) => type === 'titular' ? updateTitular(index, 'cpf', e.target.value) : updateDependente(index, 'cpf', e.target.value)}
+            onChange={(e) => {
+              const cpfValue = e.target.value;
+              type === 'titular' ? handleCPFChange(person.id, cpfValue) : updateDependente(index, 'cpf', cpfValue);
+            }}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="000.000.000-00"
             required
@@ -570,7 +638,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               // Handler melhorado que não gera erro
               const cepValue = e.target.value;
               const cepLimpo = cepValue.replace(/\D/g, '');
-              
+
               // Só executa se CEP tem 8 dígitos
               if (cepLimpo.length === 8) {
                 const endereco = buscarCEPLocal(cepValue);
@@ -670,6 +738,17 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
     </div>
   );
 
+  const updatePerson = (type: 'titular' | 'dependente', personId: string, field: keyof PersonData, value: string) => {
+    if (type === 'titular') {
+      const index = titulares.findIndex(t => t.id === personId);
+      if (index !== -1) {
+        updateTitular(index, field, value);
+      }
+    } else {
+      // Lógica para atualizar dependentes (se necessário)
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -720,7 +799,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 <h1 className="text-2xl font-bold">Completar Proposta de Plano de Saúde</h1>
                 <p className="text-blue-100 mt-2">Preencha seus dados pessoais para finalizar a proposta</p>
               </div>
-              
+
               <button
                 onClick={() => {
                   localStorage.removeItem('clientProposalToken');
@@ -741,7 +820,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               <h2 className="text-xl font-semibold text-gray-900">Dados do Contrato</h2>
               <Lock className="h-4 w-4 text-gray-500 dark:text-white ml-2" />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa *</label>
@@ -815,7 +894,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 />
                 <label className="text-sm text-gray-700">Inclui cobertura odontológica</label>
               </div>
-              
+
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
                   <input
@@ -826,7 +905,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                   />
                   <label className="text-sm text-gray-700">Livre adesão</label>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -865,7 +944,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                   </button>
                 </div>
               </div>
-              
+
               {showVendorObservations && (
                 <div className="bg-white border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm text-gray-700 whitespace-pre-wrap">
@@ -894,7 +973,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                   + Adicionar Titular
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 {titulares.map((titular, index) => renderPersonForm(titular, 'titular', index))}
               </div>
@@ -916,7 +995,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                   Adicionar Dependente
                 </button>
               </div>
-              
+
               <div className="space-y-6">
                 {dependentes.map((dependente, index) => renderPersonForm(dependente, 'dependente', index))}
               </div>
@@ -955,7 +1034,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                     <FileText className="h-6 w-6 text-blue-600 mr-2" />
                     <h2 className="text-xl font-semibold text-gray-900">Documentos Necessários</h2>
                   </div>
-                  
+
                   <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 rounded-lg p-4 mb-4">
                     <h3 className="font-medium text-blue-900 mb-2">Documentos obrigatórios para todos os beneficiários:</h3>
                     <ul className="text-sm text-blue-800 space-y-1">
@@ -974,7 +1053,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 <Upload className="h-6 w-6 text-blue-600 mr-2" />
                 <h2 className="text-xl font-semibold text-gray-900">Anexar Cotação</h2>
               </div>
-              
+
               <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8">
                 <div className="text-center mb-6">
                   <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -984,7 +1063,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                   <p className="text-sm text-gray-500 dark:text-white mb-6">
                     Suporte para PDF, DOC, DOCX, JPG, PNG - Sem limite de quantidade
                   </p>
-                  
+
                   <div className="grid grid-cols-3 gap-4">
                     <label className="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
                       <FileText className="h-8 w-8 text-blue-600 mb-2" />
@@ -998,7 +1077,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                         className="hidden"
                       />
                     </label>
-                    
+
                     <button
                       onClick={handleCameraCapture}
                       className="flex flex-col items-center justify-center p-4 bg-green-50 dark:bg-green-900 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
@@ -1007,7 +1086,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                       <span className="text-sm font-medium text-green-700">Tirar Foto</span>
                       <span className="text-xs text-green-500">Câmera do dispositivo</span>
                     </button>
-                    
+
                     <button
                       onClick={handleGallerySelect}
                       className="flex flex-col items-center justify-center p-4 bg-purple-50 dark:bg-purple-900 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors"
@@ -1018,7 +1097,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                     </button>
                   </div>
                 </div>
-                
+
                 {clientAttachments.length > 0 && (
                   <div className="mt-4">
                     <h4 className="font-medium text-gray-900 mb-2">Arquivos selecionados:</h4>
@@ -1054,7 +1133,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 <Shield className="h-6 w-6 text-blue-600 mr-2" />
                 <h2 className="text-xl font-semibold text-gray-900">Informações do Plano</h2>
               </div>
-              
+
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-center">
@@ -1076,7 +1155,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Início de Vigência</label>
