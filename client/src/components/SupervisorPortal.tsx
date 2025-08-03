@@ -4842,7 +4842,20 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     <span className="font-medium text-blue-700 dark:text-blue-300">Período Início:</span> {reportFilters.dataInicio || '2025-06-16'}
                   </div>
                   <div className="text-gray-700 dark:text-gray-300">
-                    <span className="font-medium text-blue-700 dark:text-blue-300">Campos Incluídos:</span> 20 colunas
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Campos Incluídos:</span> {(() => {
+                      // Contar dinamicamente o número de colunas da tabela
+                      const columnHeaders = [
+                        'ID', 'Número de Proposta', 'Número de Apólice', 'Data/Hora', 'Cliente', 'CNPJ', 
+                        'Vendedor', 'Valor', 'Plano', 'Status', 'Desconto', 'Autorizador do Desconto',
+                        'Data de Pagamento do Cliente', 'Venda Dupla', '% do vendedor', 'Vendedor 2',
+                        '% vendedor 2', 'Comissão Venda em Dupla', 'Reunião', '% Comissão Reunião',
+                        'Comissão de Reunião', 'Premiação', 'Meta Individual', 'Meta de Equipe',
+                        'Super Premiação', 'Supervisor', '%supervisor', 'Comissão do Supervisor',
+                        'Comissão do Vendedor', 'Status Pagamento Premiação', 'Status Pagamento',
+                        'Data Pagamento', 'Observações'
+                      ];
+                      return columnHeaders.length;
+                    })()} colunas
                   </div>
                   <div className="text-gray-700 dark:text-gray-300">
                     <span className="font-medium text-blue-700 dark:text-blue-300">Período Fim:</span> {reportFilters.dataFim || '2025-07-16'}
