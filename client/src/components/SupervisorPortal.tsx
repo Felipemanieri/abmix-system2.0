@@ -5955,7 +5955,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
                         {/* CAIXAS DE TOTAIS FINANCEIROS */}
                         {(() => {
-                          // CÁLCULOS PARA AS 4 CAIXAS
+                          // CÁLCULOS PARA AS 6 CAIXAS
                           const vendasImplantadas = reportData.filter(item => item.status === 'implantado');
                           
                           // CAIXA 1: TOTAL DE VENDAS (sem desconto)
@@ -5970,39 +5970,39 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                             
                             // % Comissão (principal)
-                            const percentComissao = parseFloat((reportComissao[item.abmId] || '0%').replace('%', '')) / 100;
+                            const percentComissao = parseFloat((reportVendedor1Percent[item.abmId] || '0%').replace('%', '')) / 100;
                             totalComissoes += valor * percentComissao;
                             
                             // % Comissão 2 (venda dupla)
-                            const percentComissao2 = parseFloat((reportComissao2[item.abmId] || '0%').replace('%', '')) / 100;
+                            const percentComissao2 = parseFloat((reportVendedor2Percent[item.abmId] || '0%').replace('%', '')) / 100;
                             totalComissoes += valor * percentComissao2;
                             
                             // % Comissão Reunião
                             const percentReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
                             totalComissoes += valor * percentReuniao;
-                            
-                            // % Comissão Visita (ainda não implementado)
-                            // const percentVisita = parseFloat((reportComissaoVisita[item.abmId] || '0%').replace('%', '')) / 100;
-                            // totalComissoes += valor * percentVisita;
                           });
                           
                           // CAIXA 3: TOTAL PREMIAÇÕES
                           let totalPremiacoes = 0;
                           vendasImplantadas.forEach(item => {
                             // Premiação manual
-                            const premiacao = parseFloat((reportPremiacao[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            const premiacaoStr = reportPremiacao[item.abmId] || '0';
+                            const premiacao = parseFloat(premiacaoStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                             totalPremiacoes += premiacao;
                             
                             // Meta Individual (automática)
-                            const metaIndividual = parseFloat((reportMetaIndividual[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            const metaIndividualStr = reportMetaIndividual[item.abmId] || '0';
+                            const metaIndividual = parseFloat(metaIndividualStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                             totalPremiacoes += metaIndividual;
                             
                             // Meta de Equipe (automática)
-                            const metaEquipe = parseFloat((reportMetaEquipe[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            const metaEquipeStr = reportMetaEquipe[item.abmId] || '0';
+                            const metaEquipe = parseFloat(metaEquipeStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                             totalPremiacoes += metaEquipe;
                             
                             // Super Premiação (automática)
-                            const superPremiacao = parseFloat((reportSuperPremiacao[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            const superPremiacaoStr = reportSuperPremiacao[item.abmId] || '0';
+                            const superPremiacao = parseFloat(superPremiacaoStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                             totalPremiacoes += superPremiacao;
                           });
                           
@@ -6017,7 +6017,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           // CAIXA 5: TOTAL COM DESCONTOS (valor líquido após desconto)
                           const totalComDescontos = vendasImplantadas.reduce((sum, item) => {
                             const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                            const desconto = parseFloat((reportDesconto[item.abmId] || '0%').replace('%', '')) / 100;
+                            const descontoStr = reportDesconto[item.abmId] || '0%';
+                            const desconto = parseFloat(descontoStr.replace('%', '')) / 100;
                             const valorComDesconto = valor * (1 - desconto);
                             return sum + valorComDesconto;
                           }, 0);
