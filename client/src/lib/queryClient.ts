@@ -33,7 +33,7 @@ export const queryClient = new QueryClient({
 export async function apiRequest(url: string, options: RequestInit = {}) {
   // Garantir URL absoluta correta
   const absoluteUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
-  
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
@@ -61,10 +61,10 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
     }
 
     const data = await response.json();
-    
+
     // Salvar dados válidos no cache local
     cacheData(absoluteUrl, data);
-    
+
     return data;
   } catch (error) {
     // TRATAR COMPLETAMENTE sem throw para evitar unhandled rejections

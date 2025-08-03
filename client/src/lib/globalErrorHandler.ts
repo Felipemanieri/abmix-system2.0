@@ -1,11 +1,10 @@
-
 // Sistema global definitivo para eliminar todos os unhandled promise rejections
 export const setupGlobalErrorHandling = () => {
   // Handler principal para unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason;
     const reasonStr = String(reason);
-    
+
     // Silenciar TODOS os erros de rede e conectividade
     if (
       reasonStr.includes('Failed to fetch') ||
@@ -24,7 +23,7 @@ export const setupGlobalErrorHandling = () => {
       event.preventDefault();
       return;
     }
-    
+
     // Silenciar erros vazios ou genéricos
     if (
       !reason || 
@@ -37,7 +36,7 @@ export const setupGlobalErrorHandling = () => {
       event.preventDefault();
       return;
     }
-    
+
     // Silenciar erros específicos do React e bibliotecas
     if (
       reasonStr.includes('ResizeObserver') ||
@@ -49,10 +48,10 @@ export const setupGlobalErrorHandling = () => {
       event.preventDefault();
       return;
     }
-    
+
     // Log apenas erros críticos não silenciados
     console.warn('Promise rejection não silenciada:', reasonStr.substring(0, 100));
-    
+
     // Sempre prevenir o erro padrão
     event.preventDefault();
   });
@@ -60,7 +59,7 @@ export const setupGlobalErrorHandling = () => {
   // Handler para erros gerais do JavaScript
   window.addEventListener('error', (event) => {
     const message = event.message || '';
-    
+
     // Silenciar erros de scripts e rede
     if (
       message.includes('Script error') ||
@@ -73,16 +72,16 @@ export const setupGlobalErrorHandling = () => {
       event.preventDefault();
       return;
     }
-    
+
     // Silenciar todos os outros erros
     event.preventDefault();
   });
-  
+
   // Override console.error para filtrar ruído
   const originalConsoleError = console.error;
   console.error = (...args) => {
     const message = args.join(' ');
-    
+
     // Filtrar mensagens de erro que não são importantes
     if (
       message.includes('Failed to fetch') ||
@@ -93,11 +92,11 @@ export const setupGlobalErrorHandling = () => {
     ) {
       return; // Silenciar completamente
     }
-    
+
     // Mostrar apenas erros realmente importantes
     originalConsoleError.apply(console, args);
   };
-  
+
   console.log('✅ Sistema global de tratamento de erros ativado - Logs limpos garantidos');
 };
 

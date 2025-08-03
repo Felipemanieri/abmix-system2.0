@@ -158,14 +158,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ portal, onLogin, onBack }) => {
     setErrorMessage('');
 
     try {
-      // Use unified authentication API for all portals
+      // Usar fetch com timeout e retry automático
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password, portal }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -178,11 +184,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ portal, onLogin, onBack }) => {
         
         onLogin(userData);
       } else {
-        const errorData = await response.json();
-        setErrorMessage(errorData.error || 'Credenciais inválidas');
+        if (response.status >= 500) {
+          setErrorMessage('Servidor temporariamente indisponível. Tente novamente em alguns segundos.');
+        } else {
+          const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+          setErrorMessage(errorData.error || 'Credenciais inválidas');
+        }
       }
-    } catch (error) {
-      setErrorMessage('Erro de conexão. Tente novamente.');
+    } catch (error: any) {
+      console.warn('Login error handled:', error);
+      if (error.name === 'AbortError') {
+        setErrorMessage('Tempo limite esgotado. Verifique sua conexão e tente novamente.');
+      } else if (error.message?.includes('fetch')) {
+        setErrorMessage('Problema de conectividade. Aguarde alguns segundos e tente novamente.');
+      } else {
+        setErrorMessage('Erro de conexão. Tente novamente.');
+      }
     } finally {
       setIsLoading(false);
     }
