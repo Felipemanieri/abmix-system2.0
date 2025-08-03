@@ -261,46 +261,54 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
     // Se CPF tem 11 dígitos (limpo), consultar API
     const cpfLimpo = cpf.replace(/[^\d]/g, '');
     if (cpfLimpo.length === 11) {
-      const dados = await consultarCPF(cpf);
-      
-      if (dados && dados.dados) {
-        // Preencher campos automaticamente
-        const updates: Partial<PersonData> = {};
-        const d = dados.dados;
+      try {
+        showNotification('🔍 Consultando CPF...', 'info');
+        const dados = await consultarCPF(cpf);
         
-        if (d.nome) updates.nomeCompleto = d.nome;
-        if (d.mae) updates.nomeMae = d.mae;
-        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-        
-        // Processar data de nascimento (formato: "02/08/1984 (41 anos)" -> "1984-08-02")
-        if (d.data_nascimento) {
-          const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-          if (dataMatch) {
-            const [, dia, mes, ano] = dataMatch;
-            updates.dataNascimento = `${ano}-${mes}-${dia}`;
+        if (dados && dados.dados) {
+          // Preencher campos automaticamente
+          const updates: Partial<PersonData> = {};
+          const d = dados.dados;
+          
+          if (d.nome) updates.nomeCompleto = d.nome;
+          if (d.mae) updates.nomeMae = d.mae;
+          if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          
+          // Processar data de nascimento (formato: "02/08/1984 (41 anos)" -> "1984-08-02")
+          if (d.data_nascimento) {
+            const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (dataMatch) {
+              const [, dia, mes, ano] = dataMatch;
+              updates.dataNascimento = `${ano}-${mes}-${dia}`;
+            }
           }
+          
+          // Montar endereço completo
+          const endereco = formatarEndereco(dados);
+          if (endereco) updates.enderecoCompleto = endereco;
+          
+          // Montar telefone
+          const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
+          if (telefone) updates.telefonePessoal = telefone;
+          
+          if (d.cep) updates.cep = d.cep;
+
+          // Aplicar as atualizações
+          Object.entries(updates).forEach(([campo, valor]) => {
+            if (type === 'titular') {
+              updateTitular(index, campo as keyof PersonData, valor);
+            } else {
+              updateDependente(index, campo as keyof PersonData, valor);
+            }
+          });
+
+          showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
+        } else {
+          showNotification('❌ CPF não encontrado na base de dados', 'error');
         }
-        
-        // Montar endereço completo
-        const endereco = formatarEndereco(dados);
-        if (endereco) updates.enderecoCompleto = endereco;
-        
-        // Montar telefone
-        const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-        if (telefone) updates.telefonePessoal = telefone;
-        
-        if (d.cep) updates.cep = d.cep;
-
-        // Aplicar as atualizações
-        Object.entries(updates).forEach(([campo, valor]) => {
-          if (type === 'titular') {
-            updateTitular(index, campo as keyof PersonData, valor);
-          } else {
-            updateDependente(index, campo as keyof PersonData, valor);
-          }
-        });
-
-        showNotification('Dados preenchidos automaticamente via CPF', 'success');
+      } catch (error) {
+        console.error('Erro na consulta CPF:', error);
+        showNotification('❌ Erro ao consultar CPF. Tente novamente.', 'error');
       }
     }
   };
