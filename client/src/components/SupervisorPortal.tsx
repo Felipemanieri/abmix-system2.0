@@ -5661,6 +5661,68 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           </div>
                         </div>
 
+                        {/* CAIXA EXCLUSIVA DO SUPERVISOR - DENTRO DE RESUMO POR VENDEDOR */}
+                        <div className="bg-indigo-100 dark:bg-indigo-800 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg p-6 mt-6">
+                          <h4 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 mb-4 text-center flex items-center justify-center gap-2">
+                            👔 SUPERVISOR - VENDAS COMISSIONADAS
+                          </h4>
+                          
+                          {/* Detalhes de cada venda comissionada para o supervisor */}
+                          <div className="space-y-3 mb-4">
+                            {reportData
+                              .filter(item => item.status === 'implantado') // Só vendas implantadas
+                              .map((item, idx) => {
+                                const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                const comissaoSupervisor = valor * 0.05;
+                                
+                                return (
+                                  <div key={idx} className="bg-indigo-50 dark:bg-indigo-900 p-3 rounded border">
+                                    <div className="flex justify-between items-center">
+                                      <div className="text-sm">
+                                        <div className="font-bold text-indigo-900 dark:text-indigo-100">
+                                          {item.abmId} - {item.cliente}
+                                        </div>
+                                        <div className="text-indigo-700 dark:text-indigo-300 text-xs">
+                                          Vendedor: {item.vendedor} | CNPJ: {item.cnpj}
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="font-bold text-indigo-900 dark:text-indigo-100">
+                                          R$ {comissaoSupervisor.toFixed(2).replace('.', ',')}
+                                        </div>
+                                        <div className="text-xs text-indigo-700 dark:text-indigo-300">
+                                          5% de R$ {item.valor}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                          
+                          {/* Total do supervisor */}
+                          <div className="bg-indigo-200 dark:bg-indigo-700 p-4 rounded-lg border-t-4 border-indigo-500">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-lg">
+                                  TOTAL SUPERVISOR
+                                </div>
+                                <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                                  {reportData.filter(item => item.status === 'implantado').length} vendas implantadas × 5%
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-2xl">
+                                  R$ {totalSupervisorComissions.toFixed(2).replace('.', ',')}
+                                </div>
+                                <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                                  Base: R$ {reportData.filter(item => item.status === 'implantado').reduce((sum, item) => sum + parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0, 0).toFixed(2).replace('.', ',')}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* SEÇÃO SEPARADA PARA SUPERVISORES */}
                         <div className="mt-8 border-t-4 border-purple-500 pt-6">
                           <div className="mb-4 flex items-center justify-between">
