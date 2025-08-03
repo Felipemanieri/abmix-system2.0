@@ -107,12 +107,17 @@ export const formatarEndereco = (data: CPFApiResponse): string => {
   const partes = [];
   const d = data.dados;
   
-  if (d.logradouro) partes.push(d.logradouro);
+  // Montar endereço: Tipo Logradouro + Logradouro + Número + Complemento, Bairro, Cidade
+  if (d.tipo_logradouro && d.logradouro) {
+    partes.push(`${d.tipo_logradouro} ${d.logradouro}`);
+  } else if (d.logradouro) {
+    partes.push(d.logradouro);
+  }
+  
   if (d.numero) partes.push(d.numero);
-  if (d.complemento) partes.push(d.complemento);
+  if (d.complemento && d.complemento !== '---') partes.push(d.complemento);
   if (d.bairro) partes.push(d.bairro);
   if (d.municipio_residencia) partes.push(d.municipio_residencia);
-  if (d.pais_residencia) partes.push(d.pais_residencia);
   
   return partes.join(', ');
 };
