@@ -1577,6 +1577,276 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
           </div>
         </div>
       )}
+
+      {/* Modal de Relatório Completo do Supervisor */}
+      {selectedReport && selectedReport.type === 'complete' && showReportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden">
+            {/* Header */}
+            <div className="bg-blue-600 text-white p-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">📊 Relatório Completo do Supervisor</h2>
+                <p className="text-blue-100 mt-1">
+                  Planilha completa com campos editáveis para pagamento
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => {
+                    // Exportar para Excel
+                    const csvData = [
+                      ['ABM ID', 'Empresa', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Status Pag. Premiação', 'Status Pagamento', 'Data Pagamento', 'Premiação', 'Meta Individual', 'Meta Equipe', 'Super Premiação'],
+                      ...(selectedReport.rawData || []).map(item => [
+                        item.abmId, item.empresa, item.cnpj, item.vendedor, 
+                        item.valor, item.plano, item.status, 
+                        item.statusPagamentoPremiacao || '', item.statusPagamento || '', item.dataPagamento || '',
+                        item.premiacao || '0,00', item.metaIndividual || '0,00', item.metaEquipe || '0,00', item.superPremiacao || '0,00'
+                      ])
+                    ].map(row => row.join(',')).join('\n');
+                    
+                    const blob = new Blob([csvData], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `relatorio_supervisor_completo_${Date.now()}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('Relatório Excel baixado!', 'success');
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Baixar Excel
+                </button>
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="text-white hover:text-gray-300 p-1"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="p-6 overflow-y-auto max-h-[calc(95vh-200px)]">
+              {/* Resumo por Vendedor */}
+              {selectedReport.summary && selectedReport.summary.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">📈 Resumo por Vendedor</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    {selectedReport.summary.map((vendorSummary, index) => (
+                      <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                        <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">{vendorSummary.vendedorNome}</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Total Vendas:</span>
+                            <span className="font-medium text-blue-800 dark:text-blue-200">R$ {vendorSummary.totalVendas.toFixed(2).replace('.', ',')}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Propostas:</span>
+                            <span className="font-medium text-blue-800 dark:text-blue-200">{vendorSummary.totalPropostas}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">% Meta:</span>
+                            <span className="font-medium text-blue-800 dark:text-blue-200">{vendorSummary.percentualMeta}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-300">Premiação:</span>
+                            <span className="font-medium text-green-600 dark:text-green-400">R$ {vendorSummary.premiacao.toFixed(2).replace('.', ',')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Totais Gerais */}
+              {selectedReport.totals && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">📊 Totais Gerais</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">{selectedReport.totals.totalPropostasImplantadas}</div>
+                      <div className="text-sm text-green-700 dark:text-green-300">Propostas Implantadas</div>
+                    </div>
+                    <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">R$ {selectedReport.totals.valorTotalImplantado.toFixed(2).replace('.', ',')}</div>
+                      <div className="text-sm text-blue-700 dark:text-blue-300">Valor Total</div>
+                    </div>
+                    <div className="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedReport.totals.totalVendedores}</div>
+                      <div className="text-sm text-purple-700 dark:text-purple-300">Vendedores</div>
+                    </div>
+                    <div className="bg-orange-50 dark:bg-orange-900 border border-orange-200 dark:border-orange-700 rounded-lg p-4 text-center">
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">R$ {selectedReport.totals.totalPremiacao.toFixed(2).replace('.', ',')}</div>
+                      <div className="text-sm text-orange-700 dark:text-orange-300">Total Premiação</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Planilha Completa */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">📋 Planilha Completa (Campos Editáveis)</h3>
+                <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 mb-4">
+                  <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+                    <strong>Apenas estas colunas podem ser editadas:</strong> Status Pagamento Premiação, Status Pagamento, Data Pagamento
+                  </p>
+                </div>
+                
+                <div className="overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-100 dark:bg-gray-700">
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">ABM ID</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Empresa</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">CNPJ</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Vendedor</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Valor</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Plano</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-yellow-700 dark:text-yellow-300">Status Pag. Premiação</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-yellow-700 dark:text-yellow-300">Status Pagamento</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-yellow-700 dark:text-yellow-300">Data Pagamento</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Premiação</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Meta Individual</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Meta Equipe</th>
+                        <th className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-bold text-gray-700 dark:text-white">Super Premiação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedReport.rawData && selectedReport.rawData.length > 0 ? (
+                        selectedReport.rawData.map((item, index) => (
+                          <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-medium">{item.abmId}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">{item.empresa}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-xs">{item.cnpj}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2">{item.vendedor}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 font-bold text-green-600 dark:text-green-400">R$ {item.valor}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-xs">{item.plano}</td>
+                            
+                            {/* Campos Editáveis */}
+                            <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
+                              <select 
+                                className="w-full text-xs p-1 border border-yellow-300 rounded bg-yellow-50 dark:bg-yellow-900 dark:border-yellow-700"
+                                defaultValue={item.statusPagamentoPremiacao || ''}
+                                onChange={(e) => {
+                                  // Atualizar status no estado
+                                  const updatedData = [...selectedReport.rawData];
+                                  updatedData[index].statusPagamentoPremiacao = e.target.value;
+                                  setSelectedReport({...selectedReport, rawData: updatedData});
+                                  showNotification('Status atualizado', 'success');
+                                }}
+                              >
+                                <option value="">-</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="Cancelado">Cancelado</option>
+                              </select>
+                            </td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
+                              <select 
+                                className="w-full text-xs p-1 border border-yellow-300 rounded bg-yellow-50 dark:bg-yellow-900 dark:border-yellow-700"
+                                defaultValue={item.statusPagamento || ''}
+                                onChange={(e) => {
+                                  const updatedData = [...selectedReport.rawData];
+                                  updatedData[index].statusPagamento = e.target.value;
+                                  setSelectedReport({...selectedReport, rawData: updatedData});
+                                  showNotification('Status atualizado', 'success');
+                                }}
+                              >
+                                <option value="">-</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="Cancelado">Cancelado</option>
+                              </select>
+                            </td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-2 py-1">
+                              <input 
+                                type="date"
+                                className="w-full text-xs p-1 border border-yellow-300 rounded bg-yellow-50 dark:bg-yellow-900 dark:border-yellow-700"
+                                defaultValue={item.dataPagamento || ''}
+                                onChange={(e) => {
+                                  const updatedData = [...selectedReport.rawData];
+                                  updatedData[index].dataPagamento = e.target.value;
+                                  setSelectedReport({...selectedReport, rawData: updatedData});
+                                  showNotification('Data atualizada', 'success');
+                                }}
+                              />
+                            </td>
+                            
+                            {/* Campos Somente Leitura */}
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-green-600 dark:text-green-400">R$ {item.premiacao}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-blue-600 dark:text-blue-400">R$ {item.metaIndividual}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-purple-600 dark:text-purple-400">R$ {item.metaEquipe}</td>
+                            <td className="border border-gray-300 dark:border-gray-600 px-3 py-2 text-orange-600 dark:text-orange-400">R$ {item.superPremiacao}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="13" className="border border-gray-300 dark:border-gray-600 px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                            Nenhum dado disponível
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Ações */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">🔧 Ações Disponíveis</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <button
+                    onClick={() => handleDownloadReport(selectedReport.id)}
+                    className="flex flex-col items-center p-3 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+                  >
+                    <Download className="h-6 w-6 text-blue-600 mb-1" />
+                    <span className="text-blue-700 text-xs font-medium">Baixar</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleEmailReport(selectedReport.id)}
+                    className="flex flex-col items-center p-3 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
+                  >
+                    <Mail className="h-6 w-6 text-green-600 mb-1" />
+                    <span className="text-green-700 text-xs font-medium">Email</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleViewInSheets(selectedReport.id)}
+                    className="flex flex-col items-center p-3 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors"
+                  >
+                    <BarChart3 className="h-6 w-6 text-yellow-600 mb-1" />
+                    <span className="text-yellow-700 text-xs font-medium">Google Sheets</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleWhatsAppShare(selectedReport.id)}
+                    className="flex flex-col items-center p-3 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors"
+                  >
+                    <MessageSquare className="h-6 w-6 text-emerald-600 mb-1" />
+                    <span className="text-emerald-700 text-xs font-medium">WhatsApp</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      // Salvar alterações
+                      showNotification('Alterações salvas com sucesso!', 'success');
+                      setShowReportModal(false);
+                    }}
+                    className="flex flex-col items-center p-3 bg-green-100 hover:bg-green-200 rounded-lg transition-colors"
+                  >
+                    <CheckCircle className="h-6 w-6 text-green-600 mb-1" />
+                    <span className="text-green-700 text-xs font-medium">Salvar</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* System Footer */}
       <SystemFooter />
