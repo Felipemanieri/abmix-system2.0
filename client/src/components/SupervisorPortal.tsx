@@ -5606,22 +5606,18 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 
                                 return (
                                   <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded border border-yellow-300 dark:border-yellow-700 mb-3">
-                                    {/* CABEÇALHO DA PROPOSTA */}
-                                    <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded mb-3">
-                                      <div className="font-bold text-blue-900 dark:text-blue-100">
+                                    {/* CABEÇALHO UNIFICADO DA PROPOSTA COM INFORMAÇÕES DO VENDEDOR */}
+                                    <div className="bg-blue-100 dark:bg-blue-800 p-4 rounded mb-3">
+                                      <div className="font-bold text-blue-900 dark:text-blue-100 text-lg mb-3">
                                         PROPOSTA {item.abmId} - {item.cliente} - CNPJ: {item.cnpj}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-sm">
+                                      <div className="text-blue-800 dark:text-blue-200 text-sm mb-3">
                                         Valor Total: R$ {item.valor} | Status: {item.status} | Plano: {item.plano}
                                       </div>
-                                    </div>
-                                    
-                                    {/* DISCRIMINAÇÃO BASEADA APENAS EM DADOS REAIS DA PLANILHA */}
-                                    <div className="grid grid-cols-1 gap-3">
                                       
-                                      {/* VENDEDOR PRINCIPAL */}
+                                      {/* INFORMAÇÕES DO VENDEDOR PRINCIPAL NA CAIXA AZUL */}
                                       {percentualVendedor && percentualVendedor !== '0%' && (
-                                        <div className="bg-green-100 dark:bg-green-800 p-3 rounded">
+                                        <div className="bg-green-100 dark:bg-green-800 p-3 rounded mb-2">
                                           <div className="font-bold text-green-900 dark:text-green-100 mb-2">
                                             💰 VENDEDOR PRINCIPAL: {vendedor}
                                           </div>
@@ -5634,7 +5630,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       
                                       {/* VENDA DUPLA - APENAS SE HOUVER DADOS REAIS */}
                                       {isVendaDupla && vendedor2 && percentualVendedor2 && (
-                                        <div className="bg-orange-100 dark:bg-orange-800 p-3 rounded">
+                                        <div className="bg-orange-100 dark:bg-orange-800 p-3 rounded mb-2">
                                           <div className="font-bold text-orange-900 dark:text-orange-100 mb-2">
                                             🤝 VENDA DUPLA: {vendedor2}
                                           </div>
@@ -5647,7 +5643,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       
                                       {/* REUNIÃO - APENAS SE HOUVER DADOS REAIS */}
                                       {temReuniao && temReuniao !== '-' && percentualReuniao && (
-                                        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded">
+                                        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded mb-2">
                                           <div className="font-bold text-purple-900 dark:text-purple-100 mb-2">
                                             👥 COMISSÃO REUNIÃO: {temReuniao}
                                           </div>
@@ -5658,14 +5654,14 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                         </div>
                                       )}
                                       
-                                      {/* FAIXA 4 - COMISSÃO SUPERVISOR (SEMPRE 5%) */}
-                                      <div className="bg-indigo-100 dark:bg-indigo-800 p-3 rounded">
+                                      {/* COMISSÃO SUPERVISOR */}
+                                      <div className="bg-indigo-100 dark:bg-indigo-800 p-3 rounded mb-2">
                                         <div className="font-bold text-indigo-900 dark:text-indigo-100 mb-2">
                                           👔 COMISSÃO SUPERVISOR
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 text-xs text-indigo-800 dark:text-indigo-200">
                                           <div><strong>Percentual:</strong> 5%</div>
-                                          <div><strong>Valor Comissão:</strong> R$ {(valor * 0.05).toFixed(2).replace('.', ',')}</div>
+                                          <div><strong>Valor Comissão:</strong> R$ {comissaoSuper.toFixed(2).replace('.', ',')}</div>
                                         </div>
                                       </div>
                                       
@@ -5673,27 +5669,15 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       {premiacao && premiacao !== '-' && (
                                         <div className="bg-yellow-100 dark:bg-yellow-800 p-3 rounded">
                                           <div className="font-bold text-yellow-900 dark:text-yellow-100 mb-2">
-                                            🏆 PREMIAÇÃO ESPECIAL
+                                            🏆 PREMIAÇÃO
                                           </div>
                                           <div className="text-xs text-yellow-800 dark:text-yellow-200">
-                                            <div><strong>Detalhes:</strong> {premiacao}</div>
+                                            <strong>Valor:</strong> {premiacao}
                                           </div>
                                         </div>
                                       )}
-                                      
-                                      {/* RESUMO TOTAL GERAL - APENAS VENDEDOR PRINCIPAL */}
-                                      <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded border-2 border-blue-300 dark:border-blue-700">
-                                        <div className="font-bold text-blue-900 dark:text-blue-100 text-center">
-                                          💼 COMISSÃO DO VENDEDOR: R$ {comissao1.toFixed(2).replace('.', ',')}
-                                        </div>
-                                        <div className="text-blue-700 dark:text-blue-300 text-xs text-center mt-1">
-                                          Financeiro: Processe pagamento de {percentualVendedor} do valor da proposta + premiação para {vendedor.toUpperCase()}
-                                        </div>
-                                        <div className="text-blue-700 dark:text-blue-300 text-xs text-center mt-1 border-t border-blue-300 pt-2">
-                                          Outras comissões: Dupla R$ {comissao2.toFixed(2).replace('.', ',')} | Reunião R$ {comissaoReun.toFixed(2).replace('.', ',')} | Supervisor R$ {(valor * 0.05).toFixed(2).replace('.', ',')}
-                                        </div>
-                                      </div>
                                     </div>
+
                                   </div>
                                 );
                               })}
