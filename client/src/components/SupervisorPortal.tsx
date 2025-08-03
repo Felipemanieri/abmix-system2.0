@@ -4885,7 +4885,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                     }}
                   >
-                    <div style={{ width: '3200px', height: '1px' }}></div>
+                    <div style={{ width: '4800px', height: '1px' }}></div>
                   </div>
                   {/* Container da tabela com rolagem sincronizada */}
                   <div 
@@ -4898,7 +4898,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                     }}
                   >
-                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '3200px' }}>
+                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '4800px' }}>
                     <thead className="bg-green-50 dark:bg-green-900">
                       <tr>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">ID</th>
