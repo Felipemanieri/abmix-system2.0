@@ -365,21 +365,57 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
 
   const downloadReport = () => {
     const csvContent = [
-      ['ID', 'Nº Proposta', 'Nº Apólice', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Desconto', 'Autorizador do Desconto', 'Observações'].join(';'),
-      ...reportData.map(item => [
-        item.abmId,
-        (item as any).numeroProposta || '-',
-        (item as any).numeroApolice || '-',
-        item.cliente,
-        item.cnpj,
-        item.vendedor,
-        `R$ ${item.valor}`,
-        item.plano,
-        item.status.toUpperCase(),
-        (item as any).desconto || '0%',
-        (item as any).autorizadorDesconto || '-',
-        reportObservations[item.abmId] || ''
-      ].join(';'))
+      ['ID', 'Número de Proposta', 'Número de Apólice', 'Data/Hora', 'Cliente', 'CNPJ', 'Vendedor', 'Valor', 'Plano', 'Status', 'Desconto', 'Autorizador do Desconto', 'Data de Pagamento do Cliente', 'Venda Dupla', '% do vendedor', 'Vendedor 2', '% vendedor 2', 'Comissão Venda em Dupla', 'Reunião', '% Comissão Reunião', 'Comissão de Reunião', 'Premiação', 'Meta Individual', 'Meta de Equipe', 'Super Premiação', 'Supervisor', '%supervisor', 'Comissão do Supervisor', 'Comissão do Vendedor', 'Status Pagamento Premiação', 'Status Pagamento', 'Data Pagamento', 'Observações'].join(';'),
+      ...reportData.map(item => {
+        // Calcular valores necessários
+        const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+        const percentVendedor1 = reportVendedor1Percent[item.abmId] || '0%';
+        const percentVendedor2 = reportVendedor2Percent[item.abmId] || '0%';
+        const percentReuniao = reportComissaoReuniao[item.abmId] || '0%';
+        const percentSupervisor = '5%'; // Fixo
+        
+        // Comissões calculadas
+        const comissaoVendedor1 = valor * (parseFloat(percentVendedor1.replace('%', '')) / 100);
+        const comissaoVendedor2 = valor * (parseFloat(percentVendedor2.replace('%', '')) / 100);
+        const comissaoReuniao = valor * (parseFloat(percentReuniao.replace('%', '')) / 100);
+        const comissaoSupervisor = valor * 0.05; // 5%
+        
+        return [
+          item.abmId,
+          (item as any).numeroProposta || '-',
+          (item as any).numeroApolice || '-',
+          new Date().toLocaleDateString('pt-BR'),
+          item.cliente,
+          item.cnpj,
+          item.vendedor,
+          `R$ ${item.valor}`,
+          item.plano,
+          item.status.toUpperCase(),
+          (item as any).desconto || '0%',
+          (item as any).autorizadorDesconto || '-',
+          reportDataPagamentoCliente[item.abmId] || '-',
+          reportVendaDupla[item.abmId] ? 'SIM' : 'NÃO',
+          percentVendedor1,
+          reportVendedor2[item.abmId] || '-',
+          percentVendedor2,
+          `R$ ${comissaoVendedor2.toFixed(2).replace('.', ',')}`,
+          reportReuniao[item.abmId] || '-',
+          percentReuniao,
+          `R$ ${comissaoReuniao.toFixed(2).replace('.', ',')}`,
+          reportPremiacao[item.abmId] || 'R$ 0,00',
+          reportMetaIndividual[item.abmId] || 'R$ 0,00',
+          reportMetaEquipe[item.abmId] || 'R$ 0,00',
+          reportSuperPremiacao[item.abmId] || 'R$ 0,00',
+          'Rod Ribas', // Supervisor fixo
+          percentSupervisor,
+          `R$ ${comissaoSupervisor.toFixed(2).replace('.', ',')}`,
+          `R$ ${comissaoVendedor1.toFixed(2).replace('.', ',')}`,
+          reportStatusPagamentoPremiacao[item.abmId] || 'PENDENTE',
+          reportStatusPagamento[item.abmId] || 'PENDENTE',
+          reportDataPagamento[item.abmId] || '-',
+          reportObservations[item.abmId] || ''
+        ].join(';');
+      })
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
