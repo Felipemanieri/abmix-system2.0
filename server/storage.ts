@@ -1,4 +1,4 @@
-import { users, vendors, proposals, vendorTargets, teamTargets, awards, systemUsers, attachments, driveConfigs, systemSettings, internalMessages, type User, type InsertUser, type Vendor, type InsertVendor, type Proposal, type InsertProposal, type VendorTarget, type InsertVendorTarget, type TeamTarget, type InsertTeamTarget, type Award, type InsertAward, type SystemUser, type InsertSystemUser, type Attachment, type InsertAttachment, type DriveConfig, type InsertDriveConfig, type SystemSetting, type InsertSystemSetting, type InternalMessage, type InsertInternalMessage } from "@shared/schema";
+import { users, vendors, proposals, vendorTargets, teamTargets, awards, systemUsers, attachments, driveConfigs, systemSettings, internalMessages, grantedAwards, type User, type InsertUser, type Vendor, type InsertVendor, type Proposal, type InsertProposal, type VendorTarget, type InsertVendorTarget, type TeamTarget, type InsertTeamTarget, type Award, type InsertAward, type SystemUser, type InsertSystemUser, type Attachment, type InsertAttachment, type DriveConfig, type InsertDriveConfig, type SystemSetting, type InsertSystemSetting, type InternalMessage, type InsertInternalMessage, type GrantedAward, type InsertGrantedAward } from "@shared/schema";
 import { db, isDatabaseAvailable } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -92,6 +92,14 @@ export interface IStorage {
   markMessagesAsRead(userEmail: string): Promise<number>;
   createInternalMessage(message: InsertInternalMessage): Promise<InternalMessage>;
   markMessageAsRead(messageId: number): Promise<void>;
+  
+  // Granted Awards operations (controle de premiações concedidas)
+  createGrantedAward(award: InsertGrantedAward): Promise<GrantedAward>;
+  getGrantedAwards(vendorId: number, month: number, year: number): Promise<GrantedAward[]>;
+  getGrantedAward(vendorId: number, awardType: string, month: number, year: number): Promise<GrantedAward | undefined>;
+  updateGrantedAward(id: number, award: Partial<InsertGrantedAward>): Promise<GrantedAward>;
+  deleteGrantedAward(id: number): Promise<void>;
+  getAllGrantedAwards(): Promise<GrantedAward[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -840,6 +848,56 @@ export class DatabaseStorage implements IStorage {
       console.error('❌ STORAGE: Erro ao buscar configurações do Drive:', error);
       return [];
     }
+  }
+
+  // Granted Awards operations (controle de premiações concedidas)
+  async createGrantedAward(award: InsertGrantedAward): Promise<GrantedAward> {
+    const [grantedAward] = await db
+      .insert(grantedAwards)
+      .values(award)
+      .returning();
+    return grantedAward;
+  }
+
+  async getGrantedAwards(vendorId: number, month: number, year: number): Promise<GrantedAward[]> {
+    return await db
+      .select()
+      .from(grantedAwards)
+      .where(and(
+        eq(grantedAwards.vendorId, vendorId),
+        eq(grantedAwards.month, month),
+        eq(grantedAwards.year, year)
+      ));
+  }
+
+  async getGrantedAward(vendorId: number, awardType: string, month: number, year: number): Promise<GrantedAward | undefined> {
+    const [award] = await db
+      .select()
+      .from(grantedAwards)
+      .where(and(
+        eq(grantedAwards.vendorId, vendorId),
+        eq(grantedAwards.awardType, awardType),
+        eq(grantedAwards.month, month),
+        eq(grantedAwards.year, year)
+      ));
+    return award || undefined;
+  }
+
+  async updateGrantedAward(id: number, award: Partial<InsertGrantedAward>): Promise<GrantedAward> {
+    const [updatedAward] = await db
+      .update(grantedAwards)
+      .set({ ...award, updatedAt: new Date() })
+      .where(eq(grantedAwards.id, id))
+      .returning();
+    return updatedAward;
+  }
+
+  async deleteGrantedAward(id: number): Promise<void> {
+    await db.delete(grantedAwards).where(eq(grantedAwards.id, id));
+  }
+
+  async getAllGrantedAwards(): Promise<GrantedAward[]> {
+    return await db.select().from(grantedAwards).orderBy(desc(grantedAwards.createdAt));
   }
 }
 

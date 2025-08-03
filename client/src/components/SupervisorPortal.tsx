@@ -3901,21 +3901,114 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   </button>
                   
                   <button
-                    onClick={() => {
-                      const currentFilteredData = getFilteredProposals();
-                      const reportData = generateReportData(currentFilteredData);
-                      // Gerar e baixar arquivo Excel
-                      const csvContent = "data:text/csv;charset=utf-8," 
-                        + "ID,Cliente,CNPJ,Vendedor,Valor,Plano,Status,Desconto\n"
-                        + reportData.map(row => `${row.abmId},${row.cliente},${row.cnpj},${row.vendedor},${row.valor},${row.plano},${row.status},${row.desconto}`).join("\n");
-                      const encodedUri = encodeURI(csvContent);
-                      const link = document.createElement("a");
-                      link.setAttribute("href", encodedUri);
-                      link.setAttribute("download", `relatorio_${new Date().toISOString().split('T')[0]}.csv`);
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      showNotification('Arquivo Excel baixado com sucesso!', 'success');
+                    onClick={async () => {
+                      try {
+                        const currentFilteredData = getFilteredProposals();
+                        const reportData = generateReportData(currentFilteredData);
+                        
+                        // Calcular premiações para cada linha
+                        const enrichedReportData = await Promise.all(reportData.map(async (row) => {
+                          const vendor = allVendors.find(v => v.name === row.vendedor);
+                          if (!vendor) return { ...row, metaIndividual: '0', metaEquipe: '0', superPremiacao: '0' };
+                          
+                          const currentMonth = new Date().getMonth() + 1;
+                          const currentYear = new Date().getFullYear();
+                          
+                          // Buscar se já foram concedidas as premiações
+                          const grantedAwardsResponse = await fetch(`/api/granted-awards/${vendor.id}/${currentMonth}/${currentYear}`)
+                            .catch(() => ({ ok: false }));
+                          
+                          let metaIndividualValue = '0';
+                          let metaEquipeValue = '0';
+                          let superPremiacaoValue = '0';
+                          
+                          if (grantedAwardsResponse.ok) {
+                            const grantedAwards = await grantedAwardsResponse.json();
+                            
+                            // Meta Individual
+                            const metaIndividualGranted = grantedAwards.find(award => award.awardType === 'meta_individual');
+                            if (metaIndividualGranted) {
+                              metaIndividualValue = metaIndividualGranted.value;
+                            } else {
+                              // Verificar se atingiu 100% para liberar o valor
+                              const target = allVendorTargets.find(t => 
+                                t.vendorId === vendor.id && 
+                                t.month === currentMonth && 
+                                t.year === currentYear
+                              );
+                              if (target) {
+                                const vendorSales = vendorStats[vendor.id];
+                                const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
+                                if (progress >= 100) {
+                                  metaIndividualValue = target.bonus || '0';
+                                }
+                              }
+                            }
+                            
+                            // Meta de Equipe
+                            const metaEquipeGranted = grantedAwards.find(award => award.awardType === 'meta_equipe');
+                            if (metaEquipeGranted) {
+                              metaEquipeValue = metaEquipeGranted.value;
+                            } else {
+                              // Verificar progresso da equipe
+                              const teamTarget = allTeamTargets.find(t => 
+                                t.month === currentMonth && 
+                                t.year === currentYear
+                              );
+                              if (teamTarget) {
+                                const teamProgress = (totalTeamValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                if (teamProgress >= 100) {
+                                  metaEquipeValue = teamTarget.teamBonus || '0';
+                                }
+                              }
+                            }
+                            
+                            // Super Premiação
+                            const superPremiacaoGranted = grantedAwards.find(award => award.awardType === 'super_premiacao');
+                            if (superPremiacaoGranted) {
+                              superPremiacaoValue = superPremiacaoGranted.value;
+                            } else {
+                              // Buscar valor da super premiação se atingiu 100%
+                              const superAward = allAwards.find(a => a.vendorId === vendor.id);
+                              if (superAward) {
+                                const vendorSales = vendorStats[vendor.id];
+                                if (vendorSales && parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0') > 0) {
+                                  const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                  if (superProgress >= 100) {
+                                    superPremiacaoValue = superAward.value || '0';
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          
+                          return {
+                            ...row,
+                            metaIndividual: metaIndividualValue,
+                            metaEquipe: metaEquipeValue,
+                            superPremiacao: superPremiacaoValue
+                          };
+                        }));
+                        
+                        // Gerar e baixar arquivo Excel com novas colunas
+                        const csvContent = "data:text/csv;charset=utf-8," 
+                          + "ID,Cliente,CNPJ,Vendedor,Valor,Plano,Status,Desconto,Meta Individual,Meta de Equipe,Super Premiação\n"
+                          + enrichedReportData.map(row => 
+                            `${row.abmId},${row.cliente},${row.cnpj},${row.vendedor},${row.valor},${row.plano},${row.status},${row.desconto},${row.metaIndividual},${row.metaEquipe},${row.superPremiacao}`
+                          ).join("\n");
+                        
+                        const encodedUri = encodeURI(csvContent);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", encodedUri);
+                        link.setAttribute("download", `relatorio_premiacao_${new Date().toISOString().split('T')[0]}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showNotification('Relatório com premiações baixado com sucesso!', 'success');
+                      } catch (error) {
+                        console.error('Erro ao gerar relatório:', error);
+                        showNotification('Erro ao gerar relatório com premiações', 'error');
+                      }
                     }}
                     className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-200 rounded-lg hover:bg-blue-200 transition-colors"
                   >

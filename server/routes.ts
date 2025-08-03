@@ -1208,5 +1208,66 @@ export function setupRoutes(app: any) {
     }
   });
 
+  // ROTAS PARA PREMIAÇÕES CONCEDIDAS
+  // Buscar premiações concedidas de um vendedor em um mês/ano específico
+  app.get('/api/granted-awards/:vendorId/:month/:year', async (req: Request, res: Response) => {
+    try {
+      const { vendorId, month, year } = req.params;
+      const awards = await storage.getGrantedAwards(parseInt(vendorId), parseInt(month), parseInt(year));
+      res.json(awards);
+    } catch (error) {
+      console.error('❌ Erro ao buscar premiações concedidas:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Criar nova premiação concedida
+  app.post('/api/granted-awards', async (req: Request, res: Response) => {
+    try {
+      const awardData = req.body;
+      const award = await storage.createGrantedAward(awardData);
+      res.json({ success: true, award });
+    } catch (error) {
+      console.error('❌ Erro ao criar premiação concedida:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Atualizar premiação concedida
+  app.put('/api/granted-awards/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const awardData = req.body;
+      const award = await storage.updateGrantedAward(parseInt(id), awardData);
+      res.json({ success: true, award });
+    } catch (error) {
+      console.error('❌ Erro ao atualizar premiação concedida:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Deletar premiação concedida
+  app.delete('/api/granted-awards/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteGrantedAward(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ Erro ao deletar premiação concedida:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Buscar todas as premiações concedidas
+  app.get('/api/granted-awards', async (req: Request, res: Response) => {
+    try {
+      const awards = await storage.getAllGrantedAwards();
+      res.json(awards);
+    } catch (error) {
+      console.error('❌ Erro ao buscar todas as premiações concedidas:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual, exclusão específica e limpeza de backups)');
 }

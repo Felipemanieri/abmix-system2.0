@@ -219,6 +219,19 @@ export const internalMessages = pgTable("internal_messages", {
   readAt: timestamp("read_at")
 });
 
+// Tabela para controlar premiações concedidas (evita duplicação)
+export const grantedAwards = pgTable("granted_awards", {
+  id: serial("id").primaryKey(),
+  vendorId: integer("vendor_id").references(() => vendors.id),
+  awardType: text("award_type").notNull(), // 'meta_individual', 'meta_equipe', 'super_premiacao'
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
+  value: text("value").notNull(),
+  grantedBy: text("granted_by").notNull(), // Email do supervisor que concedeu
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
 
 
 export const insertAttachmentSchema = createInsertSchema(attachments);
@@ -226,7 +239,7 @@ export const insertDriveConfigSchema = createInsertSchema(driveConfigs);
 export const insertSystemSettingSchema = createInsertSchema(systemSettings);
 export const insertCentralizedConfigSchema = createInsertSchema(centralizedConfigs);
 export const insertInternalMessageSchema = createInsertSchema(internalMessages);
-
+export const insertGrantedAwardSchema = createInsertSchema(grantedAwards);
 
 export type InsertAttachment = z.infer<typeof insertAttachmentSchema>;
 export type Attachment = typeof attachments.$inferSelect;
@@ -238,4 +251,6 @@ export type InsertCentralizedConfig = z.infer<typeof insertCentralizedConfigSche
 export type CentralizedConfig = typeof centralizedConfigs.$inferSelect;
 export type InsertInternalMessage = z.infer<typeof insertInternalMessageSchema>;
 export type InternalMessage = typeof internalMessages.$inferSelect;
+export type InsertGrantedAward = z.infer<typeof insertGrantedAwardSchema>;
+export type GrantedAward = typeof grantedAwards.$inferSelect;
 
