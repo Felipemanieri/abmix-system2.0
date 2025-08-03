@@ -393,7 +393,7 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
           item.status.toUpperCase(),
           (item as any).desconto || '0%',
           (item as any).autorizadorDesconto || '-',
-          reportDataPagamentoCliente[item.abmId] || '-',
+          '-', // Data de Pagamento do Cliente (não implementada)
           reportVendaDupla[item.abmId] ? 'SIM' : 'NÃO',
           percentVendedor1,
           reportVendedor2[item.abmId] || '-',
