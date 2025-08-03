@@ -950,109 +950,42 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // APLICAR ATUALIZAÇÕES DIRETAS EM CADA CAMPO
-        if (type === 'titular') {
-          // 1. NOME COMPLETO
-          if (d.nome) {
-            console.log('📝 Preenchendo nome titular:', d.nome);
-            updateTitular(index, 'nomeCompleto', d.nome);
-          }
-          
-          // 2. NOME DA MÃE
-          if (d.mae) {
-            console.log('📝 Preenchendo mãe titular:', d.mae);
-            updateTitular(index, 'nomeMae', d.mae);
-          }
-          
-          // 3. SEXO
-          if (d.sexo) {
-            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-            console.log('📝 Preenchendo sexo titular:', sexoFormatado);
-            updateTitular(index, 'sexo', sexoFormatado);
-          }
-          
-          // 4. DATA DE NASCIMENTO
-          if (d.data_nascimento) {
-            const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-            if (match) {
-              const [, dia, mes, ano] = match;
-              const dataFormatada = `${ano}-${mes}-${dia}`;
-              console.log('📝 Preenchendo data titular:', dataFormatada);
-              updateTitular(index, 'dataNascimento', dataFormatada);
-            }
-          }
-          
-          // 5. TELEFONE PESSOAL
-          if (d.telefone_ddd && d.telefone_numero) {
-            const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-            console.log('📝 Preenchendo telefone titular:', telefoneFormatado);
-            updateTitular(index, 'telefonePessoal', telefoneFormatado);
-          }
-          
-          // 6. CEP
-          if (d.cep) {
-            console.log('📝 Preenchendo CEP titular:', d.cep);
-            updateTitular(index, 'cep', d.cep);
-          }
-          
-          // 7. ENDEREÇO COMPLETO
-          const enderecoCompleto = formatarEndereco(dados);
-          if (enderecoCompleto) {
-            console.log('📝 Preenchendo endereço titular:', enderecoCompleto);
-            updateTitular(index, 'enderecoCompleto', enderecoCompleto);
-          }
-          
-        } else {
-          // DEPENDENTE - mesma lógica
-          if (d.nome) {
-            console.log('📝 Preenchendo nome dependente:', d.nome);
-            updateDependente(index, 'nomeCompleto', d.nome);
-          }
-          
-          if (d.mae) {
-            console.log('📝 Preenchendo mãe dependente:', d.mae);
-            updateDependente(index, 'nomeMae', d.mae);
-          }
-          
-          if (d.sexo) {
-            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-            console.log('📝 Preenchendo sexo dependente:', sexoFormatado);
-            updateDependente(index, 'sexo', sexoFormatado);
-          }
-          
-          if (d.data_nascimento) {
-            const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-            if (match) {
-              const [, dia, mes, ano] = match;
-              const dataFormatada = `${ano}-${mes}-${dia}`;
-              console.log('📝 Preenchendo data dependente:', dataFormatada);
-              updateDependente(index, 'dataNascimento', dataFormatada);
-            }
-          }
-          
-          if (d.telefone_ddd && d.telefone_numero) {
-            const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-            console.log('📝 Preenchendo telefone dependente:', telefoneFormatado);
-            updateDependente(index, 'telefonePessoal', telefoneFormatado);
-          }
-          
-          if (d.cep) {
-            console.log('📝 Preenchendo CEP dependente:', d.cep);
-            updateDependente(index, 'cep', d.cep);
-          }
-          
-          const enderecoCompleto = formatarEndereco(dados);
-          if (enderecoCompleto) {
-            console.log('📝 Preenchendo endereço dependente:', enderecoCompleto);
-            updateDependente(index, 'enderecoCompleto', enderecoCompleto);
+        // ÚNICA ATUALIZAÇÃO COM OS 4 CAMPOS + CPF PRESERVADO
+        const updates: any = { cpf: cpfFormatado };
+        
+        if (d.nome) updates.nomeCompleto = d.nome;
+        if (d.mae) updates.nomeMae = d.mae;
+        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        if (d.data_nascimento) {
+          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            const [, dia, mes, ano] = match;
+            updates.dataNascimento = `${ano}-${mes}-${dia}`;
           }
         }
         
-        console.log('✅ Todos os campos preenchidos automaticamente!');
+        console.log('🔧 Updates:', updates);
+        
+        if (type === 'titular') {
+          setProposalData(prev => ({
+            ...prev,
+            titulares: prev.titulares.map((t, i) => 
+              i === index ? { ...t, ...updates } : t
+            )
+          }));
+        } else {
+          setProposalData(prev => ({
+            ...prev,
+            dependentes: prev.dependentes.map((dep, i) => 
+              i === index ? { ...dep, ...updates } : dep
+            )
+          }));
+        }
+        
         showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
       } else {
         console.log('❌ CPF não encontrado na base de dados');
-        showNotification('CPF não encontrado na base de dados', 'warning');
+        showNotification('CPF não encontrado na base de dados', 'error');
       }
     } catch (error) {
       console.error('❌ Erro ao consultar CPF:', error);
