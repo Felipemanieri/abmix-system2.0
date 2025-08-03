@@ -51,6 +51,16 @@ export default function ApiManagementPanel() {
       isActive: true
     },
     {
+      id: 'cpf-api',
+      name: 'CPF Consultation API',
+      type: 'DADOS PESSOAIS',
+      url: '/api/cpf/{cpf}',
+      status: 'connected',
+      lastTest: new Date().toLocaleString('pt-BR'),
+      result: 'success',
+      isActive: true
+    },
+    {
       id: 'google-drive',
       name: 'Google Drive API - PRODUÇÃO',
       type: 'GOOGLE DRIVE',
@@ -197,9 +207,42 @@ export default function ApiManagementPanel() {
     const api = apis.find(a => a.id === apiId);
     if (!api) return;
 
-    // Simular teste de API
-    const isSuccess = Math.random() > 0.3; // 70% de chance de sucesso
+    let isSuccess = false;
+    let message = '';
     const now = new Date().toLocaleString('pt-BR');
+
+    // Teste específico para API de CPF
+    if (apiId === 'cpf-api') {
+      try {
+        const response = await fetch('/api/cpf/33585376843', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === true && data.resultado === 'success' && data.dados?.nome) {
+            isSuccess = true;
+            message = `API CPF testada com sucesso! Nome encontrado: ${data.dados.nome}`;
+          } else {
+            message = 'API CPF respondeu, mas dados não encontrados.';
+          }
+        } else {
+          message = `API CPF falhou com status ${response.status}`;
+        }
+      } catch (error) {
+        message = `Erro ao testar API CPF: ${error}`;
+      }
+    } else {
+      // Simular teste para outras APIs
+      isSuccess = Math.random() > 0.3;
+      message = isSuccess 
+        ? `API ${api.name} testada com sucesso! Conexão funcionando corretamente.`
+        : `Falha no teste da API ${api.name}. Verifique as credenciais e configurações.`;
+    }
 
     setApis(prev => prev.map(a => 
       a.id === apiId 
@@ -212,12 +255,7 @@ export default function ApiManagementPanel() {
         : a
     ));
 
-    // Mostrar notificação
-    if (isSuccess) {
-      showNotification(`API ${api.name} testada com sucesso! Conexão funcionando corretamente.`, 'success');
-    } else {
-      showNotification(`Falha no teste da API ${api.name}. Verifique as credenciais e configurações.`, 'error');
-    }
+    showNotification(message, isSuccess ? 'success' : 'error');
   };
 
   const handleToggleActive = (apiId: string) => {
