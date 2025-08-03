@@ -223,7 +223,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(proposals.createdAt); // Manter ordem cronológica de criação
       
     // Log detalhado para debug
-    console.log(`📊 STORAGE - Propostas do vendedor ${vendorId}:`, proposalResults.map(p => ({
+    console.log(`📊 STORAGE - Propostas do vendedor ${vendorId}:`, proposalResults.map((p: any) => ({
       abmId: p.abmId,
       contractData: p.contractData,
       titulares: p.titulares?.length || 0,

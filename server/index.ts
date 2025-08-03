@@ -16,23 +16,24 @@ const server = createServer(app);
 
 // Global error handlers to prevent unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  // Silenciar TODOS os erros para evitar spam nos logs do navegador
   const reasonStr = String(reason);
   
-  // Ignorar completamente erros comuns que não afetam o funcionamento
+  // Ignorar erros de rede comuns
   if (reasonStr.includes('ECONNRESET') || 
       reasonStr.includes('socket hang up') || 
       reasonStr.includes('Client network socket disconnected') ||
       reasonStr.includes('WebSocket') ||
       reasonStr.includes('fetch') ||
       reasonStr.includes('network') ||
-      reasonStr.includes('timeout')) {
+      reasonStr.includes('timeout') ||
+      reasonStr.includes('ENOTFOUND') ||
+      reasonStr.includes('connect ETIMEDOUT')) {
     return; // Ignorar silenciosamente
   }
   
-  // Log apenas erros críticos
-  if (reasonStr.includes('FATAL') || reasonStr.includes('CRITICAL')) {
-    console.warn('⚠️ Promise rejeitada crítica:', reasonStr.substring(0, 100));
+  // Log apenas erros do aplicativo - reduzido para evitar spam
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('⚠️ Promise rejeitada:', reasonStr.substring(0, 200));
   }
 });
 
@@ -44,13 +45,14 @@ process.on('uncaughtException', (error) => {
       errorStr.includes('socket hang up') || 
       errorStr.includes('WebSocket') ||
       errorStr.includes('fetch') ||
-      errorStr.includes('network')) {
+      errorStr.includes('network') ||
+      errorStr.includes('EADDRINUSE')) {
     return; // Ignorar silenciosamente
   }
   
-  // Log apenas erros críticos
-  if (errorStr.includes('FATAL') || errorStr.includes('CRITICAL')) {
-    console.error('❌ Exception crítica:', errorStr.substring(0, 100));
+  // Log apenas erros críticos do aplicativo
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌ Exception crítica:', errorStr.substring(0, 200));
   }
 });
 
