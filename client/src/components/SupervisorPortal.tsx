@@ -5238,14 +5238,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
-                              value={reportSuperPremiacao[item.abmId] || ''}
-                              onChange={(e) => setReportSuperPremiacao(prev => ({
-                                ...prev,
-                                [item.abmId]: e.target.value
-                              }))}
-                              placeholder="R$ 0,00"
-                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                              title="Digite o valor da Super Premiação em R$"
+                              value={(() => {
+                                // Calcular super premiação
+                                const vendor = vendors.find(v => v.name === item.vendedor);
+                                if (!vendor) return 'R$ 0,00';
+                                
+                                const superAward = awards.find(a => a.vendorId === vendor.id);
+                                if (!superAward) return 'R$ 0,00';
+                                
+                                const vendorSales = teamStats[vendor.id];
+                                if (!vendorSales || !parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0')) return 'R$ 0,00';
+                                
+                                const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                
+                                if (superProgress >= 100) {
+                                  return superAward.value || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-purple-50 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Super Premiação - Liberada quando atingir 100% da meta especial individual"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
@@ -5681,22 +5694,61 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       totalPremiacao += parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                                     }
                                     
-                                    // META INDIVIDUAL  
-                                    const metaIndividual = reportMetaIndividual[item.abmId] || '';
-                                    if (metaIndividual && metaIndividual !== '-' && metaIndividual.includes('R$')) {
-                                      totalMetaIndividual += parseFloat(metaIndividual.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    // META INDIVIDUAL - CALCULAR VALOR DIRETO DA CONDIÇÃO  
+                                    const vendor = vendors.find(v => v.name === item.vendedor);
+                                    if (vendor) {
+                                      const currentMonth = new Date().getMonth() + 1;
+                                      const currentYear = new Date().getFullYear();
+                                      const target = vendorTargets.find(t => 
+                                        t.vendorId === vendor.id && 
+                                        t.month === currentMonth && 
+                                        t.year === currentYear
+                                      );
+                                      
+                                      if (target) {
+                                        const vendorSales = teamStats[vendor.id];
+                                        const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
+                                        
+                                        if (progress >= 100) {
+                                          const bonus = parseFloat((target.bonus || 'R$ 0,00').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                          totalMetaIndividual += bonus;
+                                        }
+                                      }
                                     }
                                     
-                                    // META DE EQUIPE
-                                    const metaEquipe = reportMetaEquipe[item.abmId] || '';
-                                    if (metaEquipe && metaEquipe !== '-' && metaEquipe.includes('R$')) {
-                                      totalMetaEquipe += parseFloat(metaEquipe.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    // META DE EQUIPE - CALCULAR VALOR DIRETO DA CONDIÇÃO
+                                    const currentMonth = new Date().getMonth() + 1;
+                                    const currentYear = new Date().getFullYear();
+                                    const teamTarget = teamTargets.find(t => 
+                                      t.month === currentMonth && 
+                                      t.year === currentYear
+                                    );
+                                    
+                                    if (teamTarget) {
+                                      // Calcular valor total da equipe
+                                      const totalValue = Object.values(teamStats).reduce((sum: number, stats: any) => sum + (stats?.totalValue || 0), 0);
+                                      const teamProgress = (totalValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                      
+                                      if (teamProgress >= 100) {
+                                        const teamBonus = parseFloat((teamTarget.teamBonus || 'R$ 0,00').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                        totalMetaEquipe += teamBonus;
+                                      }
                                     }
                                     
-                                    // SUPER PREMIAÇÃO
-                                    const superPremiacao = reportSuperPremiacao[item.abmId] || '';
-                                    if (superPremiacao && superPremiacao !== '-' && superPremiacao.includes('R$')) {
-                                      totalSuperPremiacao += parseFloat(superPremiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    // SUPER PREMIAÇÃO - CALCULAR VALOR DIRETO DA CONDIÇÃO
+                                    if (vendor) {
+                                      const superAward = awards.find(a => a.vendorId === vendor.id);
+                                      if (superAward) {
+                                        const vendorSales = teamStats[vendor.id];
+                                        if (vendorSales && parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0')) {
+                                          const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                          
+                                          if (superProgress >= 100) {
+                                            const superValue = parseFloat((superAward.value || 'R$ 0,00').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                            totalSuperPremiacao += superValue;
+                                          }
+                                        }
+                                      }
                                     }
                                     
                                     // COMISSÃO DE REUNIÃO (se vendedor for organizador)
