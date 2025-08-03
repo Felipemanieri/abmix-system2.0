@@ -4884,7 +4884,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                     }}
                   >
-                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '2400px' }}>
+                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '2800px' }}>
                     <thead className="bg-green-50 dark:bg-green-900">
                       <tr>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">ID</th>
@@ -4909,6 +4909,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% Comissão Reunião</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão de Reunião</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Meta Individual</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Meta de Equipe</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Super Premiação</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Supervisor</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">%supervisor</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão do Supervisor</th>
@@ -5152,6 +5155,89 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               placeholder="R$ 0,00"
                               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               title="Digite o valor da premiação em R$"
+                            />
+                          </td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                            <input
+                              type="text"
+                              value={(() => {
+                                // Buscar vendor e calcular meta individual
+                                const vendor = allVendors.find(v => v.name === item.vendedor);
+                                if (!vendor) return 'R$ 0,00';
+                                
+                                const currentMonth = new Date().getMonth() + 1;
+                                const currentYear = new Date().getFullYear();
+                                const target = allVendorTargets.find(t => 
+                                  t.vendorId === vendor.id && 
+                                  t.month === currentMonth && 
+                                  t.year === currentYear
+                                );
+                                
+                                if (!target) return 'R$ 0,00';
+                                
+                                const vendorSales = vendorStats[vendor.id];
+                                const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
+                                
+                                if (progress >= 100) {
+                                  return target.bonus || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Meta Individual - Liberada automaticamente quando atingir 100% da meta"
+                            />
+                          </td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                            <input
+                              type="text"
+                              value={(() => {
+                                // Calcular meta de equipe
+                                const currentMonth = new Date().getMonth() + 1;
+                                const currentYear = new Date().getFullYear();
+                                const teamTarget = allTeamTargets.find(t => 
+                                  t.month === currentMonth && 
+                                  t.year === currentYear
+                                );
+                                
+                                if (!teamTarget) return 'R$ 0,00';
+                                
+                                const teamProgress = (totalTeamValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                
+                                if (teamProgress >= 100) {
+                                  return teamTarget.teamBonus || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-blue-50 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Meta de Equipe - Liberada quando toda equipe atingir 100% da meta coletiva"
+                            />
+                          </td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                            <input
+                              type="text"
+                              value={(() => {
+                                // Calcular super premiação
+                                const vendor = allVendors.find(v => v.name === item.vendedor);
+                                if (!vendor) return 'R$ 0,00';
+                                
+                                const superAward = allAwards.find(a => a.vendorId === vendor.id);
+                                if (!superAward) return 'R$ 0,00';
+                                
+                                const vendorSales = vendorStats[vendor.id];
+                                if (!vendorSales || !parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0')) return 'R$ 0,00';
+                                
+                                const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                
+                                if (superProgress >= 100) {
+                                  return superAward.value || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-purple-50 dark:bg-purple-900 text-purple-800 dark:text-purple-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Super Premiação - Liberada quando atingir 100% da meta especial individual"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
