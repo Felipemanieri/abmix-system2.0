@@ -945,12 +945,14 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     // Aplicar formatação automática no CPF
     const cpfFormatado = formatarCPF(cpf);
 
-    // Atualizar o campo CPF com formatação
+    // Atualizar o campo CPF com formatação SEMPRE
     if (type === 'titular') {
       updateTitular(index, 'cpf', cpfFormatado);
     } else {
       updateDependente(index, 'cpf', cpfFormatado);
     }
+
+    console.log('📝 CPF formatado aplicado:', cpfFormatado);
 
     // Se CPF tem 11 dígitos (limpo), consultar API
     const cpfLimpo = cpf.replace(/[^\d]/g, '');
@@ -1012,10 +1014,9 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             }
           }
 
-          // USUARIO PEDIU: NÃO PREENCHER ENDEREÇO
-
-          // USUARIO PEDIU: NÃO PREENCHER TELEFONE, CEP OU ENDEREÇO
-          // Removido preenchimento automático conforme solicitado
+          // IMPORTANTE: Manter o CPF formatado no campo (não deixar sumir)
+          console.log('✏️ Mantendo CPF formatado no campo:', cpfFormatado);
+          // O CPF já foi formatado e aplicado no início da função handleCPFChange
 
           console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
