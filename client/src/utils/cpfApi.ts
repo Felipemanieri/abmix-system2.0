@@ -83,7 +83,7 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
       // 1. Nome Completo
       if (dados.nome) {
         console.log('🔄 Preenchendo nome:', dados.nome);
-        updateCallback('nome', dados.nome);
+        updateCallback('nomeCompleto', dados.nome);
       }
       
       // 2. Nome da Mãe
@@ -115,7 +115,7 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
       const enderecoCompleto = formatarEndereco(data);
       if (enderecoCompleto) {
         console.log('🔄 Preenchendo endereço:', enderecoCompleto);
-        updateCallback('endereco', enderecoCompleto);
+        updateCallback('enderecoCompleto', enderecoCompleto);
       }
       
       // 6. Telefone Pessoal
