@@ -305,6 +305,43 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     showNotification('Novo relatório recebido do supervisor', 'success');
   };
 
+  // Função para solicitar relatório completo do supervisor
+  const handleRequestSupervisorReport = async () => {
+    try {
+      setIsLoading(true);
+      showNotification('Gerando relatório completo do supervisor...', 'info');
+      
+      // Buscar dados reais das propostas com todos os dados
+      const supervisorReportData = await apiRequest('/api/supervisor-report-complete');
+      
+      const completeReport = {
+        id: `supervisor-report-${Date.now()}`,
+        title: 'Relatório Completo do Supervisor',
+        status: 'received',
+        receivedAt: new Date().toISOString(),
+        type: 'complete',
+        data: supervisorReportData,
+        editableFields: ['statusPagamentoPremiacao', 'statusPagamento', 'dataPagamento'],
+        summary: supervisorReportData.summary,
+        totals: supervisorReportData.totals,
+        rawData: supervisorReportData.proposals || []
+      };
+      
+      setReceivedReports(prev => [completeReport, ...prev]);
+      showNotification('Relatório completo gerado com sucesso!', 'success');
+      
+      // Salvar no localStorage para persistência
+      const updatedReports = [completeReport, ...receivedReports];
+      localStorage.setItem('financialReports', JSON.stringify(updatedReports));
+      
+    } catch (error) {
+      console.error('Erro ao gerar relatório do supervisor:', error);
+      showNotification('Erro ao gerar relatório. Tente novamente.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Simular recebimento de relatório de teste
   const sendTestReport = () => {
     const testReport = {
@@ -452,6 +489,20 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
               </div>
             </div>
 
+            {/* Botão para solicitar relatório do supervisor */}
+            <div className="mb-6">
+              <button
+                onClick={handleRequestSupervisorReport}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              >
+                <Download className="h-5 w-5" />
+                <span>Solicitar Relatório Completo do Supervisor</span>
+              </button>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                Inclui todas as colunas editáveis: Status Pagamento Premiação, Status Pagamento, Data Pagamento
+              </p>
+            </div>
+
             {receivedReports.length === 0 ? (
               <div className="text-center py-12">
                 <div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -459,7 +510,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                 </div>
                 <h4 className="text-lg font-medium text-gray-900 dark:text-white dark:text-white mb-2">Aguardando Relatórios</h4>
                 <p className="text-gray-500 dark:text-white dark:text-gray-500 dark:text-white mb-1">Nenhum relatório recebido do supervisor ainda</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 dark:text-white">Quando o supervisor enviar relatórios, eles aparecerão aqui para análise</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 dark:text-white">Use o botão acima para solicitar o relatório completo com todas as informações</p>
               </div>
             ) : (
               <div className="space-y-4">

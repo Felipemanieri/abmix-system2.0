@@ -1305,5 +1305,119 @@ export function setupRoutes(app: any) {
     }
   });
 
+  // NOVO: Gerar relatório completo do supervisor para o financeiro
+  app.get('/api/supervisor-report-complete', async (req: Request, res: Response) => {
+    try {
+      console.log('📊 Gerando relatório completo do supervisor para o financeiro...');
+      
+      // Buscar todas as propostas com status implantado
+      const allProposals = await storage.getAllProposals();
+      const implantedProposals = allProposals.filter(p => p.status === 'implantado');
+      
+      // Buscar todos os vendedores
+      const allVendors = await storage.getAllVendors();
+      
+      // Buscar todas as configurações de relatórios
+      const allConfigs = await storage.getAllReportConfigurations();
+      
+      // Buscar todas as metas de vendedores
+      const allTargets = await storage.getAllVendorTargets();
+      
+      // Buscar todas as premiações
+      const allAwards = await storage.getAllAwards();
+      
+      // Organizar dados por vendedor
+      const vendorData = new Map();
+      
+      // Inicializar dados dos vendedores
+      allVendors.forEach(vendor => {
+        vendorData.set(vendor.id, {
+          id: vendor.id,
+          name: vendor.name,
+          email: vendor.email,
+          totalValue: 0,
+          totalProposals: 0,
+          proposals: [],
+          targets: allTargets.filter(t => t.vendorId === vendor.id),
+          awards: allAwards.filter(a => a.vendorId === vendor.id)
+        });
+      });
+      
+      // Processar cada proposta implantada
+      const reportProposals = implantedProposals.map(proposal => {
+        const vendor = allVendors.find(v => v.id === proposal.vendorId);
+        const config = allConfigs.find(c => c.abmId === proposal.abmId);
+        
+        // Atualizar dados do vendedor
+        if (vendor && vendorData.has(vendor.id)) {
+          const data = vendorData.get(vendor.id);
+          const value = parseFloat(proposal.contractData?.valor?.replace(/[^\d,]/g, '').replace(',', '.') || '0');
+          data.totalValue += value;
+          data.totalProposals += 1;
+          data.proposals.push(proposal);
+        }
+        
+        return {
+          abmId: proposal.abmId,
+          id: proposal.id,
+          empresa: proposal.contractData?.nomeEmpresa || '',
+          cnpj: proposal.contractData?.cnpj || '',
+          plano: proposal.contractData?.planoContratado || '',
+          valor: proposal.contractData?.valor || '0,00',
+          vendedor: vendor?.name || 'N/A',
+          vendedorId: proposal.vendorId,
+          status: proposal.status,
+          createdAt: proposal.createdAt,
+          // Campos editáveis pelo financeiro
+          statusPagamentoPremiacao: config?.statusPagamentoPremiacao || '',
+          statusPagamento: config?.statusPagamento || '',
+          dataPagamento: config?.dataPagamento || '',
+          // Outros campos do relatório
+          premiacao: config?.premiacao || '0,00',
+          metaIndividual: config?.metaIndividual || '0,00',
+          metaEquipe: config?.metaEquipe || '0,00',
+          superPremiacao: config?.superPremiacao || '0,00',
+          observacoes: config?.observacoes || ''
+        };
+      });
+      
+      // Gerar resumo por vendedor
+      const summary = Array.from(vendorData.values()).map(data => ({
+        vendedorId: data.id,
+        vendedorNome: data.name,
+        totalVendas: data.totalValue,
+        totalPropostas: data.totalProposals,
+        metaAtual: data.targets[0]?.targetValue || '0,00',
+        percentualMeta: data.targets[0] ? Math.round((data.totalValue / parseFloat(data.targets[0].targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100) : 0,
+        premiacao: data.awards.reduce((sum, award) => sum + parseFloat(award.value.replace(/[^\d,]/g, '').replace(',', '.') || '0'), 0)
+      }));
+      
+      // Calcular totais gerais
+      const totals = {
+        totalPropostasImplantadas: implantedProposals.length,
+        valorTotalImplantado: summary.reduce((sum, s) => sum + s.totalVendas, 0),
+        totalVendedores: allVendors.length,
+        totalPremiacao: summary.reduce((sum, s) => sum + s.premiacao, 0),
+        mediaConversao: implantedProposals.length > 0 ? Math.round((implantedProposals.length / allProposals.length) * 100) : 0
+      };
+      
+      const completeReport = {
+        generatedAt: new Date().toISOString(),
+        period: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
+        proposals: reportProposals,
+        summary: summary,
+        totals: totals,
+        editableFields: ['statusPagamentoPremiacao', 'statusPagamento', 'dataPagamento']
+      };
+      
+      console.log(`✅ Relatório gerado: ${reportProposals.length} propostas, ${summary.length} vendedores`);
+      res.json(completeReport);
+      
+    } catch (error) {
+      console.error('❌ Erro ao gerar relatório completo do supervisor:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   console.log('✅ Todas as rotas configuradas com sucesso (incluindo upload/download de arquivos, Google test, logs do sistema, pasta de backup, backup manual, exclusão específica e limpeza de backups)');
 }
