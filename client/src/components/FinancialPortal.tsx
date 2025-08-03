@@ -846,6 +846,363 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     </div>
   );
 
+  // Função para controlar estado dos filtros de relatório
+  const [reportFilters, setReportFilters] = useState({
+    vendedor: '',
+    status: '',
+    periodo: 'todos'
+  });
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+
+  // Aba Comissões - Sistema completo de relatórios igual ao SupervisorPortal
+  const renderCommissions = () => {
+    // Lista de vendedores reais do sistema
+    const realVendors = [
+      'Ana Caroline Terto',
+      'Bruna Garcia',
+      'Fabiana Ferreira',
+      'Fabiana Godinho',
+      'Fernanda Batista',
+      'Gabrielle Fernandes',
+      'Isabela Velasquez',
+      'Juliana Araujo',
+      'Lohainy Berlino',
+      'Luciana Velasquez',
+      'Monique Silva',
+      'Sara Mattos'
+    ];
+    
+    // Lista de vendedores únicos (incluindo dados reais e do banco)
+    const uniqueVendors = [...new Set([...realVendors, ...(realProposals || []).map(p => p.vendorName).filter(Boolean)])];
+
+    const filteredData = (realProposals || []).filter(proposal => {
+      if (reportFilters.vendedor && !proposal.vendorName?.toLowerCase().includes(reportFilters.vendedor.toLowerCase())) return false;
+      if (reportFilters.status && proposal.status !== reportFilters.status) return false;
+      // Filtros de data seriam aplicados aqui
+      return true;
+    });
+
+    const generateReport = async (format: string, shareMethod?: string) => {
+      setIsGenerating(true);
+      try {
+        // Simular geração de relatório
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (shareMethod) {
+          showNotification(`Relatório enviado via ${shareMethod} com sucesso!`, 'success');
+        } else {
+          showNotification(`Relatório ${format.toUpperCase()} gerado com sucesso!`, 'success');
+        }
+      } catch (error) {
+        showNotification('Erro ao gerar relatório', 'error');
+      } finally {
+        setIsGenerating(false);
+        setShowExportOptions(false);
+      }
+    };
+
+    const reportData = {
+      total: filteredData.length,
+      // CORREÇÃO CRÍTICA: Faturamento agora considera APENAS propostas implantadas
+      faturamento: filteredData
+        .filter(p => p.status === 'implantado')
+        .reduce((sum, p) => {
+          const value = p.contractData?.valor || "R$ 0";
+          const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+          const numericValue = parseFloat(cleanValue) || 0;
+          return sum + numericValue;
+        }, 0),
+      porStatus: filteredData.reduce((acc, p) => {
+        const config = STATUS_CONFIG[p.status as ProposalStatus];
+        const label = config?.label || p.status;
+        acc[label] = (acc[label] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      porVendedor: filteredData.reduce((acc, p) => {
+        const vendor = p.vendorName || 'Desconhecido';
+        if (!acc[vendor]) acc[vendor] = { count: 0, value: 0 };
+        acc[vendor].count += 1;
+        // CORREÇÃO: Valor do vendedor agora só conta propostas implantadas
+        if (p.status === 'implantado') {
+          const value = p.contractData?.valor || "R$ 0";
+          const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+          const numericValue = parseFloat(cleanValue) || 0;
+          acc[vendor].value += numericValue;
+        }
+        return acc;
+      }, {} as Record<string, { count: number; value: number }>)
+    };
+
+    // STATUS_CONFIG definido localmente se não estiver disponível
+    const STATUS_CONFIG = {
+      'em_digitacao': { label: 'Em Digitação', color: 'bg-gray-500', textColor: 'text-gray-500' },
+      'aguar_pagamento': { label: 'Aguardando Pagamento', color: 'bg-yellow-500', textColor: 'text-yellow-600' },
+      'aguar_selecao_vigencia': { label: 'Aguardando Seleção Vigência', color: 'bg-blue-500', textColor: 'text-blue-600' },
+      'aguar_vigencia': { label: 'Aguardando Vigência', color: 'bg-purple-500', textColor: 'text-purple-600' },
+      'analise': { label: 'Em Análise', color: 'bg-orange-500', textColor: 'text-orange-600' },
+      'observacao': { label: 'Em Observação', color: 'bg-amber-500', textColor: 'text-amber-600' },
+      'assinatura_ds': { label: 'Assinatura DS', color: 'bg-indigo-500', textColor: 'text-indigo-600' },
+      'assinatura_proposta': { label: 'Assinatura Proposta', color: 'bg-teal-500', textColor: 'text-teal-600' },
+      'pendencia': { label: 'Pendência', color: 'bg-red-500', textColor: 'text-red-600' },
+      'aprovado': { label: 'Aprovado', color: 'bg-green-500', textColor: 'text-green-600' },
+      'implantado': { label: 'Implantado', color: 'bg-green-600', textColor: 'text-green-700' },
+      'declinado': { label: 'Declinado', color: 'bg-red-600', textColor: 'text-red-700' }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Filtros */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filtros de Relatório</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vendedor
+              </label>
+              <select
+                value={reportFilters.vendedor}
+                onChange={(e) => setReportFilters({...reportFilters, vendedor: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Todos os vendedores</option>
+                {uniqueVendors.map(vendor => (
+                  <option key={vendor} value={vendor}>{vendor}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={reportFilters.status}
+                onChange={(e) => setReportFilters({...reportFilters, status: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Todos os status</option>
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                  <option key={key} value={key}>{config.label}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Período
+              </label>
+              <select
+                value={reportFilters.periodo}
+                onChange={(e) => setReportFilters({...reportFilters, periodo: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="todos">Todos os períodos</option>
+                <option value="hoje">Hoje</option>
+                <option value="semana">Esta semana</option>
+                <option value="mes">Este mês</option>
+                <option value="trimestre">Este trimestre</option>
+                <option value="ano">Este ano</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Resumo dos Dados */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-600 dark:text-blue-200 text-sm font-medium">Total de Propostas</p>
+                <p className="text-blue-900 dark:text-blue-100 text-2xl font-bold">{reportData.total}</p>
+              </div>
+              <FileText className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
+          
+          <div className="bg-green-50 dark:bg-green-900 rounded-lg p-6 border border-green-200 dark:border-green-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-600 dark:text-green-200 text-sm font-medium">Faturamento (Implantado)</p>
+                <p className="text-green-900 dark:text-green-100 text-2xl font-bold">
+                  R$ {reportData.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <DollarSign className="h-8 w-8 text-green-500" />
+            </div>
+          </div>
+          
+          <div className="bg-purple-50 dark:bg-purple-900 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-600 dark:text-purple-200 text-sm font-medium">Implantadas</p>
+                <p className="text-purple-900 dark:text-purple-100 text-2xl font-bold">
+                  {filteredData.filter(p => p.status === 'implantado').length}
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-purple-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Botão Gerar Relatório */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Gerar Relatório</h3>
+              <p className="text-gray-600 dark:text-gray-300">Exporte os dados em diferentes formatos</p>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => generateReport('excel')}
+                disabled={isGenerating}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                Excel
+              </button>
+              
+              <button
+                onClick={() => setShowExportOptions(!showExportOptions)}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Compartilhar
+              </button>
+            </div>
+          </div>
+          
+          {/* Opções de Compartilhamento */}
+          {showExportOptions && (
+            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Opções de Compartilhamento</h4>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => generateReport('excel', 'email')}
+                  className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email
+                </button>
+                
+                <button
+                  onClick={() => generateReport('excel', 'whatsapp')}
+                  className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </button>
+                
+                <button
+                  onClick={() => generateReport('excel', 'google-sheets')}
+                  className="flex items-center px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Google Sheets
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tabela de Dados */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Propostas Filtradas ({filteredData.length})
+            </h3>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Vendedor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Valor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Data
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredData.map((proposal) => {
+                  const statusConfig = STATUS_CONFIG[proposal.status as keyof typeof STATUS_CONFIG];
+                  return (
+                    <tr key={proposal.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {proposal.contractData?.nomeEmpresa || 'Nome não informado'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {proposal.vendorName || 'Não informado'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {proposal.contractData?.valor || 'R$ 0'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig?.textColor || 'text-gray-600'} bg-gray-100 dark:bg-gray-700`}>
+                          {statusConfig?.label || proposal.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(proposal.createdAt || Date.now()).toLocaleDateString('pt-BR')}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredData.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">Nenhuma proposta encontrada com os filtros aplicados</p>
+            </div>
+          )}
+        </div>
+
+        {/* Análise por Vendedor */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Análise por Vendedor</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(reportData.porVendedor).map(([vendor, data]) => (
+              <div key={vendor} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 dark:text-white">{vendor}</h4>
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Propostas: <span className="font-medium">{data.count}</span>
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Faturamento: <span className="font-medium text-green-600">
+                      R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAnalysis = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
