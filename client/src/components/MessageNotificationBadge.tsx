@@ -30,8 +30,8 @@ export default function MessageNotificationBadge({ userEmail, onMessagesView }: 
 
     checkUnreadMessages();
     
-    // Polling a cada 30 segundos para reduzir logs
-    const interval = setInterval(checkUnreadMessages, 30000);
+    // Polling a cada 10 segundos para notificações rápidas
+    const interval = setInterval(checkUnreadMessages, 10000);
     
     return () => clearInterval(interval);
   }, [userEmail]);
