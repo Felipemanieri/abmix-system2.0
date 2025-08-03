@@ -940,28 +940,15 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Função para consultar CPF automaticamente
-  const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', index: number) => {
-    // Aplicar formatação automática no CPF
-    const cpfFormatado = formatarCPF(cpf);
+  // Função separada para consultar API (sem mexer no CPF)
+  const consultarEPreencherCampos = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number) => {
+    console.log('🔍 Consultando CPF na API:', cpfLimpo);
 
-    // Atualizar o campo CPF com formatação SEMPRE
-    if (type === 'titular') {
-      updateTitular(index, 'cpf', cpfFormatado);
-    } else {
-      updateDependente(index, 'cpf', cpfFormatado);
-    }
+    try {
+      showNotification('🔍 Consultando CPF...', 'info');
+      const dados = await consultarCPF(cpfLimpo);
 
-    console.log('📝 CPF formatado aplicado:', cpfFormatado);
-
-    // Se CPF tem 11 dígitos (limpo), consultar API
-    const cpfLimpo = cpf.replace(/[^\d]/g, '');
-    if (cpfLimpo.length === 11) {
-      try {
-        showNotification('🔍 Consultando CPF...', 'info');
-        const dados = await consultarCPF(cpf);
-
-        if (dados && dados.status && dados.dados) {
+      if (dados && dados.status && dados.dados) {
           console.log('🔍 Iniciando preenchimento automático para:', dados.dados.nome);
           console.log('📋 Dados completos recebidos:', dados.dados);
 
@@ -1020,13 +1007,12 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
 
           console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
-        } else {
-          showNotification('❌ CPF não encontrado na base de dados', 'error');
-        }
-      } catch (error) {
-        console.error('Erro na consulta CPF:', error);
-        showNotification('❌ Erro ao consultar CPF. Tente novamente.', 'error');
+      } else {
+        showNotification('❌ CPF não encontrado na base de dados', 'error');
       }
+    } catch (error) {
+      console.error('Erro na consulta CPF:', error);
+      showNotification('❌ Erro ao consultar CPF. Tente novamente.', 'error');
     }
   };
 
@@ -1077,12 +1063,23 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             onChange={(e) => {
               const valor = e.target.value;
               console.log('💡 CPF onChange disparado:', valor);
-
-              // Forçar chamada da função diretamente para debug
-              setTimeout(() => {
-                console.log('⏰ Executando handleCPFChange após timeout...');
-                handleCPFChange(valor, type, index);
-              }, 100);
+              
+              // Aplicar formatação imediatamente no estado
+              const cpfFormatado = formatarCPF(valor);
+              if (type === 'titular') {
+                updateTitular(index, 'cpf', cpfFormatado);
+              } else {
+                updateDependente(index, 'cpf', cpfFormatado);
+              }
+              
+              // Consultar API após formatação
+              const cpfLimpo = valor.replace(/\D/g, '');
+              if (cpfLimpo.length === 11) {
+                setTimeout(() => {
+                  console.log('⏰ Executando consulta CPF API...');
+                  consultarEPreencherCampos(cpfLimpo, type, index);
+                }, 100);
+              }
             }}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="000.000.000-00"

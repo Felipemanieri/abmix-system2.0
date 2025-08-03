@@ -143,36 +143,27 @@ const ClientForm: React.FC = () => {
     const cpfFormatado = formatarCPF(cpf);
     updatePerson(type, id, 'cpf', cpfFormatado);
 
-    console.log('🔍 ClientForm - CPF digitado:', cpf);
-    console.log('📝 ClientForm - CPF formatado:', cpfFormatado);
-
     // Só consultar se o CPF tem 11 dígitos
     const cpfLimpo = cpf.replace(/\D/g, '');
     if (cpfLimpo.length === 11) {
-      console.log('🔍 ClientForm - Consultando CPF na API...');
       try {
         const dados = await consultarCPF(cpfLimpo);
         if (dados && dados.dados) {
           const d = dados.dados;
-          
-          console.log('✅ ClientForm - Dados recebidos:', d);
 
           // Preencher Nome Completo
           if (d.nome) {
-            console.log('✏️ ClientForm - Preenchendo nome:', d.nome);
             updatePerson(type, id, 'nome', d.nome);
           }
 
-          // Preencher Nome da Mãe
+          // Preencher Nome da Mãe  
           if (d.mae) {
-            console.log('✏️ ClientForm - Preenchendo nome da mãe:', d.mae);
             updatePerson(type, id, 'nomeMae', d.mae);
           }
 
           // Preencher Sexo
           if (d.sexo) {
             const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-            console.log('✏️ ClientForm - Preenchendo sexo:', sexoFormatado);
             updatePerson(type, id, 'sexo', sexoFormatado);
           }
 
@@ -182,12 +173,9 @@ const ClientForm: React.FC = () => {
             if (dataMatch) {
               const [, dia, mes, ano] = dataMatch;
               const dataFormatada = `${ano}-${mes}-${dia}`;
-              console.log('✏️ ClientForm - Preenchendo data de nascimento:', dataFormatada);
               updatePerson(type, id, 'dataNascimento', dataFormatada);
             }
           }
-
-          console.log('✅ ClientForm - Preenchimento automático concluído!');
         }
       } catch (error) {
         console.error('❌ ClientForm - Erro ao consultar CPF:', error);
