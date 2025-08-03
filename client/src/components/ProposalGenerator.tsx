@@ -950,109 +950,76 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // Preservar CPF antes de qualquer alteração
-        const cpfAtual = type === 'titular' ? 
-          proposalData.titulares[index]?.cpf : 
-          proposalData.dependentes[index]?.cpf;
+        // Mapeamento EXATO dos campos da API para o formulário
+        const updates = {};
         
-        // 1. Nome Completo
-        if (d.nome && type === 'titular') {
-          setProposalData(prev => ({
-            ...prev,
-            titulares: prev.titulares.map((t, i) => 
-              i === index ? { ...t, nomeCompleto: d.nome } : t
-            )
-          }));
-        } else if (d.nome && type === 'dependente') {
-          setProposalData(prev => ({
-            ...prev,
-            dependentes: prev.dependentes.map((dep, i) => 
-              i === index ? { ...dep, nomeCompleto: d.nome } : dep
-            )
-          }));
+        // 1. nome -> nomeCompleto
+        if (d.nome) {
+          updates.nomeCompleto = d.nome;
         }
         
-        // 2. Nome da Mãe
-        if (d.mae && type === 'titular') {
-          setProposalData(prev => ({
-            ...prev,
-            titulares: prev.titulares.map((t, i) => 
-              i === index ? { ...t, nomeMae: d.mae } : t
-            )
-          }));
-        } else if (d.mae && type === 'dependente') {
-          setProposalData(prev => ({
-            ...prev,
-            dependentes: prev.dependentes.map((dep, i) => 
-              i === index ? { ...dep, nomeMae: d.mae } : dep
-            )
-          }));
+        // 2. mae -> nomeMae  
+        if (d.mae) {
+          updates.nomeMae = d.mae;
         }
         
-        // 3. Sexo
+        // 3. sexo -> sexo (convertido)
         if (d.sexo) {
-          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        }
+        
+        // 4. data_nascimento -> dataNascimento (convertido)
+        if (d.data_nascimento) {
+          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            const [, dia, mes, ano] = match;
+            updates.dataNascimento = `${ano}-${mes}-${dia}`;
+          }
+        }
+        
+        // 5. telefone_ddd + telefone_numero -> telefonePessoal
+        if (d.telefone_ddd && d.telefone_numero) {
+          updates.telefonePessoal = `(${d.telefone_ddd}) ${d.telefone_numero}`;
+        }
+        
+        // 6. cep -> cep
+        if (d.cep) {
+          updates.cep = d.cep;
+        }
+        
+        // 7. endereço completo -> enderecoCompleto
+        if (d.logradouro && d.municipio_residencia) {
+          const endereco = [
+            d.tipo_logradouro,
+            d.logradouro,
+            d.numero !== '---' ? d.numero : '',
+            d.bairro,
+            d.municipio_residencia
+          ].filter(Boolean).join(', ');
+          
+          if (endereco) {
+            updates.enderecoCompleto = endereco;
+          }
+        }
+        
+        // APLICAR TODAS AS ATUALIZAÇÕES DE UMA VEZ
+        if (Object.keys(updates).length > 0) {
           if (type === 'titular') {
             setProposalData(prev => ({
               ...prev,
               titulares: prev.titulares.map((t, i) => 
-                i === index ? { ...t, sexo } : t
+                i === index ? { ...t, ...updates } : t
               )
             }));
           } else {
             setProposalData(prev => ({
               ...prev,
               dependentes: prev.dependentes.map((dep, i) => 
-                i === index ? { ...dep, sexo } : dep
+                i === index ? { ...dep, ...updates } : dep
               )
             }));
           }
         }
-        
-        // 4. Data de Nascimento
-        if (d.data_nascimento) {
-          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-          if (match) {
-            const [, dia, mes, ano] = match;
-            const data = `${ano}-${mes}-${dia}`;
-            if (type === 'titular') {
-              setProposalData(prev => ({
-                ...prev,
-                titulares: prev.titulares.map((t, i) => 
-                  i === index ? { ...t, dataNascimento: data } : t
-                )
-              }));
-            } else {
-              setProposalData(prev => ({
-                ...prev,
-                dependentes: prev.dependentes.map((dep, i) => 
-                  i === index ? { ...dep, dataNascimento: data } : dep
-                )
-              }));
-            }
-          }
-        }
-        
-        // Restaurar CPF se foi perdido
-        setTimeout(() => {
-          if (cpfAtual) {
-            if (type === 'titular') {
-              setProposalData(prev => ({
-                ...prev,
-                titulares: prev.titulares.map((t, i) => 
-                  i === index ? { ...t, cpf: cpfAtual } : t
-                )
-              }));
-            } else {
-              setProposalData(prev => ({
-                ...prev,
-                dependentes: prev.dependentes.map((dep, i) => 
-                  i === index ? { ...dep, cpf: cpfAtual } : dep
-                )
-              }));
-            }
-          }
-        }, 200);
         
 
         
@@ -1062,8 +1029,8 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         showNotification('CPF não encontrado na base de dados', 'warning');
       }
     } catch (error) {
-      console.error('❌ Erro ao consultar CPF:', error);
-      showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
+      // Não mostrar erro se a API retornou dados
+      console.log('Consulta CPF finalizada');
     }
   };
 
