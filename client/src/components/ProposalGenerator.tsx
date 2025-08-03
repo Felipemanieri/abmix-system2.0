@@ -1012,37 +1012,10 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             }
           }
 
-          // Montar endereço completo
-          const endereco = formatarEndereco(dados);
-          if (endereco) {
-            console.log('✏️ Preenchendo endereço:', endereco);
-            if (type === 'titular') {
-              updateTitular(index, 'enderecoCompleto', endereco);
-            } else {
-              updateDependente(index, 'enderecoCompleto', endereco);
-            }
-          }
+          // USUARIO PEDIU: NÃO PREENCHER ENDEREÇO
 
-          // Montar telefone
-          const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-          if (telefone) {
-            console.log('✏️ Preenchendo telefone:', telefone);
-            if (type === 'titular') {
-              updateTitular(index, 'telefonePessoal', telefone);
-            } else {
-              updateDependente(index, 'telefonePessoal', telefone);
-            }
-          }
-
-          // Preencher CEP
-          if (d.cep) {
-            console.log('✏️ Preenchendo CEP:', d.cep);
-            if (type === 'titular') {
-              updateTitular(index, 'cep', d.cep);
-            } else {
-              updateDependente(index, 'cep', d.cep);
-            }
-          }
+          // USUARIO PEDIU: NÃO PREENCHER TELEFONE, CEP OU ENDEREÇO
+          // Removido preenchimento automático conforme solicitado
 
           console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
@@ -2123,8 +2096,8 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                   type="text"
                   value={quotationData.valor || ''}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d.,]/g, '');
-                    setQuotationData(prev => ({ ...prev, valor: value }));
+                    const valorFormatado = formatarValorMonetario(e.target.value);
+                    setQuotationData(prev => ({ ...prev, valor: valorFormatado }));
                   }}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   placeholder="Ex: 1.250,00"

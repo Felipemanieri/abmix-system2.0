@@ -34,7 +34,7 @@ export const formatarCPF = (cpf: string): string => {
   return `${limpo.slice(0, 3)}.${limpo.slice(3, 6)}.${limpo.slice(6, 9)}-${limpo.slice(9, 11)}`;
 };
 
-export const consultarCPF = async (cpf: string, updateCallback?: (campo: string, valor: string) => void): Promise<CPFApiResponse | null> => {
+export const consultarCPF = async (cpf: string): Promise<CPFApiResponse | null> => {
   try {
     // Limpar formatação do CPF (remover pontos e hífen)
     const cpfLimpo = cpf.replace(/[^\d]/g, '');
@@ -74,62 +74,14 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
       return null;
     }
     
-    console.log('🔍 Verificando condições da API CPF:');
+    console.log('🔍 Verificando resposta da API CPF:');
     console.log('  - data.status:', data.status, typeof data.status);
     console.log('  - data.resultado:', data.resultado, typeof data.resultado);
     console.log('  - data.dados existe:', !!data.dados);
-    console.log('  - updateCallback existe:', !!updateCallback);
     
-    if (data.status === true && data.resultado === 'success' && data.dados && updateCallback) {
+    if (data.status === true && data.resultado === 'success' && data.dados) {
       console.log('✅ CPF encontrado com sucesso:', data.dados.nome);
-      
-      // PREENCHER CAMPOS AUTOMATICAMENTE
-      const dados = data.dados;
-      
-      // 1. Nome Completo
-      if (dados.nome) {
-        console.log('🔄 Preenchendo nome:', dados.nome);
-        updateCallback('nomeCompleto', dados.nome);
-      }
-      
-      // 2. Nome da Mãe
-      if (dados.mae) {
-        console.log('🔄 Preenchendo nome da mãe:', dados.mae);
-        updateCallback('nomeMae', dados.mae);
-      }
-      
-      // 3. Sexo (converter para lowercase)
-      if (dados.sexo) {
-        const sexoFormatado = dados.sexo.toLowerCase();
-        console.log('🔄 Preenchendo sexo:', sexoFormatado);
-        updateCallback('sexo', sexoFormatado);
-      }
-      
-      // 4. Data de Nascimento (converter formato)
-      if (dados.data_nascimento) {
-        // Converter de "12/07/1984 (41 anos)" para "1984-07-12"
-        const dataMatch = dados.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-        if (dataMatch) {
-          const [, dia, mes, ano] = dataMatch;
-          const dataFormatada = `${ano}-${mes}-${dia}`;
-          console.log('🔄 Preenchendo data de nascimento:', dataFormatada);
-          updateCallback('dataNascimento', dataFormatada);
-        }
-      }
-      
-      // 5. Telefone Pessoal
-      const telefoneFormatado = formatarTelefone(dados.telefone_ddd, dados.telefone_numero);
-      if (telefoneFormatado) {
-        console.log('🔄 Preenchendo telefone:', telefoneFormatado);
-        updateCallback('telefonePessoal', telefoneFormatado);
-      }
-      
-      // 6. CPF Formatado (já formatado pela função formatarCPF)
-      const cpfFormatado = formatarCPF(cpfLimpo);
-      console.log('🔄 Aplicando formatação CPF:', cpfFormatado);
-      updateCallback('cpf', cpfFormatado);
-      
-      console.log('✅ Dados básicos preenchidos automaticamente! (Nome, mãe, sexo, nascimento, telefone)');
+      console.log('📋 Dados disponíveis:', data.dados);
       return data;
     } else {
       console.log('❌ CPF não encontrado ou erro na consulta:', data);
@@ -181,6 +133,6 @@ export const preencherCamposComCPF = async (
   cpf: string, 
   updateFunction: (campo: string, valor: string) => void
 ): Promise<boolean> => {
-  const resultado = await consultarCPF(cpf, updateFunction);
+  const resultado = await consultarCPF(cpf);
   return resultado !== null;
 };
