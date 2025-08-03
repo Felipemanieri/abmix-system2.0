@@ -935,21 +935,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
       }, {} as Record<string, { count: number; value: number }>)
     };
 
-    // STATUS_CONFIG definido localmente se não estiver disponível
-    const STATUS_CONFIG = {
-      'em_digitacao': { label: 'Em Digitação', color: 'bg-gray-500', textColor: 'text-gray-500' },
-      'aguar_pagamento': { label: 'Aguardando Pagamento', color: 'bg-yellow-500', textColor: 'text-yellow-600' },
-      'aguar_selecao_vigencia': { label: 'Aguardando Seleção Vigência', color: 'bg-blue-500', textColor: 'text-blue-600' },
-      'aguar_vigencia': { label: 'Aguardando Vigência', color: 'bg-purple-500', textColor: 'text-purple-600' },
-      'analise': { label: 'Em Análise', color: 'bg-orange-500', textColor: 'text-orange-600' },
-      'observacao': { label: 'Em Observação', color: 'bg-amber-500', textColor: 'text-amber-600' },
-      'assinatura_ds': { label: 'Assinatura DS', color: 'bg-indigo-500', textColor: 'text-indigo-600' },
-      'assinatura_proposta': { label: 'Assinatura Proposta', color: 'bg-teal-500', textColor: 'text-teal-600' },
-      'pendencia': { label: 'Pendência', color: 'bg-red-500', textColor: 'text-red-600' },
-      'aprovado': { label: 'Aprovado', color: 'bg-green-500', textColor: 'text-green-600' },
-      'implantado': { label: 'Implantado', color: 'bg-green-600', textColor: 'text-green-700' },
-      'declinado': { label: 'Declinado', color: 'bg-red-600', textColor: 'text-red-700' }
-    };
+    // Usando STATUS_CONFIG importado de statusSystem
 
     return (
       <div className="space-y-6">
