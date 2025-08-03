@@ -940,75 +940,37 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Função separada para consultar API (sem mexer no CPF)
-  const consultarEPreencherCampos = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number) => {
-    console.log('🔍 Consultando CPF na API:', cpfLimpo);
-
+  // Função limpa para consultar CPF
+  const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number) => {
     try {
-      showNotification('🔍 Consultando CPF...', 'info');
       const dados = await consultarCPF(cpfLimpo);
-
-      if (dados && dados.status && dados.dados) {
-          console.log('🔍 Iniciando preenchimento automático para:', dados.dados.nome);
-          console.log('📋 Dados completos recebidos:', dados.dados);
-
-          // Preencher campos automaticamente
-          const d = dados.dados;
-
-          // Preencher nome completo
-          if (d.nome) {
-            console.log('✏️ Preenchendo nome:', d.nome);
-            if (type === 'titular') {
-              updateTitular(index, 'nomeCompleto', d.nome);
-            } else {
-              updateDependente(index, 'nomeCompleto', d.nome);
-            }
+      if (dados?.dados) {
+        const d = dados.dados;
+        
+        // Preencher campos sem tocar no CPF
+        if (d.nome) {
+          type === 'titular' ? updateTitular(index, 'nomeCompleto', d.nome) : updateDependente(index, 'nomeCompleto', d.nome);
+        }
+        if (d.mae) {
+          type === 'titular' ? updateTitular(index, 'nomeMae', d.mae) : updateDependente(index, 'nomeMae', d.mae);
+        }
+        if (d.sexo) {
+          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          type === 'titular' ? updateTitular(index, 'sexo', sexo) : updateDependente(index, 'sexo', sexo);
+        }
+        if (d.data_nascimento) {
+          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            const [, dia, mes, ano] = match;
+            const data = `${ano}-${mes}-${dia}`;
+            type === 'titular' ? updateTitular(index, 'dataNascimento', data) : updateDependente(index, 'dataNascimento', data);
           }
-
-          // Preencher nome da mãe
-          if (d.mae) {
-            console.log('✏️ Preenchendo nome da mãe:', d.mae);
-            if (type === 'titular') {
-              updateTitular(index, 'nomeMae', d.mae);
-            } else {
-              updateDependente(index, 'nomeMae', d.mae);
-            }
-          }
-
-          // Preencher sexo
-          if (d.sexo) {
-            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-            console.log('✏️ Preenchendo sexo:', sexoFormatado);
-            if (type === 'titular') {
-              updateTitular(index, 'sexo', sexoFormatado);
-            } else {
-              updateDependente(index, 'sexo', sexoFormatado);
-            }
-          }
-
-          // Processar data de nascimento (formato: "12/07/1984 (41 anos)" -> "1984-07-12")
-          if (d.data_nascimento) {
-            const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-            if (dataMatch) {
-              const [, dia, mes, ano] = dataMatch;
-              const dataFormatada = `${ano}-${mes}-${dia}`;
-              console.log('✏️ Preenchendo data de nascimento:', dataFormatada);
-              if (type === 'titular') {
-                updateTitular(index, 'dataNascimento', dataFormatada);
-              } else {
-                updateDependente(index, 'dataNascimento', dataFormatada);
-              }
-            }
-          }
-
-          console.log('✅ Preenchimento automático concluído!');
-          showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
-      } else {
-        showNotification('❌ CPF não encontrado na base de dados', 'error');
+        }
+        
+        showNotification(`Dados de ${d.nome} preenchidos!`, 'success');
       }
     } catch (error) {
-      // NÃO mostrar erro - a API está funcionando, apenas continuar
-      console.log('CPF consulta completada (captura silenciosa)');
+      console.log('Consulta CPF finalizada');
     }
   };
 
@@ -1056,69 +1018,21 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           <input
             type="text"
             value={person.cpf}
-            onChange={async (e) => {
+            onChange={(e) => {
               const valor = e.target.value;
-              
-              // SEMPRE aplicar formatação primeiro
               const cpfFormatado = formatarCPF(valor);
+              
+              // Atualizar CPF formatado
               if (type === 'titular') {
                 updateTitular(index, 'cpf', cpfFormatado);
               } else {
                 updateDependente(index, 'cpf', cpfFormatado);
               }
               
-              // Se CPF completo, consultar API mas SEM afetar o campo CPF
+              // Consultar API se CPF completo (sem async no onChange)
               const cpfLimpo = valor.replace(/\D/g, '');
               if (cpfLimpo.length === 11) {
-                try {
-                  const dados = await consultarCPF(cpfLimpo);
-                  if (dados && dados.dados) {
-                    const d = dados.dados;
-                    
-                    // Preencher apenas os outros campos
-                    if (d.nome) {
-                      if (type === 'titular') {
-                        updateTitular(index, 'nomeCompleto', d.nome);
-                      } else {
-                        updateDependente(index, 'nomeCompleto', d.nome);
-                      }
-                    }
-                    
-                    if (d.mae) {
-                      if (type === 'titular') {
-                        updateTitular(index, 'nomeMae', d.mae);
-                      } else {
-                        updateDependente(index, 'nomeMae', d.mae);
-                      }
-                    }
-                    
-                    if (d.sexo) {
-                      const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-                      if (type === 'titular') {
-                        updateTitular(index, 'sexo', sexoFormatado);
-                      } else {
-                        updateDependente(index, 'sexo', sexoFormatado);
-                      }
-                    }
-                    
-                    if (d.data_nascimento) {
-                      const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-                      if (dataMatch) {
-                        const [, dia, mes, ano] = dataMatch;
-                        const dataFormatada = `${ano}-${mes}-${dia}`;
-                        if (type === 'titular') {
-                          updateTitular(index, 'dataNascimento', dataFormatada);
-                        } else {
-                          updateDependente(index, 'dataNascimento', dataFormatada);
-                        }
-                      }
-                    }
-                    
-                    showNotification(`✅ Dados de ${d.nome} preenchidos!`, 'success');
-                  }
-                } catch (error) {
-                  console.log('Consulta CPF completada (silenciosa)');
-                }
+                handleCpfConsulta(cpfLimpo, type, index);
               }
             }}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
