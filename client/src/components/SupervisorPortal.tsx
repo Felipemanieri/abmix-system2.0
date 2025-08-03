@@ -5953,6 +5953,214 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           </div>
                         </div>
 
+                        {/* CAIXAS DE TOTAIS FINANCEIROS */}
+                        {(() => {
+                          // CÁLCULOS PARA AS 4 CAIXAS
+                          const vendasImplantadas = reportData.filter(item => item.status === 'implantado');
+                          
+                          // CAIXA 1: TOTAL DE VENDAS (sem desconto)
+                          const totalVendas = vendasImplantadas.reduce((sum, item) => {
+                            const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            return sum + valor;
+                          }, 0);
+                          
+                          // CAIXA 2: TOTAL DE COMISSÕES A PAGAR
+                          let totalComissoes = 0;
+                          vendasImplantadas.forEach(item => {
+                            const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            
+                            // % Comissão (principal)
+                            const percentComissao = parseFloat((reportComissao[item.abmId] || '0%').replace('%', '')) / 100;
+                            totalComissoes += valor * percentComissao;
+                            
+                            // % Comissão 2 (venda dupla)
+                            const percentComissao2 = parseFloat((reportComissao2[item.abmId] || '0%').replace('%', '')) / 100;
+                            totalComissoes += valor * percentComissao2;
+                            
+                            // % Comissão Reunião
+                            const percentReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
+                            totalComissoes += valor * percentReuniao;
+                            
+                            // % Comissão Visita (ainda não implementado)
+                            // const percentVisita = parseFloat((reportComissaoVisita[item.abmId] || '0%').replace('%', '')) / 100;
+                            // totalComissoes += valor * percentVisita;
+                          });
+                          
+                          // CAIXA 3: TOTAL PREMIAÇÕES
+                          let totalPremiacoes = 0;
+                          vendasImplantadas.forEach(item => {
+                            // Premiação manual
+                            const premiacao = parseFloat((reportPremiacao[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            totalPremiacoes += premiacao;
+                            
+                            // Meta Individual (automática)
+                            const metaIndividual = parseFloat((reportMetaIndividual[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            totalPremiacoes += metaIndividual;
+                            
+                            // Meta de Equipe (automática)
+                            const metaEquipe = parseFloat((reportMetaEquipe[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            totalPremiacoes += metaEquipe;
+                            
+                            // Super Premiação (automática)
+                            const superPremiacao = parseFloat((reportSuperPremiacao[item.abmId] || '0').replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            totalPremiacoes += superPremiacao;
+                          });
+                          
+                          // CAIXA 4: TOTAL SUPERVISOR (5% EXCETO Fabiana Godinho)
+                          const totalSupervisorExcetoFabiana = vendasImplantadas
+                            .filter(item => item.vendedor !== 'Fabiana Godinho')
+                            .reduce((sum, item) => {
+                              const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                              return sum + (valor * 0.05);
+                            }, 0);
+                          
+                          // CAIXA 5: TOTAL COM DESCONTOS (valor líquido após desconto)
+                          const totalComDescontos = vendasImplantadas.reduce((sum, item) => {
+                            const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                            const desconto = parseFloat((reportDesconto[item.abmId] || '0%').replace('%', '')) / 100;
+                            const valorComDesconto = valor * (1 - desconto);
+                            return sum + valorComDesconto;
+                          }, 0);
+                          
+                          // CAIXA 6: VALOR FINAL LÍQUIDO
+                          const valorFinalLiquido = totalComDescontos - totalComissoes - totalPremiacoes - totalSupervisorExcetoFabiana;
+                          
+                          return (
+                            <div className="space-y-4 mt-6">
+                              {/* CAIXA 1: TOTAL DE VENDAS */}
+                              <div className="bg-green-100 dark:bg-green-900 border-2 border-green-300 dark:border-green-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-green-900 dark:text-green-100 text-lg">
+                                      💰 TOTAL DE VENDAS
+                                    </div>
+                                    <div className="text-sm text-green-700 dark:text-green-300">
+                                      {vendasImplantadas.length} propostas implantadas
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-green-900 dark:text-green-100 text-xl">
+                                      R$ {totalVendas.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-green-700 dark:text-green-300">
+                                      Status: "implantado"
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* CAIXA 2: TOTAL COMISSÕES A PAGAR */}
+                              <div className="bg-blue-100 dark:bg-blue-900 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-blue-900 dark:text-blue-100 text-lg">
+                                      📊 TOTAL COMISSÕES A PAGAR
+                                    </div>
+                                    <div className="text-sm text-blue-700 dark:text-blue-300">
+                                      % Comissão + % Comissão 2 + % Reunião
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-blue-900 dark:text-blue-100 text-xl">
+                                      R$ {totalComissoes.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-blue-700 dark:text-blue-300">
+                                      Todas as comissões somadas
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* CAIXA 3: TOTAL PREMIAÇÕES */}
+                              <div className="bg-purple-100 dark:bg-purple-900 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-purple-900 dark:text-purple-100 text-lg">
+                                      🏆 TOTAL PREMIAÇÕES
+                                    </div>
+                                    <div className="text-sm text-purple-700 dark:text-purple-300">
+                                      Premiação + Meta Individual + Meta Equipe + Super Premiação
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-purple-900 dark:text-purple-100 text-xl">
+                                      R$ {totalPremiacoes.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-purple-700 dark:text-purple-300">
+                                      Todas as premiações somadas
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* CAIXA 4: TOTAL SUPERVISOR (EXCETO FABIANA) */}
+                              <div className="bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-300 dark:border-indigo-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-indigo-900 dark:text-indigo-100 text-lg">
+                                      👔 TOTAL SUPERVISOR
+                                    </div>
+                                    <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                                      5% das vendas (exceto Fabiana Godinho)
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-indigo-900 dark:text-indigo-100 text-xl">
+                                      R$ {totalSupervisorExcetoFabiana.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-indigo-700 dark:text-indigo-300">
+                                      Excluindo vendas da Fabiana Godinho
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* CAIXA 5: TOTAL COM DESCONTOS */}
+                              <div className="bg-orange-100 dark:bg-orange-900 border-2 border-orange-300 dark:border-orange-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-orange-900 dark:text-orange-100 text-lg">
+                                      💸 VENDAS COM DESCONTO
+                                    </div>
+                                    <div className="text-sm text-orange-700 dark:text-orange-300">
+                                      Valor após aplicar % da coluna "Desconto"
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-orange-900 dark:text-orange-100 text-xl">
+                                      R$ {totalComDescontos.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-orange-700 dark:text-orange-300">
+                                      Valor líquido com descontos
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* CAIXA 6: VALOR FINAL LÍQUIDO */}
+                              <div className="bg-red-100 dark:bg-red-900 border-2 border-red-300 dark:border-red-700 rounded-lg p-4">
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-red-900 dark:text-red-100 text-lg">
+                                      💰 VALOR FINAL LÍQUIDO
+                                    </div>
+                                    <div className="text-sm text-red-700 dark:text-red-300">
+                                      Vendas c/ Desconto - Comissões - Premiações - Supervisor
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-red-900 dark:text-red-100 text-xl">
+                                      R$ {valorFinalLiquido.toFixed(2).replace('.', ',')}
+                                    </div>
+                                    <div className="text-xs text-red-700 dark:text-red-300">
+                                      Resultado final da operação
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                       </div>
                     );
