@@ -4412,7 +4412,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 <th className="w-28 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">VENDEDOR</th>
                 <th className="w-48 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">PLANO</th>
                 <th className="w-20 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">VALOR</th>
-                <th className="w-16 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">DESC</th>
+                <th className="w-20 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">DESCONTO</th>
                 <th className="w-24 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">AUTORIZA</th>
                 <th className="w-20 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">STATUS</th>
                 <th className="w-28 text-left py-1 px-2 text-xs font-semibold text-gray-900 dark:text-white border-r border-gray-300 dark:border-gray-600">PRIORIDADE</th>
