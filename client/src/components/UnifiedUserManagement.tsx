@@ -126,15 +126,23 @@ export default function UnifiedUserManagement() {
   });
 
   const filteredUsers = allCombinedUsers.filter((user: User) => {
-    const matchesPanel = user.panel === activePanel;
+    // Para vendedores, filtrar por userType === 'vendor'
+    const matchesPanel = activePanel === 'vendor' 
+      ? user.userType === 'vendor' 
+      : user.panel === activePanel;
     const matchesSearch = searchTerm === '' || 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesPanel && matchesSearch;
   });
 
-  // Calculate user counts for each panel
+  // Calculate user counts for each panel - FIXED: comercial deve considerar apenas vendors
   const getUserCountByPanel = (panelKey: string) => {
+    if (panelKey === 'vendor') {
+      // Para vendedores, filtrar apenas por userType === 'vendor'
+      return allCombinedUsers.filter(user => user.userType === 'vendor').length;
+    }
+    // Para outros painéis, usar panel normal
     return allCombinedUsers.filter(user => user.panel === panelKey).length;
   };
 
