@@ -5608,23 +5608,15 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded border border-yellow-300 dark:border-yellow-700 mb-3">
                                     {/* CAIXA ÚNICA DA PROPOSTA COM TODAS AS INFORMAÇÕES */}
                                     <div className="bg-blue-100 dark:bg-blue-800 p-4 rounded">
-                                      {/* CABEÇALHO DA PROPOSTA */}
+                                      {/* CABEÇALHO DA PROPOSTA COM VENDEDOR */}
                                       <div className="font-bold text-blue-900 dark:text-blue-100 text-lg mb-2">
                                         PROPOSTA {item.abmId} - {item.cliente} - CNPJ: {item.cnpj}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-sm mb-3">
+                                      <div className="text-blue-800 dark:text-blue-200 text-sm mb-2">
                                         Valor Total: R$ {item.valor} | Status: {item.status} | Plano: {item.plano}
                                       </div>
-                                      
-                                      {/* INFORMAÇÕES DO VENDEDOR PRINCIPAL NA PARTE SUPERIOR */}
-                                      <div className="bg-green-100 dark:bg-green-800 p-3 rounded mb-2">
-                                        <div className="font-bold text-green-900 dark:text-green-100 mb-2">
-                                          💰 VENDEDOR PRINCIPAL: {vendedor}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 text-xs text-green-800 dark:text-green-200">
-                                          <div><strong>Percentual:</strong> {percentualVendedor}</div>
-                                          <div><strong>Valor Comissão:</strong> R$ {comissao1.toFixed(2).replace('.', ',')}</div>
-                                        </div>
+                                      <div className="text-blue-800 dark:text-blue-200 text-sm font-bold">
+                                        💰 VENDEDOR PRINCIPAL: {vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
                                       </div>
                                     </div>
 
