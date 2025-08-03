@@ -312,11 +312,15 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
       showNotification('Carregando relatórios do supervisor...', 'info');
       
       // Buscar dados reais de todas as propostas implantadas
-      const { data: allProposals } = await fetch('/api/proposals').then(r => r.json());
+      const proposalsResponse = await fetch('/api/proposals');
+      const proposalsData = await proposalsResponse.json();
+      const allProposals = proposalsData.data || proposalsData;
       const implantedProposals = allProposals.filter((p: any) => p.status === 'implantado');
       
       // Buscar dados dos vendedores
-      const { data: allVendors } = await fetch('/api/vendors').then(r => r.json());
+      const vendorsResponse = await fetch('/api/vendors');
+      const vendorsData = await vendorsResponse.json();
+      const allVendors = vendorsData.data || vendorsData;
       
       // Processar dados para relatório completo
       const processedReports = implantedProposals.map((proposal: any) => {
