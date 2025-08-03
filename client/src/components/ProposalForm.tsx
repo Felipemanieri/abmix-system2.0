@@ -407,8 +407,14 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
             type="text"
             value={person.cpf}
             onChange={(e) => {
-              console.log('💡 CPF onChange disparado:', e.target.value);
-              handleCPFChange(e.target.value, type, index);
+              const valor = e.target.value;
+              console.log('💡 CPF onChange disparado:', valor);
+              
+              // Forçar chamada da função diretamente para debug
+              setTimeout(() => {
+                console.log('⏰ Executando handleCPFChange após timeout...');
+                handleCPFChange(valor, type, index);
+              }, 100);
             }}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="000.000.000-00"

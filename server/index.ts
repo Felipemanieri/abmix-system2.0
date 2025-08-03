@@ -219,6 +219,26 @@ async function startServer() {
       }
     });
 
+    // Rota para propostas do vendedor - CORRIGIR 404
+    app.get('/api/proposals/vendor/:vendorId', async (req: Request, res: Response) => {
+      try {
+        const vendorId = parseInt(req.params.vendorId);
+        console.log(`🔍 Buscando propostas para vendedor ${vendorId}...`);
+        
+        if (isNaN(vendorId)) {
+          return res.status(400).json({ error: 'ID do vendedor inválido' });
+        }
+        
+        const proposals = await storage.getVendorProposals(vendorId);
+        console.log(`✅ Encontradas ${proposals.length} propostas para vendedor ${vendorId}`);
+        
+        res.json(proposals);
+      } catch (error) {
+        console.error(`❌ Erro ao buscar propostas do vendedor ${req.params.vendorId}:`, error);
+        res.status(500).json({ error: 'Erro ao buscar propostas do vendedor' });
+      }
+    });
+
     console.log("✅ Rotas essenciais registradas com sucesso");
 
     // Portal visibility state
