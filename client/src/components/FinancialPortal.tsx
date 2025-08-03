@@ -846,15 +846,43 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
     </div>
   );
 
-  // Função para controlar estado dos filtros de relatório
+  // Estados necessários para a aba Comissões - copiado do SupervisorPortal
   const [reportFilters, setReportFilters] = useState({
-    vendedor: '',
-    status: '',
-    periodo: 'todos'
+    dataInicio: '', 
+    dataFim: '', 
+    vendedor: '', 
+    status: '', 
+    tipo: 'completo'
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
+
+  // Funções necessárias para a funcionalidade completa
+  const generateReportData = (data: any[]) => {
+    return data.map(proposal => ({
+      abmId: proposal.abmId,
+      vendedor: proposal.vendorName || 'Desconhecido',
+      empresa: proposal.contractData?.nomeEmpresa || '',
+      valor: proposal.contractData?.valor || 'R$ 0,00',
+      status: proposal.status,
+      titulares: proposal.titulares?.length || 0,
+      dependentes: proposal.dependentes?.length || 0
+    }));
+  };
+
+  const showReportPreview = (data: any[]) => {
+    setSelectedReport({ ...selectedReport, data });
+    setShowReportModal(true);
+  };
+
+  const getFilteredProposals = () => {
+    return (realProposals || []).filter(proposal => {
+      if (reportFilters.vendedor && !proposal.vendorName?.toLowerCase().includes(reportFilters.vendedor.toLowerCase())) return false;
+      if (reportFilters.status && proposal.status !== reportFilters.status) return false;
+      return true;
+    });
+  };
 
   // Aba Comissões - Sistema completo de relatórios igual ao SupervisorPortal
   const renderCommissions = () => {
