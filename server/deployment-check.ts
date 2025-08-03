@@ -18,3 +18,4 @@ export function getDeploymentStatus() {
     timestamp: new Date().toISOString()
   };
 }
+// Force deploy trigger - Sun Aug  3 05:47:03 PM UTC 2025
