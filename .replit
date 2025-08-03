@@ -11,7 +11,7 @@ DATABASE_URL = "postgresql://postgres:password@localhost:5432/abmix_db"
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
-run = ["sh", "-c", "NODE_ENV=production PORT=5000 tsx server/index.ts"]
+run = ["sh", "-c", "npm run start"]
 
 [[ports]]
 localPort = 5000
