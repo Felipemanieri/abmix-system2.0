@@ -1025,7 +1025,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
           console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
         } else {
-          showNotification('❌ CPF não encontrado na base de dados', 'error');
+          showNotification('❌ CPF não encontrado na base de dados', 'warning');
         }
       } catch (error) {
         console.error('Erro na consulta CPF:', error);

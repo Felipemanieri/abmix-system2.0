@@ -74,7 +74,7 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
       return null;
     }
     
-    if (data.status && data.resultado === 'success' && data.dados && updateCallback) {
+    if (data.status === true && data.resultado === 'success' && data.dados && updateCallback) {
       console.log('✅ CPF encontrado com sucesso:', data.dados.nome);
       
       // PREENCHER CAMPOS AUTOMATICAMENTE
@@ -111,35 +111,22 @@ export const consultarCPF = async (cpf: string, updateCallback?: (campo: string,
         }
       }
       
-      // 5. Endereço Completo
-      const enderecoCompleto = formatarEndereco(data);
-      if (enderecoCompleto) {
-        console.log('🔄 Preenchendo endereço:', enderecoCompleto);
-        updateCallback('enderecoCompleto', enderecoCompleto);
-      }
-      
-      // 6. Telefone Pessoal
+      // 5. Telefone Pessoal
       const telefoneFormatado = formatarTelefone(dados.telefone_ddd, dados.telefone_numero);
       if (telefoneFormatado) {
         console.log('🔄 Preenchendo telefone:', telefoneFormatado);
         updateCallback('telefonePessoal', telefoneFormatado);
       }
       
-      // 7. CEP
-      if (dados.cep) {
-        console.log('🔄 Preenchendo CEP:', dados.cep);
-        updateCallback('cep', dados.cep);
-      }
-      
-      // 8. CPF Formatado (já formatado pela função formatarCPF)
+      // 6. CPF Formatado (já formatado pela função formatarCPF)
       const cpfFormatado = formatarCPF(cpfLimpo);
       console.log('🔄 Aplicando formatação CPF:', cpfFormatado);
       updateCallback('cpf', cpfFormatado);
       
-      console.log('✅ Todos os 8 campos preenchidos automaticamente!');
+      console.log('✅ Dados básicos preenchidos automaticamente! (Nome, mãe, sexo, nascimento, telefone)');
       return data;
     } else {
-      console.log('CPF não encontrado ou erro:', data.resultado);
+      console.log('❌ CPF não encontrado ou erro na consulta:', data);
       return null;
     }
     
