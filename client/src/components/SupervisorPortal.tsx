@@ -4947,27 +4947,27 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         
                         return (
                         <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'}>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.abmId}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{item.numeroProposta || '-'}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{item.numeroApolice || '-'}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 text-xs">{formattedDateTime}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.cliente}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.cnpj}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.abmId}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.numeroProposta || '-'}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.numeroApolice || '-'}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{formattedDateTime}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.cliente}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.cnpj}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                               {item.vendedor}
                             </span>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3 font-semibold">R$ {item.valor}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.plano}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs font-semibold">R$ {item.valor}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.plano}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <StatusBadge 
                               status={item.status as ProposalStatus}
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.desconto}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">{item.autorizadorDesconto || '-'}</td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.desconto}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2 text-xs">{item.autorizadorDesconto || '-'}</td>
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="date"
                               value={reportPaymentDates[item.abmId] || ''}
@@ -4978,7 +4978,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="checkbox"
                               checked={reportVendaDupla[item.abmId] || false}
@@ -4987,7 +4987,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Definido automaticamente pelos controles internos do vendedor"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportVendedor1Percent[item.abmId] || ''}
                               onChange={(e) => setReportVendedor1Percent(prev => ({
@@ -5011,7 +5011,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="100%">100%</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={reportVendedor2[item.abmId] || '-'}
@@ -5020,7 +5020,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Definido automaticamente pelos controles internos do vendedor"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportVendedor2Percent[item.abmId] || ''}
                               onChange={(e) => setReportVendedor2Percent(prev => ({
@@ -5050,7 +5050,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="100%">100%</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             {(() => {
                               // Só calcular se tem vendedor 2 preenchido
                               const hasVendedor2 = reportVendedor2[item.abmId] && reportVendedor2[item.abmId] !== '-' && reportVendedor2[item.abmId].trim() !== '';
@@ -5084,7 +5084,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               );
                             })()}
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={item.reuniao || '-'}
@@ -5093,7 +5093,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Preenchido automaticamente pelo vendedor"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportComissaoReuniao[item.abmId] || ''}
                               onChange={(e) => setReportComissaoReuniao(prev => ({
@@ -5123,7 +5123,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="100%">100%</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             {(() => {
                               // Só calcular se tem reunião preenchida
                               const hasReuniao = item.reuniao && item.reuniao !== '-' && item.reuniao.trim() !== '';
@@ -5157,7 +5157,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               );
                             })()}
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={reportPremiacao[item.abmId] || ''}
@@ -5170,7 +5170,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Digite o valor da premiação em R$"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
@@ -5201,7 +5201,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Meta Individual - Liberada automaticamente quando atingir 100% da meta"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
@@ -5229,7 +5229,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Meta de Equipe - Liberada quando toda equipe atingir 100% da meta coletiva"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
@@ -5255,7 +5255,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Super Premiação - Liberada quando atingir 100% da meta especial individual"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportSupervisor[item.abmId] || ''}
                               onChange={(e) => setReportSupervisor(prev => ({
@@ -5269,7 +5269,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="Rod Ribas">Rod Ribas</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={reportComissaoSupervisor[item.abmId] || ''}
@@ -5278,7 +5278,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Calculado automaticamente: 5% para Rod Ribas (supervisor cadastrado)"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
@@ -5300,7 +5300,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Calculado automaticamente: 5% do valor da venda (R$ 0,00 para Fabiana Godinho)"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
@@ -5325,7 +5325,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Calculado automaticamente: (Valor × % do vendedor) + Premiação"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportStatusPagamentoPremiacao[item.abmId] || ''}
                               onChange={(e) => setReportStatusPagamentoPremiacao(prev => ({
@@ -5341,7 +5341,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="AGUARDANDO">AGUARDANDO</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <select
                               value={reportStatusPagamento[item.abmId] || ''}
                               onChange={(e) => {
@@ -5369,7 +5369,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               <option value="AGUARDANDO">AGUARDANDO</option>
                             </select>
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="date"
                               value={reportDataPagamento[item.abmId] || ''}
@@ -5381,7 +5381,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               title="Selecione a data do pagamento"
                             />
                           </td>
-                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
+                          <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={reportObservations[item.abmId] || ''}
