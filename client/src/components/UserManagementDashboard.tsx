@@ -122,7 +122,7 @@ export default function UserManagementDashboard() {
         
       case 'comercial':
         filtered = allUsers.filter((u: any) => {
-          const match = u.type === 'vendor' || u.email?.includes('comercial');
+          const match = u.type === 'vendor'; // ONLY vendors, não incluir system users com 'comercial' no email
           if (match) console.log(`✅ COMERCIAL: ${u.name} (${u.email})`);
           return match;
         });
