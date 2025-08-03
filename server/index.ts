@@ -367,6 +367,41 @@ async function startServer() {
       }
     });
 
+    // API that the frontend is looking for
+    app.get('/api/auth/users', async (req: Request, res: Response) => {
+      try {
+        const systemUsers = await storage.getAllSystemUsers();
+        const vendors = await storage.getAllVendors();
+        
+        // Combine both user types for the admin interface
+        const allUsers = [
+          ...systemUsers.map(user => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            panel: user.panel,
+            active: user.active,
+            type: 'system'
+          })),
+          ...vendors.map(vendor => ({
+            id: vendor.id,
+            name: vendor.name,
+            email: vendor.email,
+            role: vendor.role,
+            panel: 'vendor',
+            active: vendor.active,
+            type: 'vendor'
+          }))
+        ];
+        
+        res.json(allUsers);
+      } catch (error) {
+        console.error('Erro ao buscar todos os usuários:', error);
+        res.status(500).json({ error: 'Erro ao buscar usuários' });
+      }
+    });
+
     // Catch invalid POST requests to root
     app.post('/', (req: Request, res: Response) => {
       console.log('❌ Invalid POST request to root - redirecting to appropriate endpoint');
