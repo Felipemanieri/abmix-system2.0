@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, DollarSign, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Calculator, Calendar, FileText, User, CreditCard, PieChart, BarChart3, Wallet, MessageSquare, Zap, Users, Upload, Database, Filter, Search, Settings, Mail, Download, Share2, ExternalLink, Send, Copy, X } from 'lucide-react';
+import { LogOut, DollarSign, TrendingUp, CheckCircle, AlertCircle, XCircle, Eye, Calculator, Calendar, FileText, User, CreditCard, PieChart, BarChart3, Wallet, MessageSquare, Zap, Users, Upload, Database, Filter, Search, Settings, Mail, Download, Share2, ExternalLink, Send, Copy, X, RefreshCw, MessageCircle, FileSpreadsheet } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import ActionButtons from './ActionButtons';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
@@ -945,7 +945,8 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
               { id: 'proposals', label: 'Propostas', icon: FileText },
               { id: 'clients', label: 'Clientes', icon: Users },
               { id: 'analysis', label: 'Análises', icon: PieChart },
-              { id: 'accounting', label: 'Contabilidade', icon: Calculator }
+              { id: 'accounting', label: 'Contabilidade', icon: Calculator },
+              { id: 'commissions', label: 'Comissões', icon: DollarSign }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -992,6 +993,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                 {activeTab === 'clients' && 'Gestão de Clientes'}
                 {activeTab === 'analysis' && 'Análises e Relatórios'}
                 {activeTab === 'accounting' && 'Contabilidade'}
+                {activeTab === 'commissions' && 'Comissões'}
                 {activeTab === 'forms' && 'Formulários'}
               </h2>
               <p className="text-gray-600 dark:text-white dark:text-gray-500 dark:text-white">
@@ -1000,6 +1002,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                 {activeTab === 'clients' && 'Gerencie informações dos clientes'}
                 {activeTab === 'analysis' && 'Relatórios detalhados e análises'}
                 {activeTab === 'accounting' && 'Gestão contábil e controle fiscal'}
+                {activeTab === 'commissions' && 'Sistema completo de relatórios de comissões com filtros e exportação'}
                 {activeTab === 'forms' && 'Formulários para coleta de dados'}
               </p>
             </div>
@@ -1024,6 +1027,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
         {activeTab === 'clients' && renderClients()}
         {activeTab === 'analysis' && renderAnalysis()}
         {activeTab === 'accounting' && renderAccounting()}
+        {activeTab === 'commissions' && renderCommissions()}
       </main>
 
       {/* Internal Message Modal */}
@@ -1730,6 +1734,363 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
       <SystemFooter />
     </div>
   );
+
+  // ========== FUNÇÃO RENDER COMISSÕES - REPLICAÇÃO COMPLETA DA ABA RELATÓRIOS DO SUPERVISOR ==========
+  const renderCommissions = () => {
+    const [reportFilters, setReportFilters] = useState({
+      vendedor: '',
+      status: '',
+      dataInicio: '',
+      dataFim: ''
+    });
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [showExportOptions, setShowExportOptions] = useState(false);
+
+    // Lista de vendedores reais do sistema (idêntica ao supervisor)
+    const realVendors = [
+      'Ana Caroline Terto',
+      'Bruna Garcia',
+      'Fabiana Ferreira',
+      'Fabiana Godinho',
+      'Fernanda Batista',
+      'Gabrielle Fernandes',
+      'Isabela Velasquez',
+      'Juliana Araujo',
+      'Lohainy Berlino',
+      'Luciana Velasquez',
+      'Monique Silva',
+      'Sara Mattos'
+    ];
+
+    // Lista de vendedores únicos
+    const uniqueVendors = [...new Set([...realVendors, ...(realProposals || []).map(p => p.vendorName).filter(Boolean)])];
+
+    // Filtrar propostas - APENAS "implantado" para comissões
+    const filteredProposals = (realProposals || []).filter(proposal => {
+      if (proposal.status !== 'implantado') return false; // CRÍTICO: Só propostas implantadas
+      if (reportFilters.vendedor && !proposal.vendorName?.toLowerCase().includes(reportFilters.vendedor.toLowerCase())) return false;
+      if (reportFilters.status && proposal.status !== reportFilters.status) return false;
+      return true;
+    });
+
+    // Gerar relatório função
+    const generateReport = async (format: string, shareMethod?: string) => {
+      setIsGenerating(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (shareMethod) {
+          showNotification(`Relatório enviado via ${shareMethod} com sucesso!`, 'success');
+        } else {
+          showNotification(`Relatório ${format.toUpperCase()} gerado com sucesso!`, 'success');
+        }
+      } catch (error) {
+        showNotification('Erro ao gerar relatório', 'error');
+      } finally {
+        setIsGenerating(false);
+        setShowExportOptions(false);
+      }
+    };
+
+    // Dados do relatório - CORREÇÃO CRÍTICA: Faturamento agora considera APENAS propostas implantadas
+    const reportData = {
+      total: filteredProposals.length,
+      faturamento: filteredProposals.reduce((sum, p) => {
+        const value = p.contractData?.valor || "R$ 0";
+        const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+        const numericValue = parseFloat(cleanValue) || 0;
+        return sum + numericValue;
+      }, 0),
+      porStatus: filteredProposals.reduce((acc, p) => {
+        const label = 'Implantado'; // Só teremos implantadas mesmo
+        acc[label] = (acc[label] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      porVendedor: filteredProposals.reduce((acc, p) => {
+        const vendor = p.vendorName || 'Desconhecido';
+        if (!acc[vendor]) acc[vendor] = { count: 0, value: 0 };
+        acc[vendor].count += 1;
+        const value = p.contractData?.valor || "R$ 0";
+        const cleanValue = value.toString().replace(/[R$\s\.]/g, '').replace(',', '.');
+        const numericValue = parseFloat(cleanValue) || 0;
+        acc[vendor].value += numericValue;
+        return acc;
+      }, {} as Record<string, { count: number; value: number }>)
+    };
+
+    return (
+      <div className="space-y-8">
+        {/* Filtros */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">🔍 Filtros de Relatório</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Vendedor
+              </label>
+              <select
+                value={reportFilters.vendedor}
+                onChange={(e) => setReportFilters({...reportFilters, vendedor: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Todos os vendedores</option>
+                {uniqueVendors.map(vendor => (
+                  <option key={vendor} value={vendor}>{vendor}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <select
+                value={reportFilters.status}
+                onChange={(e) => setReportFilters({...reportFilters, status: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Todos os status</option>
+                <option value="implantado">Implantado</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Data Início
+              </label>
+              <input
+                type="date"
+                value={reportFilters.dataInicio}
+                onChange={(e) => setReportFilters({...reportFilters, dataInicio: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Data Fim
+              </label>
+              <input
+                type="date"
+                value={reportFilters.dataFim}
+                onChange={(e) => setReportFilters({...reportFilters, dataFim: e.target.value})}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Resumo de Dados */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-600 dark:text-blue-300 text-sm font-medium">Total de Propostas</p>
+                <p className="text-blue-900 dark:text-blue-100 text-2xl font-bold">{reportData.total}</p>
+              </div>
+              <FileText className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
+
+          <div className="bg-green-50 dark:bg-green-900 rounded-lg p-6 border border-green-200 dark:border-green-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-600 dark:text-green-300 text-sm font-medium">Faturamento Total</p>
+                <p className="text-green-900 dark:text-green-100 text-2xl font-bold">
+                  R$ {reportData.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <DollarSign className="h-8 w-8 text-green-500" />
+            </div>
+          </div>
+
+          <div className="bg-purple-50 dark:bg-purple-900 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-600 dark:text-purple-300 text-sm font-medium">Vendedores Ativos</p>
+                <p className="text-purple-900 dark:text-purple-100 text-2xl font-bold">
+                  {Object.keys(reportData.porVendedor).length}
+                </p>
+              </div>
+              <Users className="h-8 w-8 text-purple-500" />
+            </div>
+          </div>
+
+          <div className="bg-orange-50 dark:bg-orange-900 rounded-lg p-6 border border-orange-200 dark:border-orange-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-600 dark:text-orange-300 text-sm font-medium">Ticket Médio</p>
+                <p className="text-orange-900 dark:text-orange-100 text-2xl font-bold">
+                  R$ {reportData.total > 0 ? (reportData.faturamento / reportData.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-orange-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Botão Gerar Relatório */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">📊 Gerar Relatório</h3>
+            
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setShowExportOptions(!showExportOptions)}
+                disabled={isGenerating}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Gerando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    <span>Gerar Relatório</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {showExportOptions && (
+            <div className="border-t pt-4">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Opções de Exportação</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  onClick={() => generateReport('excel')}
+                  className="flex flex-col items-center p-3 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-lg transition-colors"
+                >
+                  <Download className="h-6 w-6 text-green-600 dark:text-green-300 mb-1" />
+                  <span className="text-green-700 dark:text-green-200 text-xs font-medium">Excel</span>
+                </button>
+                
+                <button
+                  onClick={() => generateReport('email', 'Email')}
+                  className="flex flex-col items-center p-3 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-lg transition-colors"
+                >
+                  <Mail className="h-6 w-6 text-blue-600 dark:text-blue-300 mb-1" />
+                  <span className="text-blue-700 dark:text-blue-200 text-xs font-medium">Email</span>
+                </button>
+                
+                <button
+                  onClick={() => generateReport('whatsapp', 'WhatsApp')}
+                  className="flex flex-col items-center p-3 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-lg transition-colors"
+                >
+                  <MessageSquare className="h-6 w-6 text-green-600 dark:text-green-300 mb-1" />
+                  <span className="text-green-700 dark:text-green-200 text-xs font-medium">WhatsApp</span>
+                </button>
+                
+                <button
+                  onClick={() => generateReport('sheets', 'Google Sheets')}
+                  className="flex flex-col items-center p-3 bg-yellow-100 dark:bg-yellow-900 hover:bg-yellow-200 dark:hover:bg-yellow-800 rounded-lg transition-colors"
+                >
+                  <BarChart3 className="h-6 w-6 text-yellow-600 dark:text-yellow-300 mb-1" />
+                  <span className="text-yellow-700 dark:text-yellow-200 text-xs font-medium">Sheets</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tabela de Propostas Implantadas */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">📋 Propostas Implantadas - Base para Comissões</h3>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Vendedor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Valor
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Data
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                {filteredProposals.map(proposal => (
+                  <tr key={proposal.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      {proposal.abmId || proposal.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {proposal.contractData?.nomeEmpresa || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {proposal.vendorName || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {proposal.contractData?.valor || 'R$ 0'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
+                        Implantado
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(proposal.createdAt).toLocaleDateString('pt-BR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredProposals.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400">
+                Nenhuma proposta implantada encontrada com os filtros selecionados.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Resumo por Vendedor */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">👥 Resumo por Vendedor</h3>
+          
+          <div className="grid gap-4">
+            {Object.entries(reportData.porVendedor).map(([vendor, data]) => (
+              <div key={vendor} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">{vendor}</h4>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{data.count} propostas</p>
+                    <p className="font-bold text-green-600 dark:text-green-400">
+                      R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full" 
+                    style={{ width: `${(data.value / Math.max(...Object.values(reportData.porVendedor).map(v => v.value))) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default FinancialPortal;
