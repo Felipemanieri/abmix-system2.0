@@ -14,17 +14,11 @@ export default function MessageNotificationBadge({ userEmail, onMessagesView }: 
   useEffect(() => {
     const checkUnreadMessages = async () => {
       try {
-        console.log(`🔔 BADGE: Verificando notificações para ${userEmail}`);
-        
         // Buscar mensagens do inbox
         const inboxResponse = await fetch(`/api/messages/inbox/${userEmail}`);
         if (inboxResponse.ok) {
           const messagesData = await inboxResponse.json();
-          console.log(`📬 BADGE: ${userEmail} tem ${messagesData.length} mensagens no inbox`);
-          console.log('📬 BADGE: Estrutura das mensagens:', messagesData.map(msg => ({ id: msg.id, read: msg.read, subject: msg.subject })));
-          
           const unreadCount = messagesData.filter(msg => !msg.read).length;
-          console.log(`🔴 BADGE: ${userEmail} tem ${unreadCount} mensagens NÃO LIDAS`);
           
           setMessages(messagesData);
           setUnreadCount(unreadCount);
@@ -36,8 +30,8 @@ export default function MessageNotificationBadge({ userEmail, onMessagesView }: 
 
     checkUnreadMessages();
     
-    // Polling a cada 1 segundo para notificações em tempo real
-    const interval = setInterval(checkUnreadMessages, 1000);
+    // Polling a cada 30 segundos para reduzir logs
+    const interval = setInterval(checkUnreadMessages, 30000);
     
     return () => clearInterval(interval);
   }, [userEmail]);
