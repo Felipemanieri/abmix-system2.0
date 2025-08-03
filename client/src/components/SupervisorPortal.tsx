@@ -5776,36 +5776,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       </div>
                                     </div>
                                     
-                                    {/* DETALHAMENTO DOS VALORES */}
+                                    {/* DETALHAMENTO DOS VALORES - SEMPRE MOSTRAR TODOS OS CAMPOS */}
                                     <div className="text-xs text-green-700 dark:text-green-300 space-y-0">
                                       <div className="flex justify-between">
                                         <span>• Comissão Vendedor:</span>
                                         <span>R$ {group.subtotalComissaoVendedor.toFixed(2).replace('.', ',')}</span>
                                       </div>
-                                      {totalPremiacao > 0 && (
-                                        <div className="flex justify-between">
-                                          <span>• Premiação:</span>
-                                          <span>R$ {totalPremiacao.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      )}
-                                      {totalMetaIndividual > 0 && (
-                                        <div className="flex justify-between">
-                                          <span>• Meta Individual:</span>
-                                          <span>R$ {totalMetaIndividual.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      )}
-                                      {totalMetaEquipe > 0 && (
-                                        <div className="flex justify-between">
-                                          <span>• Meta de Equipe:</span>
-                                          <span>R$ {totalMetaEquipe.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      )}
-                                      {totalSuperPremiacao > 0 && (
-                                        <div className="flex justify-between">
-                                          <span>• Super Premiação:</span>
-                                          <span>R$ {totalSuperPremiacao.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      )}
+                                      <div className="flex justify-between">
+                                        <span>• Premiação:</span>
+                                        <span>R$ {totalPremiacao.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>• Meta Individual:</span>
+                                        <span>R$ {totalMetaIndividual.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>• Meta de Equipe:</span>
+                                        <span>R$ {totalMetaEquipe.toFixed(2).replace('.', ',')}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span>• Super Premiação:</span>
+                                        <span>R$ {totalSuperPremiacao.toFixed(2).replace('.', ',')}</span>
+                                      </div>
                                       {totalComissaoReuniao > 0 && (
                                         <div className="flex justify-between">
                                           <span>• Comissão Reunião:</span>
