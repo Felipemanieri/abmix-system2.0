@@ -5560,7 +5560,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                       
                       return acc;
-                    }, {} as Record<string, {items: any[], subtotalValor: number, subtotalComissaoVendedor: number, subtotalComissaoSupervisor: number, count: number, vendasReuniao: number}>);
+                    }, {} as Record<string, {items: any[], subtotalValor: number, subtotalComissaoVendedor: number, subtotalComissaoSupervisor: number, count: number, vendasReuniao: number, isOrganizadorReuniao?: boolean}>);
 
                     // Calcular totais gerais APENAS DOS VENDEDORES (supervisor separado)
                     const totalGeralValor = Object.values(vendorGroups).reduce((sum, group) => sum + group.subtotalValor, 0);
@@ -5681,24 +5681,63 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   comissaoSuper = valor * (percentualSuper / 100);
                                 }
                                 
+                                // IDENTIFICAR TIPO DE VENDA: REUNIÃO, DUPLA OU NORMAL
+                                const isVendaReuniao = item.isVendaReuniao || (group.isOrganizadorReuniao && temReuniao && vendedor === temReuniao);
+                                
+                                // DEFINIR CORES POR TIPO DE VENDA
+                                let bgColor, textColor, textSecondary, vendorIcon, vendorLabel;
+                                
+                                if (isVendaReuniao) {
+                                  // COR ROXA PARA VENDAS DE REUNIÃO
+                                  bgColor = 'bg-purple-100 dark:bg-purple-800';
+                                  textColor = 'text-purple-900 dark:text-purple-100';
+                                  textSecondary = 'text-purple-800 dark:text-purple-200';
+                                  vendorIcon = '🎯';
+                                  vendorLabel = 'ORGANIZADOR DE REUNIÃO';
+                                } else if (isVendaDupla) {
+                                  // COR LARANJA PARA VENDAS EM DUPLA
+                                  bgColor = 'bg-orange-100 dark:bg-orange-800';
+                                  textColor = 'text-orange-900 dark:text-orange-100';
+                                  textSecondary = 'text-orange-800 dark:text-orange-200';
+                                  vendorIcon = '👥';
+                                  vendorLabel = 'VENDA EM DUPLA';
+                                } else {
+                                  // COR AZUL PARA VENDAS NORMAIS
+                                  bgColor = 'bg-blue-100 dark:bg-blue-800';
+                                  textColor = 'text-blue-900 dark:text-blue-100';
+                                  textSecondary = 'text-blue-800 dark:text-blue-200';
+                                  vendorIcon = '💰';
+                                  vendorLabel = 'VENDA NORMAL';
+                                }
+                                
                                 return (
                                   <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-2 rounded border border-yellow-300 dark:border-yellow-700 mb-1">
                                     {/* CAIXA ÚNICA DA PROPOSTA COM TODAS AS INFORMAÇÕES */}
-                                    <div className={`p-2 rounded ${isVendaDupla ? 'bg-orange-100 dark:bg-orange-800' : 'bg-blue-100 dark:bg-blue-800'}`}>
+                                    <div className={`p-2 rounded ${bgColor}`}>
                                       {/* CABEÇALHO DA PROPOSTA COM VENDEDOR */}
-                                      <div className={`font-bold text-sm mb-1 ${isVendaDupla ? 'text-orange-900 dark:text-orange-100' : 'text-blue-900 dark:text-blue-100'}`}>
+                                      <div className={`font-bold text-sm mb-1 ${textColor}`}>
                                         PROPOSTA {item.abmId} - {item.cliente} - CNPJ: {item.cnpj}
                                       </div>
-                                      <div className={`text-xs mb-1 ${isVendaDupla ? 'text-orange-800 dark:text-orange-200' : 'text-blue-800 dark:text-blue-200'}`}>
+                                      <div className={`text-xs mb-1 ${textSecondary}`}>
                                         Valor Total: R$ {item.valor} | Status: {item.status} | Plano: {item.plano}
                                       </div>
-                                      <div className={`text-xs font-bold ${isVendaDupla ? 'text-orange-800 dark:text-orange-200' : 'text-blue-800 dark:text-blue-200'}`}>
-                                        💰 VENDEDOR PRINCIPAL: {item.vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
-                                      </div>
-                                      {isVendaDupla && vendedor2 && (
-                                        <div className="text-orange-700 dark:text-orange-300 text-xs font-bold mt-1">
-                                          👥 VENDEDOR 2: {vendedor2} | Percentual: {percentualVendedor2} | Valor Comissão: R$ {comissao2.toFixed(2).replace('.', ',')}
+                                      
+                                      {/* MOSTRAR INFORMAÇÕES ESPECÍFICAS POR TIPO */}
+                                      {isVendaReuniao ? (
+                                        <div className={`text-xs font-bold ${textSecondary}`}>
+                                          🎯 REUNIÃO: {temReuniao} | % Comissão: {percentualReuniao} | Valor Comissão: R$ {comissaoReun.toFixed(2).replace('.', ',')}
                                         </div>
+                                      ) : (
+                                        <>
+                                          <div className={`text-xs font-bold ${textSecondary}`}>
+                                            💰 VENDEDOR PRINCIPAL: {item.vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
+                                          </div>
+                                          {isVendaDupla && vendedor2 && (
+                                            <div className="text-orange-700 dark:text-orange-300 text-xs font-bold mt-1">
+                                              👥 VENDEDOR 2: {vendedor2} | Percentual: {percentualVendedor2} | Valor Comissão: R$ {comissao2.toFixed(2).replace('.', ',')}
+                                            </div>
+                                          )}
+                                        </>
                                       )}
                                     </div>
 
@@ -5836,12 +5875,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                         <span>• Super Premiação:</span>
                                         <span>R$ {totalSuperPremiacao.toFixed(2).replace('.', ',')}</span>
                                       </div>
-                                      {totalComissaoReuniao > 0 && (
-                                        <div className="flex justify-between">
-                                          <span>• Comissão Reunião:</span>
-                                          <span>R$ {totalComissaoReuniao.toFixed(2).replace('.', ',')}</span>
-                                        </div>
-                                      )}
+                                      <div className="flex justify-between">
+                                        <span>• Comissão Reunião:</span>
+                                        <span>R$ {totalComissaoReuniao.toFixed(2).replace('.', ',')}</span>
+                                      </div>
                                     </div>
                                   </div>
                                 );
