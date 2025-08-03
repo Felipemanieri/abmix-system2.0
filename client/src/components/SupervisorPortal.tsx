@@ -5282,6 +5282,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             <input
                               type="text"
                               value={(() => {
+                                // REGRA CRÍTICA: Comissão só para status "implantado"
+                                if (item.status !== 'implantado') {
+                                  return 'R$ 0,00';
+                                }
+                                
                                 // Calcular comissão do supervisor em reais
                                 const vendedor = item.vendedor1 || item.vendedor;
                                 if (vendedor === 'Fabiana Godinho') {
@@ -5297,13 +5302,18 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               })()}
                               disabled
                               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 font-semibold opacity-90 cursor-not-allowed"
-                              title="Calculado automaticamente: 5% do valor da venda (R$ 0,00 para Fabiana Godinho)"
+                              title="REGRA: Comissão calculada APENAS para status 'implantado' (5% do valor da venda, R$ 0,00 para Fabiana Godinho)"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
                               value={(() => {
+                                // REGRA CRÍTICA: Comissão só para status "implantado"
+                                if (item.status !== 'implantado') {
+                                  return 'R$ 0,00';
+                                }
+                                
                                 // Calcular comissão do vendedor: (Valor × % do vendedor) + Premiação
                                 const valorString = item.valor.toString();
                                 const valorNumerico = parseFloat(valorString.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
@@ -5322,7 +5332,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               })()}
                               disabled
                               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-semibold opacity-90 cursor-not-allowed"
-                              title="Calculado automaticamente: (Valor × % do vendedor) + Premiação"
+                              title="REGRA: Comissão calculada APENAS para status 'implantado' ((Valor × % do vendedor) + Premiação)"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
@@ -5434,18 +5444,21 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                       acc[vendedor1].subtotalValor += valor;
                       
-                      // CORREÇÃO: Comissão do vendedor = APENAS % do vendedor + premiação
-                      const percentualVendedor1 = parseFloat((reportVendedor1Percent[item.abmId] || '100%').replace('%', '')) / 100;
-                      let comissaoVendedor1 = valor * percentualVendedor1;
-                      
-                      // Adicionar APENAS premiação na comissão do vendedor
-                      const premiacao = reportPremiacao[item.abmId];
-                      if (premiacao && premiacao.includes('R$')) {
-                        const valorPremiacao = parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                        comissaoVendedor1 += valorPremiacao;
+                      // REGRA CRÍTICA: Comissão só para status "implantado"
+                      if (item.status === 'implantado') {
+                        // CORREÇÃO: Comissão do vendedor = APENAS % do vendedor + premiação
+                        const percentualVendedor1 = parseFloat((reportVendedor1Percent[item.abmId] || '100%').replace('%', '')) / 100;
+                        let comissaoVendedor1 = valor * percentualVendedor1;
+                        
+                        // Adicionar APENAS premiação na comissão do vendedor
+                        const premiacao = reportPremiacao[item.abmId];
+                        if (premiacao && premiacao.includes('R$')) {
+                          const valorPremiacao = parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                          comissaoVendedor1 += valorPremiacao;
+                        }
+                        
+                        acc[vendedor1].subtotalComissaoVendedor += comissaoVendedor1;
                       }
-                      
-                      acc[vendedor1].subtotalComissaoVendedor += comissaoVendedor1;
                       
                       // SUPERVISOR REMOVIDO DA SOMA DO VENDEDOR - SERÁ SEPARADO
                       
@@ -5477,10 +5490,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           acc[vendedor2].vendasReuniao += 1;
                         }
                         
-                        // Calcular comissão do vendedor 2
-                        const percentualVendedor2 = parseFloat(percentualVendedor2Str.replace('%', '')) / 100;
-                        const comissaoVendedor2 = valor * percentualVendedor2;
-                        acc[vendedor2].subtotalComissaoVendedor += comissaoVendedor2;
+                        // REGRA CRÍTICA: Comissão do vendedor 2 só para status "implantado"
+                        if (item.status === 'implantado') {
+                          // Calcular comissão do vendedor 2
+                          const percentualVendedor2 = parseFloat(percentualVendedor2Str.replace('%', '')) / 100;
+                          const comissaoVendedor2 = valor * percentualVendedor2;
+                          acc[vendedor2].subtotalComissaoVendedor += comissaoVendedor2;
+                        }
                       }
                       
                       // COMISSÃO DE REUNIÃO É SEPARADA - NÃO SOMA NO VENDEDOR
@@ -5494,8 +5510,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     const totalGeralValor = Object.values(vendorGroups).reduce((sum, group) => sum + group.subtotalValor, 0);
                     const totalGeralComissaoVendedor = Object.values(vendorGroups).reduce((sum, group) => sum + group.subtotalComissaoVendedor, 0);
                     
-                    // Calcular comissões de supervisor separadamente (5% de cada proposta)
+                    // Calcular comissões de supervisor separadamente (5% APENAS de propostas implantadas)
                     const totalSupervisorComissions = reportData.reduce((sum, item) => {
+                      // REGRA CRÍTICA: Comissão de supervisor só para status "implantado"
+                      if (item.status !== 'implantado') {
+                        return sum;
+                      }
                       const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                       return sum + (valor * 0.05);
                     }, 0);
@@ -5512,10 +5532,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         }
                         acc[organizadorReuniao].count += 1;
                         
-                        // Calcular comissão de reunião
-                        const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                        const percentualReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
-                        acc[organizadorReuniao].totalComissao += valor * percentualReuniao;
+                        // REGRA CRÍTICA: Comissão de reunião só para status "implantado"
+                        if (item.status === 'implantado') {
+                          // Calcular comissão de reunião
+                          const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                          const percentualReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
+                          acc[organizadorReuniao].totalComissao += valor * percentualReuniao;
+                        }
                       }
                       return acc;
                     }, {} as Record<string, {count: number, totalComissao: number}>);
@@ -5554,20 +5577,28 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 const percentualReun = parseFloat((percentualReuniao || '0%').replace('%', '')) || 0;
                                 const percentualSuper = parseFloat((percentualSupervisor || '0%').replace('%', '')) || 0;
                                 
-                                // Comissão do vendedor principal = APENAS % vendedor + premiação
-                                let comissao1 = valor * (percentual1 / 100);
+                                // REGRA CRÍTICA: Comissões só para status "implantado"
+                                let comissao1 = 0;
+                                let comissao2 = 0;
+                                let comissaoReun = 0;
+                                let comissaoSuper = 0;
                                 
-                                // Adicionar premiação SE HOUVER
-                                const temPremiacao = premiacao && premiacao !== '-' && premiacao.includes('R$');
-                                if (temPremiacao) {
-                                  const valorPremiacao = parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
-                                  comissao1 += valorPremiacao;
+                                if (item.status === 'implantado') {
+                                  // Comissão do vendedor principal = APENAS % vendedor + premiação
+                                  comissao1 = valor * (percentual1 / 100);
+                                  
+                                  // Adicionar premiação SE HOUVER
+                                  const temPremiacao = premiacao && premiacao !== '-' && premiacao.includes('R$');
+                                  if (temPremiacao) {
+                                    const valorPremiacao = parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    comissao1 += valorPremiacao;
+                                  }
+                                  
+                                  // Outras comissões são SEPARADAS
+                                  comissao2 = valor * (percentual2 / 100);
+                                  comissaoReun = valor * (percentualReun / 100);
+                                  comissaoSuper = valor * (percentualSuper / 100);
                                 }
-                                
-                                // Outras comissões são SEPARADAS
-                                const comissao2 = valor * (percentual2 / 100);
-                                const comissaoReun = valor * (percentualReun / 100);
-                                const comissaoSuper = valor * (percentualSuper / 100);
                                 
                                 return (
                                   <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded border border-yellow-300 dark:border-yellow-700 mb-3">
