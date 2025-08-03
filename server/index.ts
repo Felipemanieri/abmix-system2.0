@@ -61,6 +61,58 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
+// Rota para consultar CPF via proxy (evita CORS)
+app.get('/api/cpf/:cpf', async (req, res) => {
+  try {
+    const { cpf } = req.params;
+    const cpfLimpo = cpf.replace(/\D/g, '');
+
+    if (cpfLimpo.length !== 11) {
+      return res.status(400).json({ error: 'CPF deve ter 11 dígitos' });
+    }
+
+    console.log('🔍 Consultando CPF via backend:', cpfLimpo);
+    const response = await fetch(`https://patronhost.online/apis/cpf.php?cpf=${cpfLimpo}`, {
+      method: 'GET',
+      headers: {
+        'cache-control': 'max-age=0',
+        'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Microsoft Edge";v="138"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'dnt': '1',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'sec-fetch-site': 'none',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-user': '?1',
+        'sec-fetch-dest': 'document',
+        'accept-encoding': 'gzip, deflate, br, zstd',
+        'accept-language': 'pt-BR,pt;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'priority': 'u=0, i'
+      }
+    });
+
+    if (!response.ok) {
+      console.log('❌ Erro HTTP na consulta CPF:', response.status);
+      return res.status(response.status).json({ error: 'Erro na API externa' });
+    }
+
+    const data = await response.json();
+    console.log('✅ Resposta da API CPF:', data);
+
+    if (data.status && data.resultado === 'success' && data.dados) {
+      res.json(data);
+    } else {
+      res.status(404).json({ error: 'CPF não encontrado', response: data });
+    }
+
+  } catch (error) {
+    console.error('❌ Erro ao consultar CPF:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Database initialization
 async function initializeDatabase() {
   try {
