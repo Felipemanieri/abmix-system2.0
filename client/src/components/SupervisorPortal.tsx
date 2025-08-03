@@ -3908,7 +3908,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         
                         // Calcular premiações para cada linha
                         const enrichedReportData = await Promise.all(reportData.map(async (row) => {
-                          const vendor = allVendors.find(v => v.name === row.vendedor);
+                          const vendor = vendors.find(v => v.name === row.vendedor);
                           if (!vendor) return { ...row, metaIndividual: '0', metaEquipe: '0', superPremiacao: '0' };
                           
                           const currentMonth = new Date().getMonth() + 1;
@@ -3931,13 +3931,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               metaIndividualValue = metaIndividualGranted.value;
                             } else {
                               // Verificar se atingiu 100% para liberar o valor
-                              const target = allVendorTargets.find(t => 
+                              const target = vendorTargets.find(t => 
                                 t.vendorId === vendor.id && 
                                 t.month === currentMonth && 
                                 t.year === currentYear
                               );
                               if (target) {
-                                const vendorSales = vendorStats[vendor.id];
+                                const vendorSales = teamStats[vendor.id];
                                 const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
                                 if (progress >= 100) {
                                   metaIndividualValue = target.bonus || '0';
@@ -3951,12 +3951,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               metaEquipeValue = metaEquipeGranted.value;
                             } else {
                               // Verificar progresso da equipe
-                              const teamTarget = allTeamTargets.find(t => 
+                              const teamTarget = teamTargets.find(t => 
                                 t.month === currentMonth && 
                                 t.year === currentYear
                               );
                               if (teamTarget) {
-                                const teamProgress = (totalTeamValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                const totalValue = Object.values(teamStats).reduce((sum: number, stats: any) => sum + (stats?.totalValue || 0), 0);
+                                const teamProgress = (totalValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
                                 if (teamProgress >= 100) {
                                   metaEquipeValue = teamTarget.teamBonus || '0';
                                 }
@@ -3969,9 +3970,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               superPremiacaoValue = superPremiacaoGranted.value;
                             } else {
                               // Buscar valor da super premiação se atingiu 100%
-                              const superAward = allAwards.find(a => a.vendorId === vendor.id);
+                              const superAward = awards.find(a => a.vendorId === vendor.id);
                               if (superAward) {
-                                const vendorSales = vendorStats[vendor.id];
+                                const vendorSales = teamStats[vendor.id];
                                 if (vendorSales && parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0') > 0) {
                                   const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
                                   if (superProgress >= 100) {
@@ -5162,12 +5163,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               type="text"
                               value={(() => {
                                 // Buscar vendor e calcular meta individual
-                                const vendor = allVendors.find(v => v.name === item.vendedor);
+                                const vendor = vendors.find(v => v.name === item.vendedor);
                                 if (!vendor) return 'R$ 0,00';
                                 
                                 const currentMonth = new Date().getMonth() + 1;
                                 const currentYear = new Date().getFullYear();
-                                const target = allVendorTargets.find(t => 
+                                const target = vendorTargets.find(t => 
                                   t.vendorId === vendor.id && 
                                   t.month === currentMonth && 
                                   t.year === currentYear
@@ -5175,7 +5176,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 
                                 if (!target) return 'R$ 0,00';
                                 
-                                const vendorSales = vendorStats[vendor.id];
+                                const vendorSales = teamStats[vendor.id];
                                 const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
                                 
                                 if (progress >= 100) {
@@ -5195,14 +5196,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 // Calcular meta de equipe
                                 const currentMonth = new Date().getMonth() + 1;
                                 const currentYear = new Date().getFullYear();
-                                const teamTarget = allTeamTargets.find(t => 
+                                const teamTarget = teamTargets.find(t => 
                                   t.month === currentMonth && 
                                   t.year === currentYear
                                 );
                                 
                                 if (!teamTarget) return 'R$ 0,00';
                                 
-                                const teamProgress = (totalTeamValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                // Calcular valor total da equipe
+                                const totalValue = Object.values(teamStats).reduce((sum: number, stats: any) => sum + (stats?.totalValue || 0), 0);
+                                const teamProgress = (totalValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
                                 
                                 if (teamProgress >= 100) {
                                   return teamTarget.teamBonus || 'R$ 0,00';
@@ -5219,13 +5222,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                               type="text"
                               value={(() => {
                                 // Calcular super premiação
-                                const vendor = allVendors.find(v => v.name === item.vendedor);
+                                const vendor = vendors.find(v => v.name === item.vendedor);
                                 if (!vendor) return 'R$ 0,00';
                                 
-                                const superAward = allAwards.find(a => a.vendorId === vendor.id);
+                                const superAward = awards.find(a => a.vendorId === vendor.id);
                                 if (!superAward) return 'R$ 0,00';
                                 
-                                const vendorSales = vendorStats[vendor.id];
+                                const vendorSales = teamStats[vendor.id];
                                 if (!vendorSales || !parseFloat(superAward.targetValue?.replace(/[^\d,]/g, '').replace(',', '.') || '0')) return 'R$ 0,00';
                                 
                                 const superProgress = (vendorSales.totalValue / parseFloat(superAward.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
