@@ -47,7 +47,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
   const [showAutomationModal, setShowAutomationModal] = useState(false);
   const [selectedProposalForAutomation, setSelectedProposalForAutomation] = useState<{id: string, client: string} | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all'); 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'clients' | 'analysis' | 'accounting'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'proposals' | 'clients' | 'analysis' | 'accounting' | 'commissions'>('dashboard');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [showFinancialArea, setShowFinancialArea] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
