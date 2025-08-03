@@ -5526,9 +5526,38 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         }
                       }
                       
-                      // COMISSÃO DE REUNIÃO É SEPARADA - NÃO SOMA NO VENDEDOR
-                      // A reunião é discriminada apenas para fins de controle do financeiro
-                      // Não adiciona aos subtotais do vendedor principal
+                      // PROCESSAR ORGANIZADOR DE REUNIÃO (se houver)
+                      const organizadorReuniao = reportReuniao[item.abmId];
+                      if (organizadorReuniao && organizadorReuniao !== '-' && organizadorReuniao.trim() !== '') {
+                        if (!acc[organizadorReuniao]) {
+                          acc[organizadorReuniao] = {
+                            items: [],
+                            subtotalValor: 0,
+                            subtotalComissaoVendedor: 0,
+                            subtotalComissaoSupervisor: 0,
+                            count: 0,
+                            vendasReuniao: 0,
+                            isOrganizadorReuniao: true  // MARCADOR ESPECIAL
+                          };
+                        }
+                        
+                        // ADICIONAR O ITEM PARA O ORGANIZADOR DA REUNIÃO
+                        acc[organizadorReuniao].items.push({
+                          ...item,
+                          isVendaReuniao: true,  // MARCADOR ESPECIAL
+                          organizadorReuniao: organizadorReuniao
+                        });
+                        acc[organizadorReuniao].count += 1;
+                        acc[organizadorReuniao].subtotalValor += valor;
+                        acc[organizadorReuniao].vendasReuniao += 1;
+                        
+                        // COMISSÃO DE REUNIÃO só para status "implantado"
+                        if (item.status === 'implantado') {
+                          const percentualReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
+                          const comissaoReuniao = valor * percentualReuniao;
+                          acc[organizadorReuniao].subtotalComissaoVendedor += comissaoReuniao;
+                        }
+                      }
                       
                       return acc;
                     }, {} as Record<string, {items: any[], subtotalValor: number, subtotalComissaoVendedor: number, subtotalComissaoSupervisor: number, count: number, vendasReuniao: number}>);
