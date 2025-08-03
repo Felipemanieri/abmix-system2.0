@@ -5179,27 +5179,60 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
-                              value={reportMetaIndividual[item.abmId] || ''}
-                              onChange={(e) => setReportMetaIndividual(prev => ({
-                                ...prev,
-                                [item.abmId]: e.target.value
-                              }))}
-                              placeholder="R$ 0,00"
-                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                              title="Digite o valor da Meta Individual em R$"
+                              value={(() => {
+                                // Buscar vendor e calcular meta individual
+                                const vendor = vendors.find(v => v.name === item.vendedor);
+                                if (!vendor) return 'R$ 0,00';
+                                
+                                const currentMonth = new Date().getMonth() + 1;
+                                const currentYear = new Date().getFullYear();
+                                const target = vendorTargets.find(t => 
+                                  t.vendorId === vendor.id && 
+                                  t.month === currentMonth && 
+                                  t.year === currentYear
+                                );
+                                
+                                if (!target) return 'R$ 0,00';
+                                
+                                const vendorSales = teamStats[vendor.id];
+                                const progress = vendorSales ? (vendorSales.totalValue / parseFloat(target.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100 : 0;
+                                
+                                if (progress >= 100) {
+                                  return target.bonus || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Meta Individual - Liberada automaticamente quando atingir 100% da meta"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
                             <input
                               type="text"
-                              value={reportMetaEquipe[item.abmId] || ''}
-                              onChange={(e) => setReportMetaEquipe(prev => ({
-                                ...prev,
-                                [item.abmId]: e.target.value
-                              }))}
-                              placeholder="R$ 0,00"
-                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                              title="Digite o valor da Meta de Equipe em R$"
+                              value={(() => {
+                                // Calcular meta de equipe
+                                const currentMonth = new Date().getMonth() + 1;
+                                const currentYear = new Date().getFullYear();
+                                const teamTarget = teamTargets.find(t => 
+                                  t.month === currentMonth && 
+                                  t.year === currentYear
+                                );
+                                
+                                if (!teamTarget) return 'R$ 0,00';
+                                
+                                // Calcular valor total da equipe
+                                const totalValue = Object.values(teamStats).reduce((sum: number, stats: any) => sum + (stats?.totalValue || 0), 0);
+                                const teamProgress = (totalValue / parseFloat(teamTarget.targetValue.replace(/[^\d,]/g, '').replace(',', '.'))) * 100;
+                                
+                                if (teamProgress >= 100) {
+                                  return teamTarget.teamBonus || 'R$ 0,00';
+                                }
+                                return 'R$ 0,00';
+                              })()}
+                              disabled
+                              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-blue-50 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold opacity-90 cursor-not-allowed"
+                              title="Meta de Equipe - Liberada quando toda equipe atingir 100% da meta coletiva"
                             />
                           </td>
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-2">
