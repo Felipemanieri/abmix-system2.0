@@ -3,6 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -429,30 +430,54 @@ async function startServer() {
         if (portal === 'vendor') {
           // Check vendors table
           const vendor = await storage.getVendorByEmail(email);
-          if (vendor && vendor.password === password && vendor.active) {
-            user = {
-              id: vendor.id.toString(),
-              name: vendor.name,
-              email: vendor.email,
-              role: 'vendor',
-              portal: 'vendor'
-            };
-            await storage.updateVendor(vendor.id, { last_login: new Date() });
-            console.log(`✅ Vendor login successful: ${vendor.name}`);
+          if (vendor && vendor.active) {
+            // Verificar se a senha é texto puro ou hash bcrypt
+            let passwordMatch = false;
+            if (vendor.password.startsWith('$2b$')) {
+              // Senha hasheada com bcrypt
+              passwordMatch = await bcrypt.compare(password, vendor.password);
+            } else {
+              // Senha em texto puro
+              passwordMatch = vendor.password === password;
+            }
+            
+            if (passwordMatch) {
+              user = {
+                id: vendor.id.toString(),
+                name: vendor.name,
+                email: vendor.email,
+                role: 'vendor',
+                portal: 'vendor'
+              };
+              await storage.updateVendor(vendor.id, { last_login: new Date() });
+              console.log(`✅ Vendor login successful: ${vendor.name}`);
+            }
           }
         } else {
           // Check system users table
           const systemUser = await storage.getSystemUserByEmail(email);
-          if (systemUser && systemUser.password === password && systemUser.active) {
-            user = {
-              id: systemUser.id.toString(),
-              name: systemUser.name,
-              email: systemUser.email,
-              role: systemUser.role,
-              portal: systemUser.panel
-            };
-            await storage.updateLastLogin(systemUser.id);
-            console.log(`✅ System user login successful: ${systemUser.name} (${systemUser.role})`);
+          if (systemUser && systemUser.active) {
+            // Verificar se a senha é texto puro ou hash bcrypt
+            let passwordMatch = false;
+            if (systemUser.password.startsWith('$2b$')) {
+              // Senha hasheada com bcrypt
+              passwordMatch = await bcrypt.compare(password, systemUser.password);
+            } else {
+              // Senha em texto puro
+              passwordMatch = systemUser.password === password;
+            }
+            
+            if (passwordMatch) {
+              user = {
+                id: systemUser.id.toString(),
+                name: systemUser.name,
+                email: systemUser.email,
+                role: systemUser.role,
+                portal: systemUser.panel
+              };
+              await storage.updateLastLogin(systemUser.id);
+              console.log(`✅ System user login successful: ${systemUser.name} (${systemUser.role})`);
+            }
           }
         }
 
