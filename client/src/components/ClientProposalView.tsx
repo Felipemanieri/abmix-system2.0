@@ -392,42 +392,76 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
 
   // Função para consultar CPF e preencher campos - COPIADO DO ProposalGenerator QUE FUNCIONA
   const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number, cpfFormatado: string) => {
-    console.log('🚀 Consultando CPF:', cpfLimpo);
+    console.log('🚀 [CLIENT] Consultando CPF:', cpfLimpo);
     
-    const dados = await consultarCPF(cpfLimpo);
-    
-    if (dados?.dados) {
-      const d = dados.dados;
-      console.log('✅ Dados recebidos:', d.nome);
+    try {
+      const dados = await consultarCPF(cpfLimpo);
+      console.log('🔍 [CLIENT] Resposta completa da API:', dados);
       
-      // Preparar atualizações
-      const updates: any = { cpf: cpfFormatado };
-      
-      if (d.nome) updates.nomeCompleto = d.nome;
-      if (d.mae) updates.nomeMae = d.mae;
-      if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-      if (d.data_nascimento) {
-        const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-        if (match) {
-          const [, dia, mes, ano] = match;
-          updates.dataNascimento = `${ano}-${mes}-${dia}`;
+      if (dados?.dados) {
+        const d = dados.dados;
+        console.log('✅ [CLIENT] Dados disponíveis da API:', {
+          nome: d.nome,
+          mae: d.mae, 
+          sexo: d.sexo,
+          data_nascimento: d.data_nascimento
+        });
+        
+        // Preparar atualizações - APENAS os 4 campos solicitados
+        const updates: any = { cpf: cpfFormatado };
+        
+        if (d.nome) {
+          updates.nomeCompleto = d.nome;
+          console.log('📝 [CLIENT] Nome será preenchido:', d.nome);
         }
-      }
-      
-      console.log('📝 Atualizações:', updates);
-      
-      // Aplicar usando os setters corretos
-      if (type === 'titular') {
-        setTitulares(prev => prev.map((titular, i) => 
-          i === index ? { ...titular, ...updates } : titular
-        ));
+        if (d.mae) {
+          updates.nomeMae = d.mae;
+          console.log('📝 [CLIENT] Nome da mãe será preenchido:', d.mae);
+        }
+        if (d.sexo) {
+          updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          console.log('📝 [CLIENT] Sexo será preenchido:', updates.sexo);
+        }
+        if (d.data_nascimento) {
+          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            const [, dia, mes, ano] = match;
+            updates.dataNascimento = `${ano}-${mes}-${dia}`;
+            console.log('📝 [CLIENT] Data nascimento será preenchida:', updates.dataNascimento);
+          }
+        }
+        
+        console.log('🔄 [CLIENT] Todas as atualizações preparadas:', updates);
+        
+        // Aplicar usando os setters corretos
+        if (type === 'titular') {
+          console.log('🎯 [CLIENT] Atualizando titular na posição:', index);
+          setTitulares(prev => {
+            const updated = prev.map((titular, i) => 
+              i === index ? { ...titular, ...updates } : titular
+            );
+            console.log('🔄 [CLIENT] Novos titulares:', updated);
+            return updated;
+          });
+        } else {
+          console.log('🎯 [CLIENT] Atualizando dependente na posição:', index);
+          setDependentes(prev => {
+            const updated = prev.map((dependente, i) => 
+              i === index ? { ...dependente, ...updates } : dependente
+            );
+            console.log('🔄 [CLIENT] Novos dependentes:', updated);
+            return updated;
+          });
+        }
+        
+        showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
       } else {
-        setDependentes(prev => prev.map((dependente, i) => 
-          i === index ? { ...dependente, ...updates } : dependente
-        ));
+        console.log('❌ [CLIENT] Nenhum dado disponível na resposta da API');
+        showNotification('CPF não encontrado ou dados indisponíveis', 'error');
       }
-      
-      showNotification(`✅ Dados de ${d.nome} preenchidos!`, 'success');
+    } catch (error) {
+      console.error('❌ [CLIENT] Erro ao consultar CPF:', error);
+      showNotification('Erro ao consultar CPF', 'error');
     }
   };
 

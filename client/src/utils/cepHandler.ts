@@ -80,6 +80,13 @@ const cepDatabase: { [key: string]: EnderecoData } = {
     bairro: 'Centro',
     cidade: 'Salvador',
     estado: 'BA'
+  },
+  '09020030': {
+    enderecoCompleto: 'Rua Coronel Alfredo Fláquer, Vila Assunção, Santo André, SP',
+    endereco: 'Rua Coronel Alfredo Fláquer',
+    bairro: 'Vila Assunção',
+    cidade: 'Santo André',
+    estado: 'SP'
   }
 };
 
