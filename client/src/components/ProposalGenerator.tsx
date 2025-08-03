@@ -155,8 +155,8 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
   const [contractFieldsReadOnly, setContractFieldsReadOnly] = useState(false);
   const [showProfessionalModal, setShowProfessionalModal] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(new Date().toISOString());
-  const [isLoadingDraft, setIsLoadingDraft = useState(false);
-  const [isClearingDraft, setIsClearingDraft = useState(false);
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+  const [isClearingDraft, setIsClearingDraft] = useState(false);
 
   // Estados para cotação
   const [quotationData, setQuotationData] = useState<QuotationData>({
@@ -1429,69 +1429,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     }
   };
 
-  const handleCPFChange = async (personId: string, cpf: string) => {
-    console.log('🔍 Mudança de CPF detectada:', { personId, cpf });
 
-    // Aplicar formatação automática
-    const cpfFormatado = formatarCPF(cpf);
-    updatePerson('titular', personId, 'cpf', cpfFormatado);
-
-    // Se CPF tem 11 dígitos (sem formatação), consultar API
-    const cpfLimpo = cpf.replace(/\D/g, '');
-    if (cpfLimpo.length === 11) {
-      console.log('🔍 CPF completo, consultando API:', cpfLimpo);
-
-      try {
-        // Usar a função helper que já faz todo o preenchimento automaticamente
-        const sucesso = await preencherCamposComCPF(cpf, (campo: string, valor: string) => {
-          console.log(`🔄 Preenchendo campo ${campo} com valor:`, valor);
-
-          // Mapear os campos da API para os campos do formulário
-          switch (campo) {
-            case 'nomeCompleto':
-            case 'nome':
-              updatePerson('titular', personId, 'nomeCompleto', valor);
-              break;
-            case 'nomeMae':
-              updatePerson('titular', personId, 'nomeMae', valor);
-              break;
-            case 'sexo':
-              updatePerson('titular', personId, 'sexo', valor);
-              break;
-            case 'dataNascimento':
-              updatePerson('titular', personId, 'dataNascimento', valor);
-              break;
-            case 'enderecoCompleto':
-            case 'endereco':
-              updatePerson('titular', personId, 'enderecoCompleto', valor);
-              break;
-            case 'telefonePessoal':
-              updatePerson('titular', personId, 'telefonePessoal', valor);
-              break;
-            case 'cep':
-              updatePerson('titular', personId, 'cep', valor);
-              break;
-            case 'cpf':
-              updatePerson('titular', personId, 'cpf', valor);
-              break;
-            default:
-              console.log('Campo não mapeado:', campo, valor);
-          }
-        });
-
-        if (sucesso) {
-          console.log('✅ CPF consultado e campos preenchidos automaticamente!');
-          showNotification('CPF consultado com sucesso! Todos os 8 campos preenchidos automaticamente.', 'success');
-        } else {
-          console.log('❌ CPF não encontrado ou erro na consulta');
-          showNotification('CPF não encontrado na base de dados.', 'warning');
-        }
-      } catch (error) {
-        console.error('❌ Erro ao consultar CPF:', error);
-        showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
-      }
-    }
-  };
 
   return (
     <div className="max-w-6xl mx-auto">
