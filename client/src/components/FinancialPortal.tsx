@@ -62,6 +62,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
   const [reportDateFilter, setReportDateFilter] = useState('all');
   const [showExcelModal, setShowExcelModal] = useState(false);
   const [excelReportData, setExcelReportData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Carregar relatórios do localStorage ao inicializar
   useEffect(() => {
