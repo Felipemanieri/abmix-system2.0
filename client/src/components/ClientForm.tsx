@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Users, Shield, Check, Plus, Upload, Camera, FileText } from 'lucide-react';
 import { useGoogleDrive } from '../hooks/useGoogleDrive';
 import { buscarCEP, formatarCEP } from '../utils/cepHandler';
+import { consultarCPF, formatarCPF } from '../utils/cpfApi';
 
 interface PersonData {
   id: string;
@@ -136,6 +137,64 @@ const ClientForm: React.FC = () => {
     }
   };
 
+  // Função para consultar CPF automaticamente no ClientForm
+  const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', id: string) => {
+    // Aplicar formatação automática no CPF
+    const cpfFormatado = formatarCPF(cpf);
+    updatePerson(type, id, 'cpf', cpfFormatado);
+
+    console.log('🔍 ClientForm - CPF digitado:', cpf);
+    console.log('📝 ClientForm - CPF formatado:', cpfFormatado);
+
+    // Só consultar se o CPF tem 11 dígitos
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    if (cpfLimpo.length === 11) {
+      console.log('🔍 ClientForm - Consultando CPF na API...');
+      try {
+        const dados = await consultarCPF(cpfLimpo);
+        if (dados && dados.dados) {
+          const d = dados.dados;
+          
+          console.log('✅ ClientForm - Dados recebidos:', d);
+
+          // Preencher Nome Completo
+          if (d.nome) {
+            console.log('✏️ ClientForm - Preenchendo nome:', d.nome);
+            updatePerson(type, id, 'nome', d.nome);
+          }
+
+          // Preencher Nome da Mãe
+          if (d.mae) {
+            console.log('✏️ ClientForm - Preenchendo nome da mãe:', d.mae);
+            updatePerson(type, id, 'nomeMae', d.mae);
+          }
+
+          // Preencher Sexo
+          if (d.sexo) {
+            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+            console.log('✏️ ClientForm - Preenchendo sexo:', sexoFormatado);
+            updatePerson(type, id, 'sexo', sexoFormatado);
+          }
+
+          // Processar data de nascimento
+          if (d.data_nascimento) {
+            const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (dataMatch) {
+              const [, dia, mes, ano] = dataMatch;
+              const dataFormatada = `${ano}-${mes}-${dia}`;
+              console.log('✏️ ClientForm - Preenchendo data de nascimento:', dataFormatada);
+              updatePerson(type, id, 'dataNascimento', dataFormatada);
+            }
+          }
+
+          console.log('✅ ClientForm - Preenchimento automático concluído!');
+        }
+      } catch (error) {
+        console.error('❌ ClientForm - Erro ao consultar CPF:', error);
+      }
+    }
+  };
+
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
       const newFiles = Array.from(files);
@@ -191,7 +250,7 @@ const ClientForm: React.FC = () => {
         dataEnvio: new Date().toISOString(),
         cnpj: contractInfo.cnpj || '',
         valor: contractInfo.valor || '',
-        vendedor: contractInfo.vendedor || '',
+        vendedor: '',
         status: 'analise',
         dataAtualizacao: new Date().toISOString()
       };
@@ -257,8 +316,12 @@ const ClientForm: React.FC = () => {
             type="text"
             required
             value={person.cpf}
-            onChange={(e) => updatePerson(type, person.id, 'cpf', e.target.value)}
+            onChange={(e) => {
+              console.log('🔄 ClientForm - CPF onChange disparado:', e.target.value);
+              handleCPFChange(e.target.value, type, person.id);
+            }}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+            placeholder="000.000.000-00"
           />
         </div>
         
