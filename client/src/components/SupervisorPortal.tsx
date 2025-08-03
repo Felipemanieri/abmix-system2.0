@@ -5828,7 +5828,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                       }
                                     }
                                     
-                                    // COMISSÃO DE REUNIÃO (se vendedor for organizador)
+                                    // COMISSÃO DE REUNIÃO - calcular para exibição detalhada apenas
                                     const organizadorReuniao = reportReuniao[item.abmId] || '';
                                     if (organizadorReuniao === vendedor) {
                                       const percentualReuniao = parseFloat((reportComissaoReuniao[item.abmId] || '0%').replace('%', '')) / 100;
@@ -5837,8 +5837,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   }
                                 });
                                 
-                                // TOTAL FINAL = Comissão Vendedor + Premiações + Comissão Reunião
-                                const totalFinal = group.subtotalComissaoVendedor + totalPremiacao + totalMetaIndividual + totalMetaEquipe + totalSuperPremiacao + totalComissaoReuniao;
+                                // TOTAL FINAL = Comissão Vendedor + Premiações (Comissão Reunião já incluída no subtotalComissaoVendedor)
+                                const totalFinal = group.subtotalComissaoVendedor + totalPremiacao + totalMetaIndividual + totalMetaEquipe + totalSuperPremiacao;
                                 
                                 return (
                                   <div>
@@ -5856,7 +5856,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                     {/* DETALHAMENTO DOS VALORES - SEMPRE MOSTRAR TODOS OS CAMPOS */}
                                     <div className="text-xs text-green-700 dark:text-green-300 space-y-0">
                                       <div className="flex justify-between">
-                                        <span>• Comissão Vendedor:</span>
+                                        <span>• Comissão {group.isOrganizadorReuniao ? 'Reunião' : 'Vendedor'}:</span>
                                         <span>R$ {group.subtotalComissaoVendedor.toFixed(2).replace('.', ',')}</span>
                                       </div>
                                       <div className="flex justify-between">
@@ -5875,10 +5875,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                         <span>• Super Premiação:</span>
                                         <span>R$ {totalSuperPremiacao.toFixed(2).replace('.', ',')}</span>
                                       </div>
-                                      <div className="flex justify-between">
-                                        <span>• Comissão Reunião:</span>
-                                        <span>R$ {totalComissaoReuniao.toFixed(2).replace('.', ',')}</span>
-                                      </div>
+                                      {!group.isOrganizadorReuniao && totalComissaoReuniao > 0 && (
+                                        <div className="flex justify-between">
+                                          <span>• Comissão Reunião:</span>
+                                          <span>R$ {totalComissaoReuniao.toFixed(2).replace('.', ',')}</span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 );
