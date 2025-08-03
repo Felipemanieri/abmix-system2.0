@@ -455,6 +455,122 @@ async function startServer() {
       res.json({ success: true, message: 'API funcionando (produção)', timestamp: new Date().toISOString() });
     });
 
+    // ROTAS DE AUTENTICAÇÃO PARA PRODUÇÃO
+    app.post('/api/auth/login', async (req: Request, res: Response) => {
+      try {
+        console.log('🔐 Login em produção:', req.body);
+        
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+          return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+        }
+
+        // Mapear usuários do sistema
+        let userRole = 'client';
+        let userName = 'Usuário';
+        
+        if (email === 'cliente@abmix.com.br' && password === '123456') {
+          userRole = 'client';
+          userName = 'Cliente';
+        } else if (email === 'felipe@abmix.com.br' && password === '123456') {
+          userRole = 'restricted';
+          userName = 'Administrador';
+        } else if (email === 'supervisao@abmix.com.br' && password === '123456') {
+          userRole = 'supervisor';
+          userName = 'Rod Ribas';
+        } else if (email === 'financeiro@abmix.com.br' && password === '123456') {
+          userRole = 'financial';
+          userName = 'Financeiro';
+        } else if (email === 'implementacao@abmix.com.br' && password === '123456') {
+          userRole = 'implementation';
+          userName = 'Implementação';
+        } else if (email === 'carol@abmix.com.br' && password === '120784') {
+          userRole = 'financial';
+          userName = 'Carol Almeida';
+        } else if (email === 'michelle@abmix.com.br' && password === '120784') {
+          userRole = 'financial';
+          userName = 'Michelle Manieri';
+        } else if (email === 'adm2@abmix.com.br' && password === '120784') {
+          userRole = 'implementation';
+          userName = 'Amanda Fernandes';
+        } else if (email === 'comercial14@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Ana Caroline Terto';
+        } else if (email === 'comercial10@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Bruna Garcia';
+        } else if (email === 'comercial17@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Fabiana Ferreira';
+        } else if (email === 'comercial@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Fabiana Godinho';
+        } else if (email === 'comercial18@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Fernanda Batista';
+        } else if (email === 'comercial3@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Gabrielle Fernandes';
+        } else if (email === 'comercial4@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Isabela Velasquez';
+        } else if (email === 'comercial6@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Juliana Araujo';
+        } else if (email === 'comercial15@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Lohainy Berlino';
+        } else if (email === 'comercial21@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Luciana Velasquez';
+        } else if (email === 'comercial2@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Monique Silva';
+        } else if (email === 'comercial8@abmix.com.br' && password === '120784') {
+          userRole = 'vendor';
+          userName = 'Sara Mattos';
+        } else {
+          console.log('❌ Credenciais inválidas para:', email);
+          return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+        
+        const user = { 
+          id: '1', 
+          email, 
+          name: userName,
+          role: userRole
+        };
+        
+        console.log('✅ Login bem-sucedido em produção:', user);
+        res.json({ success: true, user });
+      } catch (error) {
+        console.error('❌ Erro no login em produção:', error);
+        res.status(500).json({ error: 'Erro de conexão. Tente novamente.' });
+      }
+    });
+
+    // Outras rotas essenciais para produção
+    app.get('/api/proposals', async (req: Request, res: Response) => {
+      try {
+        const proposals = await storage.getAllProposals();
+        res.json(proposals);
+      } catch (error) {
+        console.error('Erro ao buscar propostas:', error);
+        res.status(500).json({ error: 'Erro ao buscar propostas' });
+      }
+    });
+
+    app.get('/api/vendors', async (req: Request, res: Response) => {
+      try {
+        const vendors = await storage.getAllVendors();
+        res.json(vendors);
+      } catch (error) {
+        console.error('Erro ao buscar vendedores:', error);
+        res.status(500).json({ error: 'Erro ao buscar vendedores' });
+      }
+    });
+
     const distPath = path.resolve(__dirname, "public");
     app.use(express.static(distPath));
 
