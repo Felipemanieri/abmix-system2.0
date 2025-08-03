@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building, FileText, User, Phone, Mail, MapPin, Calendar, Plus, Trash2, Upload, Camera, Save, Send, Info, Users, Lock, Check } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
-import { consultarCPF, formatarTelefone, formatarEndereco } from '../utils/cpfApi';
+import { consultarCPF, formatarTelefone, formatarEndereco, formatarCPF } from '../utils/cpfApi';
 import { buscarCEPLocal, formatarCEP } from '../utils/cepHandler';
 import ProposalProgressTracker from './ProposalProgressTracker';
 
@@ -248,11 +248,14 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
 
   // Função para consultar CPF automaticamente
   const handleCPFChange = async (cpf: string, type: 'titular' | 'dependente', index: number) => {
-    // Atualizar o campo CPF primeiro
+    // Aplicar formatação automática no CPF
+    const cpfFormatado = formatarCPF(cpf);
+    
+    // Atualizar o campo CPF com formatação
     if (type === 'titular') {
-      updateTitular(index, 'cpf', cpf);
+      updateTitular(index, 'cpf', cpfFormatado);
     } else {
-      updateDependente(index, 'cpf', cpf);
+      updateDependente(index, 'cpf', cpfFormatado);
     }
 
     // Se CPF tem 11 dígitos (limpo), consultar API
@@ -260,24 +263,33 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
     if (cpfLimpo.length === 11) {
       const dados = await consultarCPF(cpf);
       
-      if (dados) {
+      if (dados && dados.dados) {
         // Preencher campos automaticamente
         const updates: Partial<PersonData> = {};
+        const d = dados.dados;
         
-        if (dados.nome) updates.nomeCompleto = dados.nome;
-        if (dados.mae) updates.nomeMae = dados.mae;
-        if (dados.sexo) updates.sexo = dados.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-        if (dados.data_nascimento) updates.dataNascimento = dados.data_nascimento;
+        if (d.nome) updates.nomeCompleto = d.nome;
+        if (d.mae) updates.nomeMae = d.mae;
+        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+        
+        // Processar data de nascimento (formato: "02/08/1984 (41 anos)" -> "1984-08-02")
+        if (d.data_nascimento) {
+          const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (dataMatch) {
+            const [, dia, mes, ano] = dataMatch;
+            updates.dataNascimento = `${ano}-${mes}-${dia}`;
+          }
+        }
         
         // Montar endereço completo
         const endereco = formatarEndereco(dados);
         if (endereco) updates.enderecoCompleto = endereco;
         
         // Montar telefone
-        const telefone = formatarTelefone(dados.telefone_ddd, dados.telefone_numero);
+        const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
         if (telefone) updates.telefonePessoal = telefone;
         
-        if (dados.cep) updates.cep = dados.cep;
+        if (d.cep) updates.cep = d.cep;
 
         // Aplicar as atualizações
         Object.entries(updates).forEach(([campo, valor]) => {
