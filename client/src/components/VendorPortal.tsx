@@ -1286,8 +1286,18 @@ Vendedor Abmix`;
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
-        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Módulo de Cotação</h1>
-        <p className="text-gray-600 dark:text-gray-300">Gere cotações personalizadas para seus clientes</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Módulo de Cotação</h1>
+            <p className="text-gray-600 dark:text-gray-300">Gere cotações personalizadas para seus clientes</p>
+          </div>
+          <button
+            onClick={() => window.open('https://auth.paineldocorretor.com.br/u/login/identifier?state=hKFo2SBXdlJNNUNzTUU5YmxKRmVSUTlNN1RMLXpuYjdCUXN0WaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIEwyVkVQMHVlMWZBTFVjZGdUYmNfcEtkZkV4ZHRoaTFQo2NpZNkgTXRDSjBiQmRFQ3dpaHBLb2VUQmY5TDBFNkp2Q0V4MjQ', '_blank')}
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors duration-200 font-medium"
+          >
+            Painel do Corretor
+          </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/30 border border-gray-100 dark:border-gray-700 p-6">
@@ -2129,6 +2139,21 @@ Vendedor Abmix`;
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">Painel de Cotações</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Gerenciar cotações</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => window.open('https://web.agendor.com.br/entrar/', '_blank')}
+                className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm dark:shadow-gray-900/30 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200 text-left group hover:scale-105 cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className="p-3 bg-orange-100 rounded-full group-hover:bg-orange-200 transition-colors">
+                    <ExternalLink className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Agendor</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Acesse o CRM completo</p>
                   </div>
                 </div>
               </button>
