@@ -198,43 +198,29 @@ const VendorPortal: React.FC<VendorPortalProps> = ({ user, onLogout }) => {
   };
 
   // Função para enviar via email
-  // Função auxiliar para obter saudação baseada no horário
-  const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 6 && hour < 12) {
-      return 'Bom dia!';
-    } else if (hour >= 12 && hour < 18) {
-      return 'Boa tarde!';
-    } else {
-      return 'Boa noite!';
-    }
-  };
-
   const handleEmailShare = (proposal: any) => {
     const link = `${window.location.origin}/cliente/proposta/${proposal.clientToken}`;
-    const subject = `Proposta de plano de saúde – Abmix`;
-    
-    // Obter nome do Titular 1 se existir
-    const titular1Name = proposal.titulares && proposal.titulares.length > 0 && proposal.titulares[0].nomeCompleto 
-      ? proposal.titulares[0].nomeCompleto.trim() 
-      : '';
-    
-    // Definir saudação personalizada
-    const greeting = titular1Name ? `Olá, ${titular1Name}!` : getTimeBasedGreeting();
-    
-    const body = `${greeting}
+    const subject = `Proposta de Plano de Saúde - ${proposal.cliente}`;
+    const body = `Prezado(a) cliente,
 
-Segue o link seguro para acompanhar e finalizar sua proposta de plano de saúde:
+Segue sua proposta de plano de saúde:
 
-🔗 ${link}
+📋 Detalhes da Proposta:
+• Empresa: ${proposal.cliente}
+• Plano: ${proposal.contractData?.planoContratado || proposal.plano}
+• Valor: R$ ${proposal.contractData?.valor || proposal.valor}
+• ID: ${proposal.abmId}
 
-Qualquer dúvida, estamos à disposição.
+🔗 Para completar sua proposta, acesse: ${link}
+
+Caso tenha dúvidas, estou à disposição.
 
 Atenciosamente,
-Equipe Abmix`;
+${user.name}
+Vendedor Abmix`;
 
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-    showNotification(`Enviando proposta por email`, 'success');
+    showNotification(`Enviando proposta de ${proposal.cliente} por email`, 'success');
   };
 
   // Função para mensagem interna com proposta anexada

@@ -596,6 +596,35 @@ async function startServer() {
       });
     });
 
+    // Endpoint para sincronizar documentos recebidos
+    app.post('/api/proposals/sync-documents', async (req: Request, res: Response) => {
+      try {
+        const { clientToken, documentosRecebidos } = req.body;
+        console.log(`🔄 Sincronizando documentos para token: ${clientToken}`);
+        
+        if (!clientToken) {
+          return res.status(400).json({ error: 'Token do cliente é obrigatório' });
+        }
+        
+        const proposal = await storage.getProposalByToken(clientToken);
+        if (!proposal) {
+          return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+        
+        // Atualizar documentos recebidos
+        const updatedProposal = await storage.updateProposal(proposal.id, {
+          documentosRecebidos: documentosRecebidos,
+          updatedAt: new Date()
+        });
+        
+        console.log(`✅ Documentos sincronizados para proposta ${proposal.abmId}`);
+        res.json({ success: true, proposal: updatedProposal });
+      } catch (error) {
+        console.error('❌ Erro ao sincronizar documentos:', error);
+        res.status(500).json({ error: 'Erro ao sincronizar documentos' });
+      }
+    });
+
     // API 404 handler
     app.use('/api/*', (req: Request, res: Response) => {
       console.log(`❌ API REQUEST NOT HANDLED: ${req.method} ${req.url}`);
