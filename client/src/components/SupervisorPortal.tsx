@@ -5554,16 +5554,16 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           })
                           .sort(([a], [b]) => a.localeCompare(b)) // Ordenação alfabética
                           .map(([vendedor, group]) => (
-                          <div key={vendedor} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                          <div key={vendedor} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-2">
                             {/* Cabeçalho do vendedor */}
-                            <div className="mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
-                              <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+                            <div className="mb-2 pb-1 border-b border-gray-200 dark:border-gray-600">
+                              <h4 className="font-bold text-sm text-gray-900 dark:text-white">
                                 {vendedor.toUpperCase()} ({group.count} proposta{group.count !== 1 ? 's' : ''})
                               </h4>
                             </div>
                             
                             {/* Detalhes de cada proposta do vendedor */}
-                            <div className="space-y-2 mb-4 text-sm">
+                            <div className="space-y-1 mb-2 text-xs">
                               {group.items.map((item, idx) => {
                                 const percentualVendedor = reportVendedor1Percent[item.abmId] || '0%';
                                 const percentualSupervisor = reportSupervisorPercent[item.abmId] || '0%';
@@ -5605,17 +5605,17 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 }
                                 
                                 return (
-                                  <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded border border-yellow-300 dark:border-yellow-700 mb-3">
+                                  <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-2 rounded border border-yellow-300 dark:border-yellow-700 mb-1">
                                     {/* CAIXA ÚNICA DA PROPOSTA COM TODAS AS INFORMAÇÕES */}
-                                    <div className="bg-blue-100 dark:bg-blue-800 p-4 rounded">
+                                    <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
                                       {/* CABEÇALHO DA PROPOSTA COM VENDEDOR */}
-                                      <div className="font-bold text-blue-900 dark:text-blue-100 text-lg mb-2">
+                                      <div className="font-bold text-blue-900 dark:text-blue-100 text-sm mb-1">
                                         PROPOSTA {item.abmId} - {item.cliente} - CNPJ: {item.cnpj}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-sm mb-2">
+                                      <div className="text-blue-800 dark:text-blue-200 text-xs mb-1">
                                         Valor Total: R$ {item.valor} | Status: {item.status} | Plano: {item.plano}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-sm font-bold">
+                                      <div className="text-blue-800 dark:text-blue-200 text-xs font-bold">
                                         💰 VENDEDOR PRINCIPAL: {vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
                                       </div>
                                     </div>
@@ -5626,13 +5626,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                             </div>
                             
                             {/* Subtotal do vendedor */}
-                            <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-3">
+                            <div className="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded p-2">
                               <div className="flex justify-between items-center">
-                                <span className="font-bold text-green-800 dark:text-green-200">
+                                <span className="font-bold text-green-800 dark:text-green-200 text-xs">
                                   TOTAL {vendedor.toUpperCase()}:
                                 </span>
                                 <div className="text-right">
-                                  <div className="font-bold text-green-800 dark:text-green-200">
+                                  <div className="font-bold text-green-800 dark:text-green-200 text-xs">
                                     R$ {group.subtotalValor.toFixed(2).replace('.', ',')}
                                   </div>
                                   <div className="text-xs text-green-700 dark:text-green-300">
@@ -5662,13 +5662,13 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         </div>
 
                         {/* CAIXA EXCLUSIVA DO SUPERVISOR - DENTRO DE RESUMO POR VENDEDOR */}
-                        <div className="bg-indigo-100 dark:bg-indigo-800 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg p-6 mt-6">
-                          <h4 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 mb-4 text-center flex items-center justify-center gap-2">
+                        <div className="bg-indigo-100 dark:bg-indigo-800 border border-indigo-300 dark:border-indigo-600 rounded-lg p-3 mt-4">
+                          <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 mb-2 text-center flex items-center justify-center gap-1">
                             👔 SUPERVISOR - VENDAS COMISSIONADAS
                           </h4>
                           
                           {/* Detalhes de cada venda comissionada para o supervisor */}
-                          <div className="space-y-3 mb-4">
+                          <div className="space-y-1 mb-2">
                             {reportData
                               .filter(item => item.status === 'implantado') // Só vendas implantadas
                               .map((item, idx) => {
@@ -5676,9 +5676,9 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 const comissaoSupervisor = valor * 0.05;
                                 
                                 return (
-                                  <div key={idx} className="bg-indigo-50 dark:bg-indigo-900 p-3 rounded border">
+                                  <div key={idx} className="bg-indigo-50 dark:bg-indigo-900 p-2 rounded border">
                                     <div className="flex justify-between items-center">
-                                      <div className="text-sm">
+                                      <div className="text-xs">
                                         <div className="font-bold text-indigo-900 dark:text-indigo-100">
                                           {item.abmId} - {item.cliente}
                                         </div>
@@ -5687,7 +5687,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                         </div>
                                       </div>
                                       <div className="text-right">
-                                        <div className="font-bold text-indigo-900 dark:text-indigo-100">
+                                        <div className="font-bold text-indigo-900 dark:text-indigo-100 text-xs">
                                           R$ {comissaoSupervisor.toFixed(2).replace('.', ',')}
                                         </div>
                                         <div className="text-xs text-indigo-700 dark:text-indigo-300">
@@ -5701,21 +5701,21 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           </div>
                           
                           {/* Total do supervisor */}
-                          <div className="bg-indigo-200 dark:bg-indigo-700 p-4 rounded-lg border-t-4 border-indigo-500">
+                          <div className="bg-indigo-200 dark:bg-indigo-700 p-2 rounded-lg border-t-2 border-indigo-500">
                             <div className="flex justify-between items-center">
                               <div>
-                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-lg">
+                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-sm">
                                   TOTAL SUPERVISOR
                                 </div>
-                                <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                                <div className="text-xs text-indigo-700 dark:text-indigo-300">
                                   {reportData.filter(item => item.status === 'implantado').length} vendas implantadas × 5%
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-2xl">
+                                <div className="font-bold text-indigo-900 dark:text-indigo-100 text-lg">
                                   R$ {totalSupervisorComissions.toFixed(2).replace('.', ',')}
                                 </div>
-                                <div className="text-sm text-indigo-700 dark:text-indigo-300">
+                                <div className="text-xs text-indigo-700 dark:text-indigo-300">
                                   Base: R$ {reportData.filter(item => item.status === 'implantado').reduce((sum, item) => sum + parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0, 0).toFixed(2).replace('.', ',')}
                                 </div>
                               </div>
