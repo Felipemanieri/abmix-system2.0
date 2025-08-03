@@ -5548,6 +5548,10 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
 
 
                         {Object.entries(vendorGroups)
+                          .filter(([vendedor, group]) => {
+                            // REGRA CRÍTICA: Só mostrar vendedores com pelo menos uma venda implantada
+                            return group.items.some(item => item.status === 'implantado');
+                          })
                           .sort(([a], [b]) => a.localeCompare(b)) // Ordenação alfabética
                           .map(([vendedor, group]) => (
                           <div key={vendedor} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
