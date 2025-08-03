@@ -5655,17 +5655,22 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                 return (
                                   <div key={idx} className="bg-yellow-50 dark:bg-yellow-900 p-2 rounded border border-yellow-300 dark:border-yellow-700 mb-1">
                                     {/* CAIXA ÚNICA DA PROPOSTA COM TODAS AS INFORMAÇÕES */}
-                                    <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded">
+                                    <div className={`p-2 rounded ${isVendaDupla ? 'bg-orange-100 dark:bg-orange-800' : 'bg-blue-100 dark:bg-blue-800'}`}>
                                       {/* CABEÇALHO DA PROPOSTA COM VENDEDOR */}
-                                      <div className="font-bold text-blue-900 dark:text-blue-100 text-sm mb-1">
+                                      <div className={`font-bold text-sm mb-1 ${isVendaDupla ? 'text-orange-900 dark:text-orange-100' : 'text-blue-900 dark:text-blue-100'}`}>
                                         PROPOSTA {item.abmId} - {item.cliente} - CNPJ: {item.cnpj}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-xs mb-1">
+                                      <div className={`text-xs mb-1 ${isVendaDupla ? 'text-orange-800 dark:text-orange-200' : 'text-blue-800 dark:text-blue-200'}`}>
                                         Valor Total: R$ {item.valor} | Status: {item.status} | Plano: {item.plano}
                                       </div>
-                                      <div className="text-blue-800 dark:text-blue-200 text-xs font-bold">
-                                        💰 VENDEDOR PRINCIPAL: {vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
+                                      <div className={`text-xs font-bold ${isVendaDupla ? 'text-orange-800 dark:text-orange-200' : 'text-blue-800 dark:text-blue-200'}`}>
+                                        💰 VENDEDOR PRINCIPAL: {item.vendedor} | Percentual: {percentualVendedor} | Valor Comissão: R$ {comissao1.toFixed(2).replace('.', ',')}
                                       </div>
+                                      {isVendaDupla && vendedor2 && (
+                                        <div className="text-orange-700 dark:text-orange-300 text-xs font-bold mt-1">
+                                          👥 VENDEDOR 2: {vendedor2} | Percentual: {percentualVendedor2} | Valor Comissão: R$ {comissao2.toFixed(2).replace('.', ',')}
+                                        </div>
+                                      )}
                                     </div>
 
                                   </div>
