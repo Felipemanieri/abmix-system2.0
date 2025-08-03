@@ -67,10 +67,13 @@ export const useSupervisorReport = (reportId: string = 'current') => {
       
       if (config && Object.keys(config).length > 0) {
         // Atualizar estados com dados salvos
+        console.log(`🔍 CARREGANDO CONFIG PARA ${abmId}:`, config);
         if (config.vendorPercent) {
+          console.log(`📊 Definindo vendorPercent para ${abmId}: ${config.vendorPercent}`);
           setReportVendedor1Percent(prev => ({...prev, [abmId]: config.vendorPercent}));
         }
         if (config.vendorPercent2) {
+          console.log(`📊 Definindo vendorPercent2 para ${abmId}: ${config.vendorPercent2}`);
           setReportVendedor2Percent(prev => ({...prev, [abmId]: config.vendorPercent2}));
         }
         if (config.reuniaoPercent) {

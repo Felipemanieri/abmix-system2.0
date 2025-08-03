@@ -303,12 +303,13 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     setReportVendaDupla(vendaDuplaData);
     setReportVendedor1(vendedor1Data);
     setReportVendedor2(vendedor2Data);
-    setReportVendedor1Percent(vendedor1PercentData);
-    setReportVendedor2Percent(vendedor2PercentData);
     setReportComissaoReuniao(comissaoReuniaoData);
     setReportComissaoSupervisor(comissaoSupervisorData);
     setReportSupervisorPercent(supervisorPercentData);
     setReportReuniao(reuniaoData);
+    
+    // Carregar configurações salvas após definir os dados básicos
+    loadAllConfigurations();
     
     setShowReportModal(true);
   };
