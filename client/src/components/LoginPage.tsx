@@ -162,10 +162,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ portal, onLogin, onBack }) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
 
-      const response = await fetch('/api/auth/login', {
+      // Construir URL correta para produção
+      const apiUrl = window.location.hostname.includes('replit.app') 
+        ? `https://${window.location.hostname}/api/auth/login`
+        : '/api/auth/login';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ email, password, portal }),
         signal: controller.signal

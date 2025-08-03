@@ -34,11 +34,23 @@ process.on('uncaughtException', (error) => {
   console.error('❌ Exception crítica:', errorStr.substring(0, 200));
 });
 
-// CORS configuration
+// CORS configuration - Replit production fix
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://abmixsystem.replit.app',
+    'https://abmixsystem-' + process.env.REPL_OWNER + '.replit.app',
+    req.headers.host ? `https://${req.headers.host}` : null
+  ].filter(Boolean);
+  
+  if (!origin || allowedOrigins.some(allowed => allowed === origin)) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -283,7 +295,7 @@ async function startServer() {
     app.post('/api/auth/login', async (req: Request, res: Response) => {
       try {
         const { email, password, portal } = req.body;
-        console.log(`🔐 Login attempt for ${email} on portal ${portal}`);
+        console.log(`🔐 Login attempt for ${email} on portal ${portal} from ${req.headers.host}`);
 
         let user = null;
 
@@ -455,7 +467,10 @@ async function startServer() {
     console.log(`🚀 Servidor iniciado na porta ${PORT}`);
     console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`);
     console.log(`📡 Banco de dados: Conectado`);
-    console.log(`🔗 URL: http://localhost:${PORT}`);
+    console.log(`🔗 URL Local: http://localhost:${PORT}`);
+    if (process.env.REPL_SLUG) {
+      console.log(`🌐 URL Produção: https://${process.env.REPL_SLUG}.replit.app`);
+    }
   });
 
   // Graceful shutdown

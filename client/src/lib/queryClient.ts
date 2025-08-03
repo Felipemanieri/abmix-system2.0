@@ -31,8 +31,16 @@ export const queryClient = new QueryClient({
 });
 
 export async function apiRequest(url: string, options: RequestInit = {}) {
-  // Garantir URL absoluta correta
-  const absoluteUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  // Garantir URL absoluta correta - fix para produção Replit
+  let absoluteUrl = url;
+  if (url.startsWith('/')) {
+    // Se estamos no domínio replit.app, usar a URL correta
+    if (window.location.hostname.includes('replit.app')) {
+      absoluteUrl = `https://${window.location.hostname}${url}`;
+    } else {
+      absoluteUrl = `${window.location.origin}${url}`;
+    }
+  }
 
   try {
     const controller = new AbortController();
