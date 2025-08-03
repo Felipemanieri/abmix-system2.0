@@ -551,20 +551,21 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       
       // Sincronização automática com Google Drive e Sheets
       try {
-        const realTimeIntegration = RealTimeIntegration.getInstance();
-        await realTimeIntegration.onProposalCreated({
+        // const realTimeIntegration = RealTimeIntegration.getInstance();
+        /*await realTimeIntegration.onProposalCreated({
           id: result.id || Date.now().toString(),
           contractData: contractData,
           vendorName: currentVendor?.name || ''
-        });
-        showNotification('Sincronização com Google realizada!', 'success');
+        });*/
+        // showNotification('Sincronização com Google realizada!', 'success');
       } catch (syncError) {
         console.error('Erro na sincronização Google:', syncError);
       }
     } catch (error) {
       console.error('Erro ao gerar proposta:', error);
-      console.error('Detalhes do erro:', error.message);
-      showNotification(`Erro ao gerar link da proposta: ${error.message}`, 'error');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Detalhes do erro:', errorMessage);
+      showNotification(`Erro ao gerar link da proposta: ${errorMessage}`, 'error');
     }
   };
 
@@ -663,7 +664,9 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       periodoVigencia: { inicio: '', fim: '' },
       odontoConjugado: false,
       compulsorio: false,
+      livreAdesao: false,
       inicioVigencia: '',
+      periodoMinimo: '',
       aproveitamentoCongenere: false,
     });
     setTitulares([{
@@ -697,7 +700,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       observacoesFinanceiras: '',
       observacoesCliente: ''
     });
-    setAttachments([]);
+    setVendorAttachments([]);
     setIsSubmitted(false);
     setGeneratedLink('');
     setShowProfessionalModal(false);
@@ -1292,11 +1295,11 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                     }
                     showNotification('CEP encontrado! Endereço preenchido automaticamente.', 'success');
                   } else {
-                    showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'warning');
+                    showNotification('CEP não encontrado. Preencha o endereço manualmente.', 'error');
                   }
                 } catch (error) {
                   console.error('Erro ao buscar CEP:', error);
-                  showNotification('Erro ao buscar CEP. Preencha o endereço manualmente.', 'warning');
+                  showNotification('Erro ao buscar CEP. Preencha o endereço manualmente.', 'error');
                 }
               }
             }}
