@@ -4872,7 +4872,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                     }}
                   >
-                    <div style={{ width: '2400px', height: '1px' }}></div>
+                    <div style={{ width: '3200px', height: '1px' }}></div>
                   </div>
                   {/* Container da tabela com rolagem sincronizada */}
                   <div 
@@ -4885,7 +4885,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                       }
                     }}
                   >
-                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '2800px' }}>
+                    <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" style={{ minWidth: '3200px' }}>
                     <thead className="bg-green-50 dark:bg-green-900">
                       <tr>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">ID</th>
@@ -4902,23 +4902,23 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Autorizador do Desconto</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data de Pagamento do Cliente</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Venda Dupla</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% do vendedor</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Vendedor 2</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% vendedor 2</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão Venda em Dupla</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Reunião</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">% Comissão Reunião</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão de Reunião</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Premiação</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Meta Individual</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Meta de Equipe</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Super Premiação</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Supervisor</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">%supervisor</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão do Supervisor</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Comissão do Vendedor</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status Pagamento Premiação</th>
-                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Status Pagamento</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '100px'}}>% do vendedor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '140px'}}>Vendedor 2</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '100px'}}>% vendedor 2</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '150px'}}>Comissão Venda em Dupla</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '120px'}}>Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '130px'}}>% Comissão Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '140px'}}>Comissão de Reunião</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '110px'}}>Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '120px'}}>Meta Individual</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '120px'}}>Meta de Equipe</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '130px'}}>Super Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '110px'}}>Supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '90px'}}>%supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '160px'}}>Comissão do Supervisor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '150px'}}>Comissão do Vendedor</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '180px'}}>Status Pagamento Premiação</th>
+                        <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs" style={{minWidth: '140px'}}>Status Pagamento</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Data Pagamento</th>
                         <th className="text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700 p-2 text-left font-medium text-xs">Observações</th>
                       </tr>
