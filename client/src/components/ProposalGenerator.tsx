@@ -937,7 +937,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         showNotification('🔍 Consultando CPF...', 'info');
         const dados = await consultarCPF(cpf);
         
-        if (dados && dados.dados) {
+        if (dados && dados.status && dados.dados) {
           console.log('🔍 Iniciando preenchimento automático para:', dados.dados.nome);
           console.log('📋 Dados completos recebidos:', dados.dados);
           
