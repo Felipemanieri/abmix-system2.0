@@ -738,7 +738,7 @@ Vendedor Abmix`;
 
   // Filtrar apenas as metas individuais DO VENDEDOR LOGADO E PEGAR APENAS A MAIS RECENTE
   const myVendorTargets = vendorTargets
-    .filter(target => target.vendorId === user.id)
+    .filter(target => Number(target.vendorId) === Number(user.id))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 1); // APENAS 1 META - A MAIS RECENTE
 
