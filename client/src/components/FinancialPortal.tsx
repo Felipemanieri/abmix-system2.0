@@ -51,17 +51,17 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [showFinancialArea, setShowFinancialArea] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusManager] = useState(() => StatusManager.getInstance());
+  const [statusManager] = useState(() => StatusManager);
   const [proposalStatuses, setProposalStatuses] = useState<Map<string, ProposalStatus>>(new Map());
   
   // Estado para relatórios recebidos do supervisor (inicia vazio)
-  const [receivedReports, setReceivedReports] = useState([]);
-  const [selectedReport, setSelectedReport] = useState(null);
+  const [receivedReports, setReceivedReports] = useState<any[]>([]);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showReportsBox, setShowReportsBox] = useState(false);
   const [reportDateFilter, setReportDateFilter] = useState('all');
   const [showExcelModal, setShowExcelModal] = useState(false);
-  const [excelReportData, setExcelReportData] = useState(null);
+  const [excelReportData, setExcelReportData] = useState<any>(null);
 
   // Carregar relatórios do localStorage ao inicializar
   useEffect(() => {
@@ -127,7 +127,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
       console.log(`✅ Aprovando proposta ${proposalId} - Portal Financeiro`);
       await updateProposal.mutateAsync({ 
         id: proposalId, 
-        approved: true 
+        status: 'aprovado' 
       });
       showNotification(`Proposta de ${cliente} aprovada com sucesso!`, 'success');
       console.log(`✅ Proposta ${proposalId} aprovada - Aparecerá imediatamente para vendedor e supervisor`);
@@ -679,7 +679,7 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                     <div className="text-sm text-gray-500 dark:text-white dark:text-gray-500 dark:text-white">CNPJ: {proposal.contractData?.cnpj}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 dark:text-white dark:text-white">{proposal.vendorName}</div>
+                    <div className="text-sm text-gray-900 dark:text-white dark:text-white">{proposal.vendedor?.name || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white dark:text-white">R$ {proposal.contractData?.valor}</div>
@@ -702,18 +702,18 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      {/* SISTEMA DE APROVAÇÃO E REJEIÇÃO SINCRONIZADO EM TEMPO REAL */}
-                      {!proposal.approved && !proposal.rejected ? (
+                      {/* SISTEMA DE APROVAÇÃO E REJEIÇÃO BASEADO NO STATUS */}
+                      {proposal.status === 'pendente' || proposal.status === 'analise' ? (
                         <>
                           <button
-                            onClick={() => handleApproveProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                            onClick={() => handleApproveProposal(proposal.id, proposal.contractData?.nomeEmpresa || 'Cliente')}
                             className="p-2 text-lime-600 hover:text-lime-800 dark:text-white hover:bg-lime-50 rounded-md transition-colors"
                             title="Aprovar Proposta"
                           >
                             <CheckCircle className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleRejectProposal(proposal.id, proposal.contractData?.nomeEmpresa || proposal.cliente)}
+                            onClick={() => handleRejectProposal(proposal.id, proposal.contractData?.nomeEmpresa || 'Cliente')}
                             className="p-2 text-red-600 hover:text-red-800 dark:text-white hover:bg-red-50 rounded-md transition-colors"
                             title="Rejeitar Proposta"
                             disabled={rejectProposal.isPending}
@@ -721,14 +721,14 @@ const FinancialPortal: React.FC<FinancialPortalProps> = ({ user, onLogout }) => 
                             <XCircle className={`w-4 h-4 ${rejectProposal.isPending ? 'animate-spin' : ''}`} />
                           </button>
                         </>
-                      ) : proposal.approved ? (
+                      ) : proposal.status === 'aprovado' ? (
                         <span
                           className="inline-flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full cursor-pointer"
                           title="Proposta Aprovada"
                         >
                           <CheckCircle className="w-4 h-4" />
                         </span>
-                      ) : proposal.rejected ? (
+                      ) : proposal.status === 'rejeitado' ? (
                         <span
                           className="inline-flex items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full cursor-pointer"
                           title="Proposta Rejeitada"
