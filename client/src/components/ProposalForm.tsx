@@ -266,42 +266,91 @@ const ProposalForm: React.FC<ProposalFormProps> = ({
         const dados = await consultarCPF(cpf);
         
         if (dados && dados.dados) {
+          console.log('🔍 Iniciando preenchimento automático para:', dados.dados.nome);
+          console.log('📋 Dados completos recebidos:', dados.dados);
+          
           // Preencher campos automaticamente
-          const updates: Partial<PersonData> = {};
           const d = dados.dados;
           
-          if (d.nome) updates.nomeCompleto = d.nome;
-          if (d.mae) updates.nomeMae = d.mae;
-          if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          // Preencher nome completo
+          if (d.nome) {
+            console.log('✏️ Preenchendo nome:', d.nome);
+            if (type === 'titular') {
+              updateTitular(index, 'nomeCompleto', d.nome);
+            } else {
+              updateDependente(index, 'nomeCompleto', d.nome);
+            }
+          }
           
-          // Processar data de nascimento (formato: "02/08/1984 (41 anos)" -> "1984-08-02")
+          // Preencher nome da mãe
+          if (d.mae) {
+            console.log('✏️ Preenchendo nome da mãe:', d.mae);
+            if (type === 'titular') {
+              updateTitular(index, 'nomeMae', d.mae);
+            } else {
+              updateDependente(index, 'nomeMae', d.mae);
+            }
+          }
+          
+          // Preencher sexo
+          if (d.sexo) {
+            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+            console.log('✏️ Preenchendo sexo:', sexoFormatado);
+            if (type === 'titular') {
+              updateTitular(index, 'sexo', sexoFormatado);
+            } else {
+              updateDependente(index, 'sexo', sexoFormatado);
+            }
+          }
+          
+          // Processar data de nascimento (formato: "12/07/1984 (41 anos)" -> "1984-07-12")
           if (d.data_nascimento) {
             const dataMatch = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
             if (dataMatch) {
               const [, dia, mes, ano] = dataMatch;
-              updates.dataNascimento = `${ano}-${mes}-${dia}`;
+              const dataFormatada = `${ano}-${mes}-${dia}`;
+              console.log('✏️ Preenchendo data de nascimento:', dataFormatada);
+              if (type === 'titular') {
+                updateTitular(index, 'dataNascimento', dataFormatada);
+              } else {
+                updateDependente(index, 'dataNascimento', dataFormatada);
+              }
             }
           }
           
           // Montar endereço completo
           const endereco = formatarEndereco(dados);
-          if (endereco) updates.enderecoCompleto = endereco;
+          if (endereco) {
+            console.log('✏️ Preenchendo endereço:', endereco);
+            if (type === 'titular') {
+              updateTitular(index, 'enderecoCompleto', endereco);
+            } else {
+              updateDependente(index, 'enderecoCompleto', endereco);
+            }
+          }
           
           // Montar telefone
           const telefone = formatarTelefone(d.telefone_ddd, d.telefone_numero);
-          if (telefone) updates.telefonePessoal = telefone;
-          
-          if (d.cep) updates.cep = d.cep;
-
-          // Aplicar as atualizações
-          Object.entries(updates).forEach(([campo, valor]) => {
+          if (telefone) {
+            console.log('✏️ Preenchendo telefone:', telefone);
             if (type === 'titular') {
-              updateTitular(index, campo as keyof PersonData, valor);
+              updateTitular(index, 'telefonePessoal', telefone);
             } else {
-              updateDependente(index, campo as keyof PersonData, valor);
+              updateDependente(index, 'telefonePessoal', telefone);
             }
-          });
+          }
+          
+          // Preencher CEP
+          if (d.cep) {
+            console.log('✏️ Preenchendo CEP:', d.cep);
+            if (type === 'titular') {
+              updateTitular(index, 'cep', d.cep);
+            } else {
+              updateDependente(index, 'cep', d.cep);
+            }
+          }
 
+          console.log('✅ Preenchimento automático concluído!');
           showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
         } else {
           showNotification('❌ CPF não encontrado na base de dados', 'error');
