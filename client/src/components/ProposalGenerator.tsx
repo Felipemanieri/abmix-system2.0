@@ -940,56 +940,45 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Função limpa para consultar CPF
+  // Função simples para consultar CPF e preencher campos
   const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number, cpfFormatado: string) => {
-    try {
-      console.log('🔍 Consultando CPF:', cpfLimpo);
-      const dados = await consultarCPF(cpfLimpo);
+    const dados = await consultarCPF(cpfLimpo);
+    
+    if (dados?.dados) {
+      const d = dados.dados;
       
-      if (dados?.dados) {
-        const d = dados.dados;
-        console.log('✅ Dados recebidos da API:', d);
-        
-        // ÚNICA ATUALIZAÇÃO COM OS 4 CAMPOS + CPF PRESERVADO
-        const updates: any = { cpf: cpfFormatado };
-        
-        if (d.nome) updates.nomeCompleto = d.nome;
-        if (d.mae) updates.nomeMae = d.mae;
-        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-        if (d.data_nascimento) {
-          const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-          if (match) {
-            const [, dia, mes, ano] = match;
-            updates.dataNascimento = `${ano}-${mes}-${dia}`;
-          }
+      // Mapeamento direto campo a campo
+      const updates: any = { cpf: cpfFormatado }; // SEMPRE manter CPF
+      
+      if (d.nome) updates.nomeCompleto = d.nome;
+      if (d.mae) updates.nomeMae = d.mae; 
+      if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+      if (d.data_nascimento) {
+        const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+        if (match) {
+          const [, dia, mes, ano] = match;
+          updates.dataNascimento = `${ano}-${mes}-${dia}`;
         }
-        
-        console.log('🔧 Updates:', updates);
-        
-        if (type === 'titular') {
-          setProposalData(prev => ({
-            ...prev,
-            titulares: prev.titulares.map((t, i) => 
-              i === index ? { ...t, ...updates } : t
-            )
-          }));
-        } else {
-          setProposalData(prev => ({
-            ...prev,
-            dependentes: prev.dependentes.map((dep, i) => 
-              i === index ? { ...dep, ...updates } : dep
-            )
-          }));
-        }
-        
-        showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
-      } else {
-        console.log('❌ CPF não encontrado na base de dados');
-        showNotification('CPF não encontrado na base de dados', 'error');
       }
-    } catch (error) {
-      console.error('❌ Erro ao consultar CPF:', error);
-      showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
+      
+      // Aplicar uma única vez
+      if (type === 'titular') {
+        setProposalData(prev => ({
+          ...prev,
+          titulares: prev.titulares.map((t, i) => 
+            i === index ? { ...t, ...updates } : t
+          )
+        }));
+      } else {
+        setProposalData(prev => ({
+          ...prev,
+          dependentes: prev.dependentes.map((dep, i) => 
+            i === index ? { ...dep, ...updates } : dep
+          )
+        }));
+      }
+      
+      showNotification(`✅ Dados de ${d.nome} preenchidos!`, 'success');
     }
   };
 
