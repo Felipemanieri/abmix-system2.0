@@ -941,7 +941,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
   };
 
   // Função limpa para consultar CPF
-  const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number) => {
+  const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number, cpfFormatado: string) => {
     try {
       console.log('🔍 Consultando CPF:', cpfLimpo);
       const dados = await consultarCPF(cpfLimpo);
@@ -950,53 +950,35 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // APENAS OS 4 CAMPOS SOLICITADOS com preenchimento direto
-        console.log('🔧 Iniciando preenchimento dos 4 campos...');
+        // SINGLE UPDATE para evitar conflitos de estado
+        const updates = { cpf: cpfFormatado }; // SEMPRE preservar CPF
         
-        // 1. Nome Completo
-        if (d.nome) {
-          console.log('📝 Preenchendo nome:', d.nome);
-          if (type === 'titular') {
-            updateTitular(index, 'nomeCompleto', d.nome);
-          } else {
-            updateDependente(index, 'nomeCompleto', d.nome);
-          }
-        }
-        
-        // 2. Nome da Mãe
-        if (d.mae) {
-          console.log('📝 Preenchendo nome da mãe:', d.mae);
-          if (type === 'titular') {
-            updateTitular(index, 'nomeMae', d.mae);
-          } else {
-            updateDependente(index, 'nomeMae', d.mae);
-          }
-        }
-        
-        // 3. Sexo
-        if (d.sexo) {
-          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-          console.log('📝 Preenchendo sexo:', sexo);
-          if (type === 'titular') {
-            updateTitular(index, 'sexo', sexo);
-          } else {
-            updateDependente(index, 'sexo', sexo);
-          }
-        }
-        
-        // 4. Data de Nascimento
+        if (d.nome) updates.nomeCompleto = d.nome;
+        if (d.mae) updates.nomeMae = d.mae;
+        if (d.sexo) updates.sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
         if (d.data_nascimento) {
           const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
           if (match) {
             const [, dia, mes, ano] = match;
-            const data = `${ano}-${mes}-${dia}`;
-            console.log('📝 Preenchendo data de nascimento:', data);
-            if (type === 'titular') {
-              updateTitular(index, 'dataNascimento', data);
-            } else {
-              updateDependente(index, 'dataNascimento', data);
-            }
+            updates.dataNascimento = `${ano}-${mes}-${dia}`;
           }
+        }
+        
+        // ÚNICA atualização para evitar conflitos
+        if (type === 'titular') {
+          setProposalData(prev => ({
+            ...prev,
+            titulares: prev.titulares.map((t, i) => 
+              i === index ? { ...t, ...updates } : t
+            )
+          }));
+        } else {
+          setProposalData(prev => ({
+            ...prev,
+            dependentes: prev.dependentes.map((dep, i) => 
+              i === index ? { ...dep, ...updates } : dep
+            )
+          }));
         }
         
 
@@ -1067,13 +1049,10 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 updateDependente(index, 'cpf', cpfFormatado);
               }
               
-              // Consultar API se CPF completo, mas sem afetar o CPF
+              // Consultar API se CPF completo
               const cpfLimpo = valor.replace(/\D/g, '');
               if (cpfLimpo.length === 11) {
-                // Usar setTimeout para evitar conflito de estado
-                setTimeout(() => {
-                  handleCpfConsulta(cpfLimpo, type, index);
-                }, 100);
+                handleCpfConsulta(cpfLimpo, type, index, cpfFormatado);
               }
             }}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
