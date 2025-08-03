@@ -9,8 +9,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const server = createServer(app);
 
-// Global error handlers
+// Global error handlers to prevent unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
+  // Silently ignore common network errors
   const reasonStr = String(reason);
   if (reasonStr.includes('ECONNRESET') || 
       reasonStr.includes('socket hang up') || 
@@ -49,7 +50,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// Database initialization
+// Database connection check
 async function initializeDatabase() {
   try {
     console.log("🔌 Inicializando conexão com banco de dados...");
@@ -100,36 +101,15 @@ async function startServer() {
       },
     });
 
+    // API Routes - Basic ones first
     console.log("🔗 Registrando rotas API básicas...");
-
-    // Portal visibility state
-    let portalVisibilityState = {
-      vendor: true,
-      client: true,
-      financial: true,
-      implementation: true,
-      supervisor: true,
-      restricted: true
-    };
 
     // Health check
     app.get('/api/test', (req: Request, res: Response) => {
       res.json({ success: true, message: 'API funcionando', timestamp: new Date().toISOString() });
     });
 
-    // Portal visibility endpoints
-    app.get('/api/portal-visibility', (req: Request, res: Response) => {
-      console.log('🔍 GET /api/portal-visibility - Estado atual:', portalVisibilityState);
-      res.json(portalVisibilityState);
-    });
-
-    app.post('/api/portal-visibility', (req: Request, res: Response) => {
-      console.log('🔧 POST /api/portal-visibility:', req.body);
-      portalVisibilityState = { ...req.body, restricted: true };
-      res.json({ success: true, data: portalVisibilityState });
-    });
-
-    // Basic data endpoints
+    // Basic proposal routes
     app.get('/api/proposals', async (req: Request, res: Response) => {
       try {
         const proposals = await storage.getAllProposals();
@@ -150,133 +130,23 @@ async function startServer() {
       }
     });
 
-    app.get('/api/users', async (req: Request, res: Response) => {
-      try {
-        const systemUsers = await storage.getAllSystemUsers();
-        const vendors = await storage.getAllVendors();
+    // Portal visibility state
+    let portalVisibilityState = {
+      vendor: true,
+      client: true,
+      financial: true,
+      implementation: true,
+      supervisor: true,
+      restricted: true
+    };
 
-        const allUsers = [
-          ...systemUsers.map(user => ({
-            email: user.email,
-            name: user.name,
-            type: 'system',
-            role: user.role
-          })),
-          ...vendors.map(vendor => ({
-            email: vendor.email,
-            name: vendor.name,
-            type: 'vendor',
-            role: 'vendor'
-          }))
-        ];
-
-        res.json(allUsers);
-      } catch (error) {
-        console.error('❌ Erro ao buscar usuários:', error);
-        res.status(500).json({ error: 'Erro ao buscar usuários' });
-      }
+    app.get('/api/portal-visibility', (req: Request, res: Response) => {
+      res.json(portalVisibilityState);
     });
 
-    // Google services (simplified)
-    app.get('/api/google/test-connections', (req: Request, res: Response) => {
-      res.json({
-        success: true,
-        connections: { drive: false, sheets: false },
-        drive: { connected: false },
-        sheets: { connected: false },
-        credentials: { clientId: 'Not configured', clientSecret: 'Not configured' },
-        timestamp: new Date().toISOString()
-      });
-    });
-
-    // Proposal creation (simplified)
-    app.post('/api/proposals', async (req: Request, res: Response) => {
-      try {
-        console.log('🚀 Criando nova proposta com dados:', req.body);
-        
-        const timestamp = Date.now();
-        const randomSuffix = Math.random().toString(36).substr(2, 9);
-        const proposalId = `PROP-${timestamp}-${randomSuffix}`;
-        
-        const existingProposals = await storage.getAllProposals();
-        const maxAbmNumber = Math.max(0, ...existingProposals
-          .filter(p => p.abmId && p.abmId.startsWith('ABM'))
-          .map(p => parseInt(p.abmId.substring(3)) || 0));
-        const nextAbmNumber = maxAbmNumber + 1;
-        const abmId = `ABM${String(nextAbmNumber).padStart(3, '0')}`;
-        
-        const clientToken = `CLIENT-${timestamp}-${randomSuffix}`;
-        
-        const proposalData = {
-          id: proposalId,
-          abmId: abmId,
-          clientToken: clientToken,
-          vendorId: req.body.vendorId || null,
-          contractData: req.body.contractData || {},
-          titulares: req.body.titulares || [],
-          dependentes: req.body.dependentes || [],
-          internalData: req.body.internalData || {},
-          vendorAttachments: req.body.vendorAttachments || [],
-          clientAttachments: req.body.clientAttachments || [],
-          clientCompleted: req.body.clientCompleted || false,
-          status: req.body.status || 'pendente',
-          priority: req.body.priority || 'normal',
-          driveFolder: req.body.driveFolder || null,
-          folderName: req.body.folderName || null,
-          driveFolderId: req.body.driveFolderId || null,
-          observacaoFinanceira: req.body.observacaoFinanceira || null,
-          observacaoSupervisor: req.body.observacaoSupervisor || null,
-          observacaoImplementacao: req.body.observacaoImplementacao || null,
-          documentosRecebidos: req.body.documentosRecebidos || {},
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        const proposal = await storage.createProposal(proposalData);
-        console.log('✅ Proposta criada com sucesso:', proposal.id);
-
-        const clientFormLink = `${req.protocol}://${req.get('host')}/cliente/proposta/${proposal.clientToken}`;
-        
-        res.json({
-          ...proposal,
-          clientFormLink: clientFormLink
-        });
-      } catch (error) {
-        console.error('❌ Erro ao criar proposta:', error);
-        res.status(500).json({ error: 'Erro ao criar proposta' });
-      }
-    });
-
-    // Proposal endpoints
-    app.get('/api/proposals/:id', async (req: Request, res: Response) => {
-      try {
-        const proposal = await storage.getProposal(req.params.id);
-        if (!proposal) {
-          return res.status(404).json({ error: 'Proposta não encontrada' });
-        }
-        res.json(proposal);
-      } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar proposta' });
-      }
-    });
-
-    app.put('/api/proposals/:id', async (req: Request, res: Response) => {
-      try {
-        const proposal = await storage.updateProposal(req.params.id, req.body);
-        res.json(proposal);
-      } catch (error) {
-        res.status(500).json({ error: 'Erro ao atualizar proposta' });
-      }
-    });
-
-    app.delete('/api/proposals/:id', async (req: Request, res: Response) => {
-      try {
-        await storage.deleteProposal(req.params.id);
-        res.json({ success: true, message: 'Proposta excluída com sucesso' });
-      } catch (error) {
-        console.error('❌ Erro ao excluir proposta:', error);
-        res.status(500).json({ error: 'Erro ao excluir proposta' });
-      }
+    app.post('/api/portal-visibility', (req: Request, res: Response) => {
+      portalVisibilityState = { ...req.body, restricted: true };
+      res.json({ success: true, data: portalVisibilityState });
     });
 
     // API 404 handler
@@ -307,13 +177,16 @@ async function startServer() {
     // Production setup
     console.log("📦 Configurando servidor de produção");
     
+    // Basic API routes for production
     app.get('/api/test', (req: Request, res: Response) => {
       res.json({ success: true, message: 'API funcionando (produção)', timestamp: new Date().toISOString() });
     });
 
+    // Serve static files
     const distPath = path.resolve(__dirname, "public");
     app.use(express.static(distPath));
 
+    // Catch all other routes and serve index.html
     app.use("*", (_req: Request, res: Response) => {
       res.sendFile(path.resolve(distPath, "index.html"));
     });

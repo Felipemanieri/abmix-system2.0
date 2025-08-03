@@ -1,5 +1,6 @@
 // SISTEMA DE WEBSOCKETS PARA TEMPO REAL - MANTÉM TODAS AS FUNCIONALIDADES
 import { WebSocketServer, WebSocket } from 'ws';
+import { IncomingMessage } from 'http';
 import { Server } from 'http';
 
 interface WebSocketClient {
@@ -26,7 +27,7 @@ class RealTimeManager {
   }
 
   private setupWebSocketServer() {
-    this.wss.on('connection', (ws: WebSocket, request) => {
+    this.wss.on('connection', (ws: WebSocket, request: IncomingMessage) => {
       console.log('🔗 Nova conexão WebSocket estabelecida');
       
       // Criar cliente
@@ -38,9 +39,9 @@ class RealTimeManager {
       this.clients.set(ws, client);
 
       // Configurar handlers
-      ws.on('message', (data) => this.handleMessage(ws, data));
+      ws.on('message', (data: Buffer) => this.handleMessage(ws, data));
       ws.on('close', () => this.handleDisconnect(ws));
-      ws.on('error', (error) => {
+      ws.on('error', (error: Error) => {
         console.error('❌ Erro WebSocket:', error);
         this.handleDisconnect(ws);
       });
@@ -53,7 +54,7 @@ class RealTimeManager {
     });
   }
 
-  private handleMessage(ws: WebSocket, data: any) {
+  private handleMessage(ws: WebSocket, data: Buffer) {
     try {
       const message = JSON.parse(data.toString());
       const client = this.clients.get(ws);
