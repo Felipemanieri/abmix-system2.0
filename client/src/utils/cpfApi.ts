@@ -45,8 +45,8 @@ export const consultarCPF = async (cpf: string): Promise<CPFApiResponse | null> 
       return null;
     }
 
-    console.log('Consultando CPF:', cpfLimpo);
-    const url = `https://patronhost.online/apis/cpf.php?cpf=${cpfLimpo}`;
+    console.log('Consultando CPF via backend:', cpfLimpo);
+    const url = `/api/cpf/${cpfLimpo}`;
     
     const response = await fetch(url, {
       method: 'GET',
@@ -61,8 +61,18 @@ export const consultarCPF = async (cpf: string): Promise<CPFApiResponse | null> 
       return null;
     }
 
-    const data: CPFApiResponse = await response.json();
-    console.log('Resposta da API CPF:', data);
+    const responseText = await response.text();
+    console.log('Resposta bruta da API CPF:', responseText);
+    
+    let data: CPFApiResponse;
+    try {
+      data = JSON.parse(responseText);
+      console.log('Resposta parseada da API CPF:', data);
+    } catch (parseError) {
+      console.log('Erro ao fazer parse do JSON:', parseError);
+      console.log('Conteúdo recebido:', responseText);
+      return null;
+    }
     
     if (data.status && data.resultado === 'success' && data.dados) {
       console.log('CPF encontrado com sucesso:', data.dados.nome);
