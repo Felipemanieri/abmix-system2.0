@@ -41,6 +41,8 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         dataPagamento: reportPaymentDates[abmId] || '',
         observacoes: reportObservations[abmId] || ''
       };
+      
+      console.log(`🔍 DEBUG - Salvando dados para ${abmId}:`, config);
 
       await apiRequest('/api/report-configurations', {
         method: 'POST',
@@ -142,6 +144,12 @@ export const useSupervisorReport = (reportId: string = 'current') => {
         setReportObservations(prev => ({...prev, ...observationsData}));
 
         console.log(`✅ ${configs.length} configurações carregadas automaticamente`);
+        console.log('🔍 DEBUG - Dados carregados:', {
+          vendedor1PercentData,
+          vendedor2PercentData,
+          paymentDatesData,
+          statusPagamentoData
+        });
       }
     } catch (error) {
       console.error('❌ Erro ao carregar todas as configurações:', error);

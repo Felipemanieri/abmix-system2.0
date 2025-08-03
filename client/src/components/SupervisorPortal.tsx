@@ -250,9 +250,9 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
     error: reportError
   } = useSupervisorReport('current_report');
   
-  // Estados adicionais para compatibilidade (usando fields existentes do hook)
-  const setReportDataPagamento = setReportStatusPagamento; // Mapeamento compatível
-  const reportDataPagamento = reportStatusPagamento; // Mapeamento compatível
+  // Estados adicionais para compatibilidade (corrigindo mapeamento)
+  const setReportDataPagamento = setReportPaymentDates; // Mapeamento corrigido
+  const reportDataPagamento = reportPaymentDates; // Mapeamento corrigido
   const [reportStatusPagamentoPremiacao, setReportStatusPagamentoPremiacao] = useState<{[key: string]: string}>({});
 
   // Função para calcular total de comissões
@@ -5345,10 +5345,22 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           <td className="text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 p-3">
                             <select
                               value={reportStatusPagamento[item.abmId] || ''}
-                              onChange={(e) => setReportStatusPagamento(prev => ({
-                                ...prev,
-                                [item.abmId]: e.target.value
-                              }))}
+                              onChange={(e) => {
+                                const newStatus = e.target.value;
+                                setReportStatusPagamento(prev => ({
+                                  ...prev,
+                                  [item.abmId]: newStatus
+                                }));
+                                
+                                // Se status for PAGO e não houver data, definir data atual
+                                if (newStatus === 'PAGO' && !reportPaymentDates[item.abmId]) {
+                                  const today = new Date().toISOString().split('T')[0];
+                                  setReportPaymentDates(prev => ({
+                                    ...prev,
+                                    [item.abmId]: today
+                                  }));
+                                }
+                              }}
                               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               title="Selecione o status do pagamento"
                             >
