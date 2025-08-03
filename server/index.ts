@@ -279,6 +279,103 @@ async function startServer() {
       }
     });
 
+    // Authentication endpoints
+    app.post('/api/auth/login', async (req: Request, res: Response) => {
+      try {
+        const { email, password, portal } = req.body;
+        console.log(`🔐 Login attempt for ${email} on portal ${portal}`);
+
+        let user = null;
+
+        if (portal === 'vendor') {
+          // Check vendors table
+          const vendor = await storage.getVendorByEmail(email);
+          if (vendor && vendor.password === password && vendor.active) {
+            user = {
+              id: vendor.id.toString(),
+              name: vendor.name,
+              email: vendor.email,
+              role: 'vendor',
+              portal: 'vendor'
+            };
+            await storage.updateVendor(vendor.id, { last_login: new Date() });
+            console.log(`✅ Vendor login successful: ${vendor.name}`);
+          }
+        } else {
+          // Check system users table
+          const systemUser = await storage.getSystemUserByEmail(email);
+          if (systemUser && systemUser.password === password && systemUser.active) {
+            user = {
+              id: systemUser.id.toString(),
+              name: systemUser.name,
+              email: systemUser.email,
+              role: systemUser.role,
+              portal: systemUser.panel
+            };
+            await storage.updateLastLogin(systemUser.id);
+            console.log(`✅ System user login successful: ${systemUser.name} (${systemUser.role})`);
+          }
+        }
+
+        if (user) {
+          res.json({ 
+            success: true, 
+            user,
+            message: 'Login realizado com sucesso'
+          });
+        } else {
+          console.log(`❌ Login failed for ${email} - Invalid credentials`);
+          res.status(401).json({ 
+            success: false, 
+            error: 'Email ou senha inválidos' 
+          });
+        }
+      } catch (error) {
+        console.error('❌ Erro no login:', error);
+        res.status(500).json({ 
+          success: false, 
+          error: 'Erro interno do servidor' 
+        });
+      }
+    });
+
+    app.post('/api/auth/logout', (req: Request, res: Response) => {
+      console.log('👋 Logout request received');
+      res.json({ success: true, message: 'Logout realizado com sucesso' });
+    });
+
+    // Vendor specific endpoints
+    app.get('/api/vendors/:id/proposals', async (req: Request, res: Response) => {
+      try {
+        const vendorId = parseInt(req.params.id);
+        const proposals = await storage.getVendorProposals(vendorId);
+        res.json(proposals);
+      } catch (error) {
+        console.error('Erro ao buscar propostas do vendedor:', error);
+        res.status(500).json({ error: 'Erro ao buscar propostas do vendedor' });
+      }
+    });
+
+    // System users endpoints
+    app.get('/api/system-users', async (req: Request, res: Response) => {
+      try {
+        const systemUsers = await storage.getAllSystemUsers();
+        res.json(systemUsers);
+      } catch (error) {
+        console.error('Erro ao buscar usuários do sistema:', error);
+        res.status(500).json({ error: 'Erro ao buscar usuários do sistema' });
+      }
+    });
+
+    // Catch invalid POST requests to root
+    app.post('/', (req: Request, res: Response) => {
+      console.log('❌ Invalid POST request to root - redirecting to appropriate endpoint');
+      res.status(400).json({ 
+        error: 'Invalid request',
+        message: 'Use specific API endpoints for authentication and data operations'
+      });
+    });
+
     // API 404 handler
     app.use('/api/*', (req: Request, res: Response) => {
       console.log(`❌ API REQUEST NOT HANDLED: ${req.method} ${req.url}`);
