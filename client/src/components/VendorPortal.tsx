@@ -743,7 +743,7 @@ Vendedor Abmix`;
     .slice(0, 1); // APENAS 1 META - A MAIS RECENTE
 
   // Filtrar apenas as premiações DO VENDEDOR LOGADO - SEGURANÇA TOTAL
-  const myAwards = awards.filter(award => award.vendorId === user.id);
+  const myAwards = awards.filter(award => Number(award.vendorId) === Number(user.id));
   
   // Debug: Log para verificar filtros
   console.log('🎯 DEBUG METAS VENDEDOR:');
