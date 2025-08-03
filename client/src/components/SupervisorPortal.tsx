@@ -5889,22 +5889,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           </div>
                         ))}
                         
-                        {/* Total Geral dos VENDEDORES (supervisor separado) */}
-                        <div className="bg-blue-100 dark:bg-blue-900 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4 mt-4">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-blue-900 dark:text-blue-100 text-xl">
-                              TOTAL VENDEDORES (FILTRADO):
-                            </span>
-                            <div className="text-right">
-                              <div className="font-bold text-blue-900 dark:text-blue-100 text-xl">
-                                R$ {totalGeralValor.toFixed(2).replace('.', ',')}
-                              </div>
-                              <div className="text-sm text-blue-800 dark:text-blue-200">
-                                Total Comissões Vendedores: R$ {totalGeralComissaoVendedor.toFixed(2).replace('.', ',')}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+
 
                         {/* CAIXA EXCLUSIVA DO SUPERVISOR - DENTRO DE RESUMO POR VENDEDOR */}
                         <div className="bg-indigo-100 dark:bg-indigo-800 border border-indigo-300 dark:border-indigo-600 rounded-lg p-3 mt-4">
