@@ -5688,10 +5688,14 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   if (item.status === 'implantado') {
                                     const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                                     
-                                    // PREMIAÇÃO
+                                    // PREMIAÇÃO - ACEITAR QUALQUER VALOR NUMÉRICO
                                     const premiacao = reportPremiacao[item.abmId] || '';
-                                    if (premiacao && premiacao !== '-' && premiacao.includes('R$')) {
-                                      totalPremiacao += parseFloat(premiacao.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+                                    if (premiacao && premiacao !== '-' && premiacao.trim() !== '') {
+                                      // Extrair número de qualquer formato: "100,00", "R$ 100,00", "15000", etc.
+                                      const numeroLimpo = premiacao.replace(/[^0-9,]/g, '').replace(',', '.');
+                                      if (numeroLimpo) {
+                                        totalPremiacao += parseFloat(numeroLimpo) || 0;
+                                      }
                                     }
                                     
                                     // META INDIVIDUAL - CALCULAR VALOR DIRETO DA CONDIÇÃO  
