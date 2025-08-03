@@ -255,6 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializePortalVisibility();
 
   // ROTAS PARA RELATÓRIOS PERSISTENTES DO SUPERVISOR
+  app.delete('/api/supervisor/reports/:reportId', async (req: Request, res: Response) => {
     try {
       const { reportId } = req.params;
       console.log('🗑️ Deletando dados do relatório:', reportId);

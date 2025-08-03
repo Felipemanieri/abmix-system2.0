@@ -114,6 +114,61 @@ async function startServer() {
 
     console.log("🔗 Registrando rotas API básicas...");
 
+    // IMPORTANTE: Registrar rotas essenciais para portais
+    console.log("🔗 Registrando rotas essenciais dos portais...");
+    
+    // Rotas essenciais para portal do vendedor
+    app.get('/api/vendor-targets', async (req: Request, res: Response) => {
+      try {
+        const targets = await storage.getAllVendorTargets();
+        res.json(targets);
+      } catch (error) {
+        console.error('Erro ao buscar metas de vendedores:', error);
+        res.status(500).json({ error: 'Erro ao buscar metas' });
+      }
+    });
+
+    app.get('/api/team-targets', async (req: Request, res: Response) => {
+      try {
+        const targets = await storage.getAllTeamTargets();
+        res.json(targets);
+      } catch (error) {
+        console.error('Erro ao buscar metas de equipe:', error);
+        res.status(500).json({ error: 'Erro ao buscar metas' });
+      }
+    });
+
+    app.get('/api/awards', async (req: Request, res: Response) => {
+      try {
+        const awards = await storage.getAllAwards();
+        res.json(awards);
+      } catch (error) {
+        console.error('Erro ao buscar prêmios:', error);
+        res.status(500).json({ error: 'Erro ao buscar prêmios' });
+      }
+    });
+
+    app.get('/api/analytics/team', async (req: Request, res: Response) => {
+      try {
+        const { month, year } = req.query;
+        // Retornar analytics básicos da equipe
+        const proposals = await storage.getAllProposals();
+        const vendors = await storage.getAllVendors();
+        
+        res.json({
+          proposals: proposals.length,
+          vendors: vendors.length,
+          month: month || new Date().getMonth() + 1,
+          year: year || new Date().getFullYear()
+        });
+      } catch (error) {
+        console.error('Erro ao buscar analytics:', error);
+        res.status(500).json({ error: 'Erro ao buscar analytics' });
+      }
+    });
+
+    console.log("✅ Rotas essenciais registradas com sucesso");
+
     // Portal visibility state
     let portalVisibilityState = {
       vendor: true,
