@@ -943,34 +943,104 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
   // Função limpa para consultar CPF
   const handleCpfConsulta = async (cpfLimpo: string, type: 'titular' | 'dependente', index: number) => {
     try {
+      console.log('🔍 Consultando CPF:', cpfLimpo);
       const dados = await consultarCPF(cpfLimpo);
+      
       if (dados?.dados) {
         const d = dados.dados;
+        console.log('✅ Dados recebidos da API:', d);
         
-        // Preencher campos sem tocar no CPF
+        // 1. Preencher Nome Completo
         if (d.nome) {
-          type === 'titular' ? updateTitular(index, 'nomeCompleto', d.nome) : updateDependente(index, 'nomeCompleto', d.nome);
+          console.log('📝 Preenchendo nome:', d.nome);
+          if (type === 'titular') {
+            updateTitular(index, 'nomeCompleto', d.nome);
+          } else {
+            updateDependente(index, 'nomeCompleto', d.nome);
+          }
         }
+        
+        // 2. Preencher Nome da Mãe
         if (d.mae) {
-          type === 'titular' ? updateTitular(index, 'nomeMae', d.mae) : updateDependente(index, 'nomeMae', d.mae);
+          console.log('📝 Preenchendo nome da mãe:', d.mae);
+          if (type === 'titular') {
+            updateTitular(index, 'nomeMae', d.mae);
+          } else {
+            updateDependente(index, 'nomeMae', d.mae);
+          }
         }
+        
+        // 3. Preencher Sexo
         if (d.sexo) {
-          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-          type === 'titular' ? updateTitular(index, 'sexo', sexo) : updateDependente(index, 'sexo', sexo);
+          const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+          console.log('📝 Preenchendo sexo:', sexoFormatado);
+          if (type === 'titular') {
+            updateTitular(index, 'sexo', sexoFormatado);
+          } else {
+            updateDependente(index, 'sexo', sexoFormatado);
+          }
         }
+        
+        // 4. Preencher Data de Nascimento
         if (d.data_nascimento) {
           const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
           if (match) {
             const [, dia, mes, ano] = match;
-            const data = `${ano}-${mes}-${dia}`;
-            type === 'titular' ? updateTitular(index, 'dataNascimento', data) : updateDependente(index, 'dataNascimento', data);
+            const dataFormatada = `${ano}-${mes}-${dia}`;
+            console.log('📝 Preenchendo data de nascimento:', dataFormatada);
+            if (type === 'titular') {
+              updateTitular(index, 'dataNascimento', dataFormatada);
+            } else {
+              updateDependente(index, 'dataNascimento', dataFormatada);
+            }
           }
         }
         
-        showNotification(`Dados de ${d.nome} preenchidos!`, 'success');
+        // 5. Preencher Endereço se disponível
+        if (d.logradouro && d.municipio_residencia) {
+          const enderecoCompleto = formatarEndereco(dados);
+          if (enderecoCompleto) {
+            console.log('📝 Preenchendo endereço:', enderecoCompleto);
+            if (type === 'titular') {
+              updateTitular(index, 'enderecoCompleto', enderecoCompleto);
+            } else {
+              updateDependente(index, 'enderecoCompleto', enderecoCompleto);
+            }
+          }
+        }
+        
+        // 6. Preencher Telefone se disponível
+        if (d.telefone_ddd && d.telefone_numero) {
+          const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
+          if (telefoneFormatado) {
+            console.log('📝 Preenchendo telefone:', telefoneFormatado);
+            if (type === 'titular') {
+              updateTitular(index, 'telefonePessoal', telefoneFormatado);
+            } else {
+              updateDependente(index, 'telefonePessoal', telefoneFormatado);
+            }
+          }
+        }
+        
+        // 7. Preencher CEP se disponível
+        if (d.cep) {
+          console.log('📝 Preenchendo CEP:', d.cep);
+          if (type === 'titular') {
+            updateTitular(index, 'cep', d.cep);
+          } else {
+            updateDependente(index, 'cep', d.cep);
+          }
+        }
+        
+        console.log('✅ Todos os campos preenchidos automaticamente!');
+        showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
+      } else {
+        console.log('❌ CPF não encontrado na base de dados');
+        showNotification('CPF não encontrado na base de dados', 'warning');
       }
     } catch (error) {
-      console.log('Consulta CPF finalizada');
+      console.error('❌ Erro ao consultar CPF:', error);
+      showNotification('Erro ao consultar CPF. Tente novamente.', 'error');
     }
   };
 

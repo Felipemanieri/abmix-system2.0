@@ -403,49 +403,71 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
       console.log('🔍 CPF completo, consultando API:', cpfLimpo);
 
       try {
-        // Usar a função helper que já faz todo o preenchimento automaticamente
-        const sucesso = await preencherCamposComCPF(cpf, (campo: string, valor: string) => {
-          console.log(`🔄 Preenchendo campo ${campo} com valor:`, valor);
-
-          // Mapear os campos da API para os campos do formulário
-          switch (campo) {
-            case 'nomeCompleto':
-            case 'nome':
-              updatePerson('titular', personId, 'nomeCompleto', valor);
-              break;
-            case 'nomeMae':
-              updatePerson('titular', personId, 'nomeMae', valor);
-              break;
-            case 'sexo':
-              updatePerson('titular', personId, 'sexo', valor);
-              break;
-            case 'dataNascimento':
-              updatePerson('titular', personId, 'dataNascimento', valor);
-              break;
-            case 'enderecoCompleto':
-            case 'endereco':
-              updatePerson('titular', personId, 'enderecoCompleto', valor);
-              break;
-            case 'telefonePessoal':
-              updatePerson('titular', personId, 'telefonePessoal', valor);
-              break;
-            case 'cep':
-              updatePerson('titular', personId, 'cep', valor);
-              break;
-            case 'cpf':
-              updatePerson('titular', personId, 'cpf', valor);
-              break;
-            default:
-              console.log('Campo não mapeado:', campo, valor);
+        const dados = await consultarCPF(cpfLimpo);
+        
+        if (dados?.dados) {
+          const d = dados.dados;
+          console.log('✅ Dados recebidos da API:', d);
+          
+          // 1. Preencher Nome Completo
+          if (d.nome) {
+            console.log('📝 Preenchendo nome:', d.nome);
+            updatePerson('titular', personId, 'nomeCompleto', d.nome);
           }
-        });
-
-        if (sucesso) {
-          console.log('✅ CPF consultado e campos preenchidos automaticamente!');
-          showNotification('CPF consultado com sucesso! Todos os 8 campos preenchidos automaticamente.', 'success');
+          
+          // 2. Preencher Nome da Mãe
+          if (d.mae) {
+            console.log('📝 Preenchendo nome da mãe:', d.mae);
+            updatePerson('titular', personId, 'nomeMae', d.mae);
+          }
+          
+          // 3. Preencher Sexo
+          if (d.sexo) {
+            const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
+            console.log('📝 Preenchendo sexo:', sexoFormatado);
+            updatePerson('titular', personId, 'sexo', sexoFormatado);
+          }
+          
+          // 4. Preencher Data de Nascimento
+          if (d.data_nascimento) {
+            const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+            if (match) {
+              const [, dia, mes, ano] = match;
+              const dataFormatada = `${ano}-${mes}-${dia}`;
+              console.log('📝 Preenchendo data de nascimento:', dataFormatada);
+              updatePerson('titular', personId, 'dataNascimento', dataFormatada);
+            }
+          }
+          
+          // 5. Preencher Endereço se disponível
+          if (d.logradouro && d.municipio_residencia) {
+            const enderecoCompleto = formatarEndereco(dados);
+            if (enderecoCompleto) {
+              console.log('📝 Preenchendo endereço:', enderecoCompleto);
+              updatePerson('titular', personId, 'enderecoCompleto', enderecoCompleto);
+            }
+          }
+          
+          // 6. Preencher Telefone se disponível
+          if (d.telefone_ddd && d.telefone_numero) {
+            const telefoneFormatado = formatarTelefone(d.telefone_ddd, d.telefone_numero);
+            if (telefoneFormatado) {
+              console.log('📝 Preenchendo telefone:', telefoneFormatado);
+              updatePerson('titular', personId, 'telefonePessoal', telefoneFormatado);
+            }
+          }
+          
+          // 7. Preencher CEP se disponível
+          if (d.cep) {
+            console.log('📝 Preenchendo CEP:', d.cep);
+            updatePerson('titular', personId, 'cep', d.cep);
+          }
+          
+          console.log('✅ Todos os campos preenchidos automaticamente!');
+          showNotification(`✅ Dados de ${d.nome} preenchidos automaticamente!`, 'success');
         } else {
-          console.log('❌ CPF não encontrado ou erro na consulta');
-          showNotification('CPF não encontrado na base de dados.', 'warning');
+          console.log('❌ CPF não encontrado na base de dados');
+          showNotification('CPF não encontrado na base de dados', 'warning');
         }
       } catch (error) {
         console.error('❌ Erro ao consultar CPF:', error);
