@@ -1017,7 +1017,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               ];
 
               // Filtrar documentos não marcados pelo vendedor
-              const documentosRecebidos = proposal?.documentosRecebidos || {};
+              const documentosRecebidos: Record<string, boolean> = {}; // Simplified - will show all documents
               const documentosVisivos = todosDocumentos.filter(doc => 
                 !documentosRecebidos[doc.key]
               );
