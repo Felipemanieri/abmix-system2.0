@@ -267,51 +267,49 @@ export function SupervisorPortal({ user, onLogout }: SupervisorPortalProps) {
   };
 
   const showReportPreview = (data: any[]) => {
-    setReportData(data);
-    
-    // Inicializar automaticamente os dados de venda dupla baseados nos controles internos
-    const vendaDuplaData: {[key: string]: boolean} = {};
-    const vendedor1Data: {[key: string]: string} = {};
-    const vendedor2Data: {[key: string]: string} = {};
-    const vendedor1PercentData: {[key: string]: string} = {};
-    const vendedor2PercentData: {[key: string]: string} = {};
-    const comissaoReuniaoData: {[key: string]: string} = {};
-    const comissaoSupervisorData: {[key: string]: string} = {};
-    const supervisorPercentData: {[key: string]: string} = {};
-    const reuniaoData: {[key: string]: string} = {};
-    
-    data.forEach(item => {
-      const abmId = item.abmId;
-      // Sincronizar dados automaticamente dos controles internos
-      vendaDuplaData[abmId] = item.vendaDupla || false;
-      vendedor1Data[abmId] = item.vendedor1 || item.vendedor; // Dono da venda
-      vendedor2Data[abmId] = item.vendedor2 || '';
-      // Porcentagens iniciais (supervisor pode editar)
-      vendedor1PercentData[abmId] = item.vendaDupla ? '50%' : '100%';
-      vendedor2PercentData[abmId] = item.vendaDupla ? '50%' : '';
-      // Porcentagem de comissão de reunião (supervisor pode editar)
-      // Se houver organizador de reunião, definir percentual padrão
-      comissaoReuniaoData[abmId] = item.reuniao && item.reuniao !== '-' && item.reuniao !== '' ? '10%' : '';
-      // Comissão supervisor: 5% automático para Rod Ribas (único supervisor cadastrado)
-      // Sistema atual tem apenas Rod Ribas como supervisor
-      comissaoSupervisorData[abmId] = '5%';
-      supervisorPercentData[abmId] = '5%';
-      // Dados da reunião vindos dos controles internos
-      reuniaoData[abmId] = item.reuniao || '';
-    });
-    
-    setReportVendaDupla(vendaDuplaData);
-    setReportVendedor1(vendedor1Data);
-    setReportVendedor2(vendedor2Data);
-    setReportComissaoReuniao(comissaoReuniaoData);
-    setReportComissaoSupervisor(comissaoSupervisorData);
-    setReportSupervisorPercent(supervisorPercentData);
-    setReportReuniao(reuniaoData);
-    
-    // Carregar configurações salvas após definir os dados básicos
-    loadAllConfigurations();
-    
-    setShowReportModal(true);
+    try {
+      console.log('🔍 INICIANDO showReportPreview com dados:', data.length, 'itens');
+      setReportData(data);
+      
+      // Inicializar automaticamente os dados de venda dupla baseados nos controles internos
+      const vendaDuplaData: {[key: string]: boolean} = {};
+      const vendedor1Data: {[key: string]: string} = {};
+      const vendedor2Data: {[key: string]: string} = {};
+      const comissaoReuniaoData: {[key: string]: string} = {};
+      const comissaoSupervisorData: {[key: string]: string} = {};
+      const supervisorPercentData: {[key: string]: string} = {};
+      const reuniaoData: {[key: string]: string} = {};
+      
+      data.forEach(item => {
+        const abmId = item.abmId;
+        // Sincronizar dados automaticamente dos controles internos
+        vendaDuplaData[abmId] = item.vendaDupla || false;
+        vendedor1Data[abmId] = item.vendedor1 || item.vendedor; // Dono da venda
+        vendedor2Data[abmId] = item.vendedor2 || '';
+        // Porcentagem de comissão de reunião (supervisor pode editar)
+        // Se houver organizador de reunião, definir percentual padrão
+        comissaoReuniaoData[abmId] = item.reuniao && item.reuniao !== '-' && item.reuniao !== '' ? '10%' : '';
+        // Comissão supervisor: 5% automático para Rod Ribas (único supervisor cadastrado)
+        // Sistema atual tem apenas Rod Ribas como supervisor
+        comissaoSupervisorData[abmId] = '5%';
+        supervisorPercentData[abmId] = '5%';
+        // Dados da reunião vindos dos controles internos
+        reuniaoData[abmId] = item.reuniao || '';
+      });
+      
+      setReportVendaDupla(vendaDuplaData);
+      setReportVendedor1(vendedor1Data);
+      setReportVendedor2(vendedor2Data);
+      setReportComissaoReuniao(comissaoReuniaoData);
+      setReportComissaoSupervisor(comissaoSupervisorData);
+      setReportSupervisorPercent(supervisorPercentData);
+      setReportReuniao(reuniaoData);
+      
+      console.log('✅ DADOS CONFIGURADOS - Abrindo modal');
+      setShowReportModal(true);
+    } catch (error) {
+      console.error('❌ ERRO na função showReportPreview:', error);
+    }
   };
 
   const sendToFinanceiro = () => {
