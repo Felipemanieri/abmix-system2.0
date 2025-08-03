@@ -950,51 +950,109 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         const d = dados.dados;
         console.log('✅ Dados recebidos da API:', d);
         
-        // 1. Preencher Nome Completo
-        if (d.nome) {
-          console.log('📝 Preenchendo nome:', d.nome);
-          if (type === 'titular') {
-            updateTitular(index, 'nomeCompleto', d.nome);
-          } else {
-            updateDependente(index, 'nomeCompleto', d.nome);
-          }
+        // Preservar CPF antes de qualquer alteração
+        const cpfAtual = type === 'titular' ? 
+          proposalData.titulares[index]?.cpf : 
+          proposalData.dependentes[index]?.cpf;
+        
+        // 1. Nome Completo
+        if (d.nome && type === 'titular') {
+          setProposalData(prev => ({
+            ...prev,
+            titulares: prev.titulares.map((t, i) => 
+              i === index ? { ...t, nomeCompleto: d.nome } : t
+            )
+          }));
+        } else if (d.nome && type === 'dependente') {
+          setProposalData(prev => ({
+            ...prev,
+            dependentes: prev.dependentes.map((dep, i) => 
+              i === index ? { ...dep, nomeCompleto: d.nome } : dep
+            )
+          }));
         }
         
-        // 2. Preencher Nome da Mãe
-        if (d.mae) {
-          console.log('📝 Preenchendo nome da mãe:', d.mae);
-          if (type === 'titular') {
-            updateTitular(index, 'nomeMae', d.mae);
-          } else {
-            updateDependente(index, 'nomeMae', d.mae);
-          }
+        // 2. Nome da Mãe
+        if (d.mae && type === 'titular') {
+          setProposalData(prev => ({
+            ...prev,
+            titulares: prev.titulares.map((t, i) => 
+              i === index ? { ...t, nomeMae: d.mae } : t
+            )
+          }));
+        } else if (d.mae && type === 'dependente') {
+          setProposalData(prev => ({
+            ...prev,
+            dependentes: prev.dependentes.map((dep, i) => 
+              i === index ? { ...dep, nomeMae: d.mae } : dep
+            )
+          }));
         }
         
-        // 3. Preencher Sexo
+        // 3. Sexo
         if (d.sexo) {
-          const sexoFormatado = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
-          console.log('📝 Preenchendo sexo:', sexoFormatado);
+          const sexo = d.sexo.toLowerCase() === 'masculino' ? 'masculino' : 'feminino';
           if (type === 'titular') {
-            updateTitular(index, 'sexo', sexoFormatado);
+            setProposalData(prev => ({
+              ...prev,
+              titulares: prev.titulares.map((t, i) => 
+                i === index ? { ...t, sexo } : t
+              )
+            }));
           } else {
-            updateDependente(index, 'sexo', sexoFormatado);
+            setProposalData(prev => ({
+              ...prev,
+              dependentes: prev.dependentes.map((dep, i) => 
+                i === index ? { ...dep, sexo } : dep
+              )
+            }));
           }
         }
         
-        // 4. Preencher Data de Nascimento
+        // 4. Data de Nascimento
         if (d.data_nascimento) {
           const match = d.data_nascimento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
           if (match) {
             const [, dia, mes, ano] = match;
-            const dataFormatada = `${ano}-${mes}-${dia}`;
-            console.log('📝 Preenchendo data de nascimento:', dataFormatada);
+            const data = `${ano}-${mes}-${dia}`;
             if (type === 'titular') {
-              updateTitular(index, 'dataNascimento', dataFormatada);
+              setProposalData(prev => ({
+                ...prev,
+                titulares: prev.titulares.map((t, i) => 
+                  i === index ? { ...t, dataNascimento: data } : t
+                )
+              }));
             } else {
-              updateDependente(index, 'dataNascimento', dataFormatada);
+              setProposalData(prev => ({
+                ...prev,
+                dependentes: prev.dependentes.map((dep, i) => 
+                  i === index ? { ...dep, dataNascimento: data } : dep
+                )
+              }));
             }
           }
         }
+        
+        // Restaurar CPF se foi perdido
+        setTimeout(() => {
+          if (cpfAtual) {
+            if (type === 'titular') {
+              setProposalData(prev => ({
+                ...prev,
+                titulares: prev.titulares.map((t, i) => 
+                  i === index ? { ...t, cpf: cpfAtual } : t
+                )
+              }));
+            } else {
+              setProposalData(prev => ({
+                ...prev,
+                dependentes: prev.dependentes.map((dep, i) => 
+                  i === index ? { ...dep, cpf: cpfAtual } : dep
+                )
+              }));
+            }
+          }
+        }, 200);
         
 
         
@@ -1057,17 +1115,20 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               const valor = e.target.value;
               const cpfFormatado = formatarCPF(valor);
               
-              // Atualizar CPF formatado
+              // Atualizar CPF formatado SEMPRE primeiro
               if (type === 'titular') {
                 updateTitular(index, 'cpf', cpfFormatado);
               } else {
                 updateDependente(index, 'cpf', cpfFormatado);
               }
               
-              // Consultar API se CPF completo (sem async no onChange)
+              // Consultar API se CPF completo, mas sem afetar o CPF
               const cpfLimpo = valor.replace(/\D/g, '');
               if (cpfLimpo.length === 11) {
-                handleCpfConsulta(cpfLimpo, type, index);
+                // Usar setTimeout para evitar conflito de estado
+                setTimeout(() => {
+                  handleCpfConsulta(cpfLimpo, type, index);
+                }, 100);
               }
             }}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
