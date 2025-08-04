@@ -171,7 +171,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     dataEnvio: new Date().toISOString().split('T')[0],
     idades: [25]
   });
-  const [arquivosAnexados, setArquivosAnexados] = useState<File[]>([]);
+  // REMOVIDO: arquivosAnexados - usar apenas vendorAttachments
   const [cotacoesCadastradas, setCotacoesCadastradas] = useState<any[]>([]);
 
   // Estados para documentos necessários
@@ -676,7 +676,6 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
 
     // Limpar anexos
     setVendorAttachments([]);
-    setArquivosAnexados([]);
     setCotacoesCadastradas([]);
 
     // Resetar cotação
@@ -755,7 +754,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       dataEnvio: new Date().toISOString().split('T')[0],
       idades: [25]
     });
-    setArquivosAnexados([]);
+    // REMOVIDO: setArquivosAnexados - usando apenas vendorAttachments
   };
 
   // Funções para cotação
@@ -795,18 +794,14 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         }
       }
       
-      // Adicionar arquivos imediatamente à lista visual
-      setArquivosAnexados(prev => [...prev, ...novosArquivos]);
-      
-      // Upload imediato de cada arquivo
+      // Upload imediato de cada arquivo - SEM duplicar na lista visual
       showNotification('Enviando anexos...', 'info');
       
       for (const file of novosArquivos) {
         try {
           await uploadAnexoImediato(file);
         } catch (error) {
-          // Remove o arquivo da lista se falhou
-          setArquivosAnexados(prev => prev.filter(f => f !== file));
+          console.error('Erro no upload:', error);
         }
       }
       
@@ -841,18 +836,14 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         }
       }
       
-      // Adicionar arquivos imediatamente à lista visual
-      setArquivosAnexados(prev => [...prev, ...files]);
-      
-      // Upload imediato de cada arquivo via drag and drop
+      // Upload imediato de cada arquivo via drag and drop - SEM duplicar na lista visual
       showNotification('Enviando anexos via drag and drop...', 'info');
       
       for (const file of files) {
         try {
           await uploadAnexoImediato(file);
         } catch (error) {
-          // Remove o arquivo da lista se falhou
-          setArquivosAnexados(prev => prev.filter(f => f !== file));
+          console.error('Erro no upload:', error);
         }
       }
       
@@ -878,7 +869,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         const result = await response.json();
         console.log('✅ Arquivo enviado com sucesso:', result);
         
-        // Atualizar lista de anexos do vendedor
+        // Atualizar APENAS lista de anexos do vendedor - NÃO arquivosAnexados
         setVendorAttachments(prev => [...prev, result.attachment]);
         
         return result.attachment;
@@ -909,9 +900,30 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     }
   };
 
-  const removerArquivo = (index: number) => {
-    setArquivosAnexados(prev => prev.filter((_, i) => i !== index));
-    showNotification('Arquivo removido!', 'success');
+  const removerAnexo = async (attachmentId: string | number) => {
+    try {
+      // Se for um anexo temporário, remover apenas da lista
+      if (attachmentId.toString().startsWith('temp-')) {
+        setVendorAttachments(prev => prev.filter(att => att.id !== attachmentId));
+        showNotification('Arquivo removido!', 'success');
+        return;
+      }
+
+      // Se for um anexo real, deletar do servidor
+      const response = await fetch(`/api/attachments/${attachmentId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setVendorAttachments(prev => prev.filter(att => att.id !== attachmentId));
+        showNotification('Arquivo removido!', 'success');
+      } else {
+        throw new Error('Erro ao remover arquivo');
+      }
+    } catch (error) {
+      console.error('Erro ao remover anexo:', error);
+      showNotification('Erro ao remover arquivo', 'error');
+    }
   };
 
   const generateQuotation = () => {
@@ -941,7 +953,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       dataEnvio: new Date().toISOString().split('T')[0],
       idades: [25]
     });
-    setArquivosAnexados([]);
+    // REMOVIDO: setArquivosAnexados - usando apenas vendorAttachments
     showNotification('Formulário de cotação limpo!', 'success');
   };
 
@@ -970,7 +982,7 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     const cotacaoSalva = {
       ...quotationData,
       dataHora: new Date().toISOString(),
-      arquivos: arquivosAnexados.length
+      arquivos: vendorAttachments.length
     };
 
     // Aqui você poderia salvar no banco de dados
@@ -1022,7 +1034,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
       valor: quotationData.valor,
       validade: quotationData.validade || '',
       dataEnvio: quotationData.dataEnvio || new Date().toISOString().split('T')[0],
-      arquivos: arquivosAnexados.length
+      arquivos: vendorAttachments.length
     };
 
     setCotacoesCadastradas(prev => [...prev, novaCotacao]);
@@ -1037,7 +1049,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
       dataEnvio: new Date().toISOString().split('T')[0],
       idades: [25]
     });
-    setArquivosAnexados([]);
+    // REMOVIDO: setArquivosAnexados - usando apenas vendorAttachments
 
     showNotification('Cotação salva com sucesso!', 'success');
   };
@@ -2232,31 +2244,34 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
             </div>
 
-            {/* Lista de Arquivos Anexados */}
-            {arquivosAnexados.length > 0 && (
+            {/* Lista de Arquivos Anexados - USANDO vendorAttachments */}
+            {vendorAttachments.length > 0 && (
               <div className="mt-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                   <FileText className="w-5 h-5 text-emerald-500 mr-2" />
-                  Arquivos Anexados ({arquivosAnexados.length})
+                  Arquivos Anexados ({vendorAttachments.length})
                 </h3>
                 <div className="space-y-3">
-                  {arquivosAnexados.map((arquivo, index) => (
+                  {vendorAttachments.map((attachment, index) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
                       <div className="flex items-center">
                         <FileText className="w-5 h-5 text-emerald-600 mr-3" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{arquivo.name}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{attachment.name}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {(arquivo.size / 1024 / 1024).toFixed(2)} MB • {arquivo.type}
+                            {attachment.size && typeof attachment.size === 'string' ? 
+                              `${(parseInt(attachment.size) / 1024 / 1024).toFixed(2)} MB` : 
+                              'Tamanho desconhecido'
+                            } • {attachment.mimetype}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-800 px-2 py-1 rounded">
-                          Enviado
+                          Salvo no Banco
                         </span>
                         <button
-                          onClick={() => removerArquivo(index)}
+                          onClick={() => removerAnexo(attachment.id)}
                           className="text-red-500 hover:text-red-700 transition-colors p-1 rounded"
                           title="Remover arquivo"
                         >

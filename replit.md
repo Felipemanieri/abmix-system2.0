@@ -17,15 +17,19 @@ Preferred communication style: Simple, everyday language.
   - Anexos aparecendo duplicados no ProposalGenerator
   - Anexos desaparecendo após upload
   - Problema crítico de scroll travando após geração de proposta
+  - CRÍTICO: Duplicação de anexos ao arrastar arquivos no portal vendedor
 - **Complete Fix**: 
   - Sistema de upload 100% funcional com persistência no banco PostgreSQL
   - Anexos salvos corretamente via storage.createAttachment()
   - Eliminada duplicação de anexos removendo seção duplicada
   - Implementado scroll suave após criação de propostas
   - Upload imediato durante anexação de arquivos
-  - Sistema aceita PDF, DOC, DOCX, JPG, PNG com validação de 50MB
+  - Sistema aceita PDF, DOC, DOCX, JPG, PNG com validação de 10MB
   - Notificações do vendedor implementadas no servidor
-  - Resolução: Sistema de anexos 100% operacional e confiável
+  - **DUPLICAÇÃO RESOLVIDA**: Removido completamente `arquivosAnexados` state
+  - **ÚNICA FONTE**: Sistema usa apenas `vendorAttachments` para evitar duplicação
+  - **DRAG & DROP CORRIGIDO**: Upload único sem duplicar na interface visual
+  - Resolução: Sistema de anexos 100% operacional, confiável e sem duplicação
 
 ### Simulador de Propostas com Dados Aleatórios Completo
 - **Date**: August 4, 2025
