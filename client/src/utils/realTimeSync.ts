@@ -144,7 +144,7 @@ class RealTimeSync {
     
     setInterval(() => {
       // Invalidar queries sem fazer refetch completo
-      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] }, { refetchType: 'none' });
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
     }, 500); // A cada 500ms
   }
 }

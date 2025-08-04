@@ -147,6 +147,9 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     observacoesCliente: 'Lembre-se de enviar todos os documentos solicitados em boa qualidade. Para dúvidas sobre documentos específicos, entre em contato através do chat.'
   });
 
+  // Estados para drag and drop
+  const [dragActive, setDragActive] = useState(false);
+
 
   const [showInternalFields, setShowInternalFields] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -768,12 +771,78 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     }));
   };
 
-  const handleAnexarArquivo = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAnexarArquivo = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
       const novosArquivos = Array.from(files);
+      
+      // Validação de arquivo
+      for (const file of novosArquivos) {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          showNotification(`Arquivo ${file.name} é muito grande (máximo 10MB)`, 'error');
+          return;
+        }
+      }
+      
       setArquivosAnexados(prev => [...prev, ...novosArquivos]);
-      showNotification(`${novosArquivos.length} arquivo(s) anexado(s)!`, 'success');
+      showNotification(`${novosArquivos.length} arquivo(s) anexado(s) com sucesso`, 'success');
+    }
+  };
+
+  // Funções para drag and drop
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const files = Array.from(e.dataTransfer.files);
+      
+      // Validação de arquivo
+      for (const file of files) {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+          showNotification(`Arquivo ${file.name} é muito grande (máximo 10MB)`, 'error');
+          return;
+        }
+      }
+      
+      setArquivosAnexados(prev => [...prev, ...files]);
+      showNotification(`${files.length} arquivo(s) anexado(s) via drag and drop`, 'success');
+    }
+  };
+
+  // Função para fazer upload real do arquivo para o servidor
+  const uploadFileToServer = async (file: File, proposalId: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('category', 'vendor');
+
+    try {
+      const response = await fetch(`/api/proposals/${proposalId}/attachments`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Arquivo enviado com sucesso:', result);
+        return result.attachment;
+      } else {
+        throw new Error('Falha no upload');
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      throw error;
     }
   };
 
@@ -1923,7 +1992,17 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             </div>
 
             {/* Área de Upload com Drag & Drop */}
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 dark:border-gray-600 rounded-lg p-8 text-center mb-4">
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 transition-colors ${
+                dragActive 
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                  : 'border-gray-300 dark:border-gray-600'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
               <input
                 type="file"
                 multiple
@@ -1933,12 +2012,12 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
               <label htmlFor="file-upload-cotacao" className="cursor-pointer">
-                <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 dark:text-white mx-auto mb-4" />
+                <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                 <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Arraste arquivos aqui ou escolha uma opção
+                  Arraste arquivos aqui ou clique para selecionar
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white">
-                  Suporte para PDF, DOC, DOCX, JPG, PNG - Sem limite de quantidade
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Suporte para PDF, DOC, DOCX, JPG, PNG - Máximo 10MB por arquivo
                 </p>
               </label>
             </div>

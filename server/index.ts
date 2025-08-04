@@ -98,13 +98,13 @@ const upload = multer({
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rota para buscar anexos de uma proposta
-app.get('/api/proposals/:id/attachments', (req, res) => {
+app.get('/api/proposals/:id/attachments', async (req, res) => {
   const proposalId = req.params.id;
   
   try {
-    // Para agora, retorna lista vazia - usuário pode anexar novos documentos
-    // Esta foi a resposta solicitada: os anexos antigos não eram reais
-    const attachments = [];
+    // Buscar anexos reais do banco de dados
+    const attachments = await storage.getProposalAttachments(proposalId);
+    console.log(`📎 Buscando anexos para proposta ${proposalId}:`, attachments.length);
     
     res.json({ success: true, attachments: attachments });
   } catch (error) {
@@ -126,29 +126,42 @@ app.post('/api/proposals/:id/attachments', upload.single('file'), async (req, re
     // Gerar URL do arquivo
     const fileUrl = `/uploads/${req.file.filename}`;
     
-    // Dados do anexo
+    // Dados do anexo para o banco de dados
     const attachment = {
-      id: `att-${Date.now()}`,
-      name: req.file.originalname,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-      category: category || 'vendor',
       proposalId: proposalId,
-      url: fileUrl,
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      fileType: req.file.mimetype,
+      fileSize: req.file.size,
+      category: category || 'vendor',
+      status: 'pending',
+      uploadedBy: 'vendor',
       uploadedAt: new Date()
     };
 
-    // Aqui você salvaria no banco de dados
+    // Salvar no banco de dados real
     console.log('📎 Anexo recebido:', attachment);
     
-    res.json({ 
-      success: true, 
-      attachment: {
-        id: attachment.id,
-        url: attachment.url
-      }
-    });
+    try {
+      // Inserir no banco de dados
+      const savedAttachment = await storage.createAttachment(attachment);
+      console.log('✅ Anexo salvo no banco de dados:', savedAttachment.id);
+      
+      res.json({ 
+        success: true, 
+        attachment: {
+          id: savedAttachment.id,
+          name: savedAttachment.originalName,
+          url: fileUrl,
+          size: savedAttachment.fileSize,
+          mimetype: savedAttachment.fileType,
+          uploadedAt: savedAttachment.uploadedAt
+        }
+      });
+    } catch (dbError) {
+      console.error('❌ Erro ao salvar anexo no banco:', dbError);
+      res.status(500).json({ success: false, error: 'Erro ao salvar anexo no banco de dados' });
+    }
   } catch (error) {
     console.error('Erro no upload:', error);
     res.status(500).json({ success: false, error: 'Erro interno do servidor' });
