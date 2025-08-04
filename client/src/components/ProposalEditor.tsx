@@ -219,6 +219,8 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     setEditingField(null);
   };
 
+
+
   const handleSyncGoogleSheets = async () => {
     setIsSyncing(true);
     try {
@@ -625,57 +627,78 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {attachments.map((attachment) => (
-                  <div key={attachment.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500 dark:text-white" />
-                          <span className="text-sm font-medium text-gray-900 truncate">{attachment.name}</span>
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-white space-y-1">
-                          <div>{attachment.type} • {attachment.size}</div>
-                          <div>Por: {attachment.uploadedBy}</div>
-                          <div>{attachment.uploadDate}</div>
-                          <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
-                            attachment.category === 'vendor' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                          }`}>
-                            {attachment.category === 'vendor' ? 'Vendedor' : 'Cliente'}
+              {attachments.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-white">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p>Nenhum documento anexado</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {attachments.map((attachment) => (
+                    <div key={attachment.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500 dark:text-white" />
+                            <span className="text-sm font-medium text-gray-900 truncate">{attachment.name}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-white space-y-1">
+                            <div>{attachment.type} • {attachment.size}</div>
+                            <div>Por: {attachment.uploadedBy}</div>
+                            <div>{attachment.uploadDate}</div>
+                            <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
+                              attachment.category === 'vendor' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                            }`}>
+                              {attachment.category === 'vendor' ? 'Vendedor' : 'Cliente'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-1 ml-2">
-                        <button
-                          onClick={() => attachment.url && window.open(attachment.url, '_blank')}
-                          className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-blue-600"
-                          title="Visualizar"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => showNotification(`Download de ${attachment.name} iniciado`, 'success')}
-                          className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-green-600"
-                          title="Download"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAttachment(attachment.id)}
-                          className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-red-600"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center space-x-1 ml-2">
+                          <button
+                            onClick={() => {
+                              if (attachment.url) {
+                                window.open(attachment.url, '_blank');
+                              } else {
+                                showNotification('Arquivo não disponível para visualização', 'error');
+                              }
+                            }}
+                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-blue-600"
+                            title="Visualizar"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (attachment.url) {
+                                const link = document.createElement('a');
+                                link.href = attachment.url;
+                                link.download = attachment.name;
+                                link.click();
+                                showNotification(`Download de ${attachment.name} iniciado`, 'success');
+                              } else {
+                                showNotification('Arquivo não disponível para download', 'error');
+                              }
+                            }}
+                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-green-600"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAttachment(attachment.id)}
+                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-red-600"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-
-
         </div>
       </div>
     </div>

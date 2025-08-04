@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import bcrypt from "bcrypt";
+import multer from "multer";
 import { storage } from "./storage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,6 +62,40 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// Configuração do multer para upload de arquivos
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: multerStorage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo não permitido'));
+    }
+  }
+});
+
+// Servir arquivos estáticos da pasta uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rota para consultar CPF via proxy (evita CORS)
 app.get('/api/cpf/:cpf', async (req, res) => {
@@ -287,6 +322,37 @@ async function startServer() {
       } catch (error) {
         console.error('❌ Erro ao atualizar proposta por token do cliente:', error);
         res.status(500).json({ error: 'Falha ao atualizar proposta' });
+      }
+    });
+
+    // ROTA CRÍTICA: Upload de arquivos para anexos
+    app.post('/api/upload', upload.array('files'), (req: Request, res: Response) => {
+      try {
+        const files = req.files as Express.Multer.File[];
+        
+        if (!files || files.length === 0) {
+          return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+        }
+
+        const uploadedFiles = files.map(file => ({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          originalName: file.originalname,
+          filename: file.filename,
+          size: file.size,
+          mimetype: file.mimetype,
+          path: file.path,
+          url: `/uploads/${file.filename}`
+        }));
+
+        console.log(`✅ Upload realizado: ${files.length} arquivo(s) salvos`);
+        res.json({ 
+          success: true, 
+          files: uploadedFiles,
+          message: `${files.length} arquivo(s) enviado(s) com sucesso` 
+        });
+      } catch (error) {
+        console.error('❌ Erro no upload:', error);
+        res.status(500).json({ error: 'Erro no upload de arquivos' });
       }
     });
 

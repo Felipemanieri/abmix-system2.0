@@ -1100,7 +1100,15 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 <h2 className="text-xl font-semibold text-gray-900">Anexar Cotação</h2>
               </div>
 
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8">
+              <div 
+                className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8"
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleFileUpload(e.dataTransfer.files);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={(e) => e.preventDefault()}
+              >
                 <div className="text-center mb-6">
                   <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg font-medium text-gray-700 mb-2">
