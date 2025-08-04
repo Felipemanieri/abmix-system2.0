@@ -255,37 +255,58 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
-  const handleFileUpload = (files: FileList | null, category: 'vendor' | 'client') => {
+  const handleFileUpload = async (files: FileList | null, category: 'vendor' | 'client') => {
     if (!files) return;
 
+    const formData = new FormData();
     Array.from(files).forEach(file => {
-      const newAttachment: AttachmentData = {
-        id: Date.now().toString(),
-        name: file.name,
-        type: file.name.split('.').pop()?.toUpperCase() || 'FILE',
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-        uploadDate: new Date().toISOString().split('T')[0],
-        uploadedBy: user.name,
-        category: category,
-        url: URL.createObjectURL(file)
-      };
-
-      setAttachments(prev => [...prev, newAttachment]);
-      
-      // Registrar no log
-      const newChange: ChangeLog = {
-        id: Date.now().toString(),
-        timestamp: new Date(),
-        user: user.name,
-        field: 'Novo Anexo',
-        oldValue: '',
-        newValue: file.name,
-        section: 'Documentos'
-      };
-      setChangeLog(prev => [newChange, ...prev]);
-
-      showNotification(`Arquivo "${file.name}" enviado para o Google Drive`, 'success');
+      formData.append('files', file);
     });
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        result.files.forEach((file: any) => {
+          const newAttachment: AttachmentData = {
+            id: file.id,
+            name: file.originalName,
+            type: file.originalName.split('.').pop()?.toUpperCase() || 'FILE',
+            size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+            uploadDate: new Date().toISOString().split('T')[0],
+            uploadedBy: user.name,
+            category: category,
+            url: file.url
+          };
+
+          setAttachments(prev => [...prev, newAttachment]);
+          
+          // Registrar no log
+          const newChange: ChangeLog = {
+            id: Date.now().toString(),
+            timestamp: new Date(),
+            user: user.name,
+            field: 'Novo Anexo',
+            oldValue: '',
+            newValue: file.originalName,
+            section: 'Documentos'
+          };
+          setChangeLog(prev => [newChange, ...prev]);
+        });
+
+        showNotification(`${result.files.length} arquivo(s) enviado(s) com sucesso`, 'success');
+      } else {
+        showNotification(result.error || 'Erro no upload', 'error');
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      showNotification('Erro ao enviar arquivos', 'error');
+    }
   };
 
   const handleDeleteAttachment = (attachmentId: string) => {
@@ -635,63 +656,61 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {attachments.map((attachment) => (
-                    <div key={attachment.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500 dark:text-white" />
-                            <span className="text-sm font-medium text-gray-900 truncate">{attachment.name}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-white space-y-1">
-                            <div>{attachment.type} • {attachment.size}</div>
-                            <div>Por: {attachment.uploadedBy}</div>
-                            <div>{attachment.uploadDate}</div>
-                            <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
-                              attachment.category === 'vendor' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                            }`}>
-                              {attachment.category === 'vendor' ? 'Vendedor' : 'Cliente'}
-                            </div>
+                    <div key={attachment.id} className="border border-gray-200 rounded-lg p-4 bg-white dark:bg-gray-800 transition-colors">
+                      <div className="mb-3">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <FileText className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{attachment.name}</span>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                          <div>{attachment.type} • {attachment.size}</div>
+                          <div>Por: {attachment.uploadedBy}</div>
+                          <div>{attachment.uploadDate}</div>
+                          <div className={`inline-flex px-2 py-1 rounded-full text-xs ${
+                            attachment.category === 'vendor' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                          }`}>
+                            {attachment.category === 'vendor' ? 'Vendedor' : 'Cliente'}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-1 ml-2">
-                          <button
-                            onClick={() => {
-                              if (attachment.url) {
-                                window.open(attachment.url, '_blank');
-                              } else {
-                                showNotification('Arquivo não disponível para visualização', 'error');
-                              }
-                            }}
-                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-blue-600"
-                            title="Visualizar"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (attachment.url) {
-                                const link = document.createElement('a');
-                                link.href = attachment.url;
-                                link.download = attachment.name;
-                                link.click();
-                                showNotification(`Download de ${attachment.name} iniciado`, 'success');
-                              } else {
-                                showNotification('Arquivo não disponível para download', 'error');
-                              }
-                            }}
-                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-green-600"
-                            title="Download"
-                          >
-                            <Download className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAttachment(attachment.id)}
-                            className="p-1 text-gray-400 dark:text-gray-500 dark:text-white hover:text-red-600"
-                            title="Excluir"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                      </div>
+                      
+                      {/* Ações fixas na parte inferior */}
+                      <div className="flex items-center justify-center space-x-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <button
+                          onClick={() => {
+                            const fileUrl = attachment.url.startsWith('http') ? attachment.url : `${window.location.origin}${attachment.url}`;
+                            window.open(fileUrl, '_blank');
+                            showNotification(`Visualizando ${attachment.name}`, 'info');
+                          }}
+                          className="flex items-center px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                          title="Visualizar arquivo"
+                        >
+                          <Eye className="w-3 h-3 mr-1" />
+                          Visualizar
+                        </button>
+                        <button
+                          onClick={() => {
+                            const fileUrl = attachment.url.startsWith('http') ? attachment.url : `${window.location.origin}${attachment.url}`;
+                            const link = document.createElement('a');
+                            link.href = fileUrl;
+                            link.download = attachment.name;
+                            link.click();
+                            showNotification(`Download de ${attachment.name} iniciado`, 'success');
+                          }}
+                          className="flex items-center px-3 py-1.5 text-xs bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors"
+                          title="Baixar arquivo"
+                        >
+                          <Download className="w-3 h-3 mr-1" />
+                          Baixar
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAttachment(attachment.id)}
+                          className="flex items-center px-3 py-1.5 text-xs bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+                          title="Excluir arquivo"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Excluir
+                        </button>
                       </div>
                     </div>
                   ))}
