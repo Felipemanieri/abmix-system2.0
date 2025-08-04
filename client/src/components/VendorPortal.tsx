@@ -657,24 +657,23 @@ Vendedor Abmix`;
     showNotification('Redirecionando para WhatsApp...', 'success');
   };
 
-  const handleMarkAsRead = (id: string) => {
-    // SISTEMA CORRIGIDO: Marcar mensagem como lida e REMOVER da lista de notificações
+  const handleMarkAsRead = async (id: string) => {
+    // USAR API DO BACKEND PARA MARCAR COMO LIDA
     try {
-      const storedMessages = localStorage.getItem('internalMessages');
-      if (storedMessages) {
-        const messages = JSON.parse(storedMessages);
-        const updatedMessages = messages.map((msg: any) => 
-          msg.id === id ? { ...msg, read: true } : msg
-        );
-        localStorage.setItem('internalMessages', JSON.stringify(updatedMessages));
-        console.log(`Mensagem ${id} marcada como lida para ${user.name}`);
+      const response = await fetch(`/api/messages/${id}/read`, {
+        method: 'PUT'
+      });
+      
+      if (response.ok) {
+        console.log(`✅ Mensagem ${id} marcada como lida no banco`);
+        // REMOVER da lista de notificações local
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
+      } else {
+        console.error('❌ Erro ao marcar mensagem como lida no servidor');
       }
     } catch (error) {
-      console.error('Erro ao marcar mensagem como lida:', error);
+      console.error('❌ Erro ao marcar mensagem como lida:', error);
     }
-    
-    // REMOVER completamente da lista de notificações
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
   const handleMarkAllAsRead = () => {
@@ -697,22 +696,23 @@ Vendedor Abmix`;
     setNotifications([]);
   };
 
-  const handleDeleteNotification = (id: string) => {
-    // SISTEMA CORRIGIDO: Deletar mensagem completamente
+  const handleDeleteNotification = async (id: string) => {
+    // USAR API DO BACKEND PARA DELETAR MENSAGEM
     try {
-      const storedMessages = localStorage.getItem('internalMessages');
-      if (storedMessages) {
-        const messages = JSON.parse(storedMessages);
-        const updatedMessages = messages.filter(msg => msg.id !== id);
-        localStorage.setItem('internalMessages', JSON.stringify(updatedMessages));
-        console.log(`Mensagem ${id} deletada completamente`);
+      const response = await fetch(`/api/messages/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        console.log(`✅ Mensagem ${id} deletada do banco`);
+        // REMOVER da lista de notificações local
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
+      } else {
+        console.error('❌ Erro ao deletar mensagem no servidor');
       }
     } catch (error) {
-      console.error('Erro ao deletar mensagem:', error);
+      console.error('❌ Erro ao deletar mensagem:', error);
     }
-    
-    // REMOVER da lista de notificações
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
   // Hook para buscar metas do vendedor - Sistema híbrido WebSocket + polling

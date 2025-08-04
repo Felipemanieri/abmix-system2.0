@@ -415,12 +415,25 @@ export default function AdvancedInternalMessage({
       console.log(`📎 Tipo de anexo:`, attachments.length > 0 ? 'ARQUIVOS REAIS' : 'DADOS JSON');
       
       try {
-        // Enviar com FormData para processar arquivos reais
-        const response = await fetch('/api/messages/send', {
-          method: 'POST',
-          body: formData_multipart // NÃO usar JSON.stringify aqui!
-        });
-        
+        const response = attachments.length === 0 ? 
+          await fetch('/api/messages/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: currentUser.email,
+              to: recipient,
+              subject: formData.subject,
+              message: formData.message,
+              proposalData: attachedProposal ? JSON.stringify(attachedProposal) : null
+            })
+          }) :
+          await fetch('/api/messages/send', {
+            method: 'POST',
+            body: formData_multipart
+          });
+
         console.log('📡 RESPOSTA DO SERVIDOR:', response.status, response.statusText);
         
         if (!response.ok) {
