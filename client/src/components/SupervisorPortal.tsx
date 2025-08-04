@@ -5430,8 +5430,8 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Resumo por Vendedor</h3>
                 {(() => {
-                  // Agrupar dados filtrados por vendedor
-                  const vendorGroups = reportData.reduce((acc, item) => {
+                  // Agrupar dados filtrados por vendedor - APENAS STATUS IMPLANTADO
+                  const vendorGroups = reportData.filter(item => item.status === 'implantado').reduce((acc, item) => {
                       const vendedor1 = item.vendedor;
                       
                       // Processar vendedor 1 (principal)
