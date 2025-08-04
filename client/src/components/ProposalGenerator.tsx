@@ -1545,7 +1545,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Início da Vigência *
+                  Início da Vigência
                 </label>
                 <input
                   type="date"

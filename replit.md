@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Field Requirement Updates
+- **Date**: August 4, 2025
+- **Change**: Removed required validation from "Início da Vigência" field
+- **Details**: 
+  - Removed asterisk (*) from all form labels showing "Início da Vigência *" 
+  - Removed `required` attribute from VendorForm.tsx date input
+  - Updated ProposalGenerator.tsx, VendorForm.tsx, and ClientProposalView.tsx
+  - Field is now optional across all interfaces
+
 ### Email Personalization Implementation
 - **Date**: August 4, 2025
 - **Feature**: Automated email generation with personalized greetings

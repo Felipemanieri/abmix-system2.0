@@ -901,7 +901,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Início da Vigência *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Início da Vigência</label>
                 <input
                   type="text"
                   value={proposal.contractData.inicioVigencia}
