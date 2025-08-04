@@ -138,18 +138,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     observacoesCliente: ''
   });
 
-  const [attachments, setAttachments] = useState<AttachmentData[]>([
-    {
-      id: 'sample-1',
-      name: 'Contrato-Exemplo.pdf',
-      type: 'PDF',
-      size: '2.4 MB',
-      uploadDate: '2025-08-04',
-      uploadedBy: 'Sistema',
-      category: 'vendor',
-      url: '/uploads/exemplo.pdf'
-    }
-  ]);
+  const [attachments, setAttachments] = useState<AttachmentData[]>([]);
   const [changeLog, setChangeLog] = useState<ChangeLog[]>([]);
 
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -194,23 +183,25 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
         setInternalData(data.internalData);
       }
 
-      // Carregar anexos
-      const allAttachments = [];
-      if (data.vendorAttachments) {
-        allAttachments.push(...data.vendorAttachments.map((att: any) => ({
-          ...att,
-          category: 'vendor'
-        })));
-      }
-      if (data.clientAttachments) {
-        allAttachments.push(...data.clientAttachments.map((att: any) => ({
-          ...att,
-          category: 'client'
-        })));
-      }
-      setAttachments(allAttachments);
+      // Carregar anexos da API
+      loadAttachments();
     }
   }, [data, isLoading]);
+
+  // Função para carregar anexos
+  const loadAttachments = async () => {
+    try {
+      const response = await fetch(`/api/proposals/${proposalId}/attachments`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setAttachments(result.attachments);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar anexos:', error);
+      showNotification('Erro ao carregar anexos', 'error');
+    }
+  };
 
   const handleFieldEdit = (fieldName: string, value: any, section: string) => {
     // Registrar mudança no log
@@ -492,7 +483,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
               </button>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Editor de Proposta {data?.abmId || `ABM${proposalId?.slice(-3) || '000'}`}
+                Editor de Proposta
               </h1>
             </div>
             <div className="flex items-center space-x-3">

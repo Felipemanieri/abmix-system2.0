@@ -97,6 +97,42 @@ const upload = multer({
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Rota para buscar anexos de uma proposta
+app.get('/api/proposals/:id/attachments', (req, res) => {
+  const proposalId = req.params.id;
+  
+  try {
+    // Anexos de exemplo para teste - substitua pela lógica real do banco
+    const mockAttachments = [
+      {
+        id: 'att-001',
+        name: 'Contrato-Assinado.pdf',
+        type: 'PDF',
+        size: '2.4 MB',
+        uploadDate: '2025-08-04',
+        uploadedBy: 'Vendedor',
+        category: 'vendor',
+        url: '/uploads/exemplo.pdf'
+      },
+      {
+        id: 'att-002',
+        name: 'Documentos-Cliente.jpg',
+        type: 'JPG', 
+        size: '1.8 MB',
+        uploadDate: '2025-08-04',
+        uploadedBy: 'Cliente',
+        category: 'client',
+        url: '/uploads/exemplo.jpg'
+      }
+    ];
+    
+    res.json({ success: true, attachments: mockAttachments });
+  } catch (error) {
+    console.error('Erro ao buscar anexos:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+  }
+});
+
 // Rota para deletar anexos
 app.delete('/api/attachments/:id', (req, res) => {
   const attachmentId = req.params.id;
