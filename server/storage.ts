@@ -672,31 +672,7 @@ export class DatabaseStorage implements IStorage {
     return messages;
   }
 
-  // MARCAR MENSAGEM COMO LIDA
-  async markMessageAsRead(messageId: number): Promise<void> {
-    console.log(`📧 STORAGE: Marcando mensagem ${messageId} como lida`);
-    
-    await db
-      .update(internalMessages)
-      .set({ 
-        read: true,
-        readAt: new Date()
-      })
-      .where(eq(internalMessages.id, messageId));
-    
-    console.log(`✅ STORAGE: Mensagem ${messageId} marcada como lida`);
-  }
 
-  // EXCLUIR MENSAGEM
-  async deleteMessage(messageId: number): Promise<void> {
-    console.log(`📧 STORAGE: Excluindo mensagem ${messageId}`);
-    
-    await db
-      .delete(internalMessages)
-      .where(eq(internalMessages.id, messageId));
-    
-    console.log(`✅ STORAGE: Mensagem ${messageId} excluída`);
-  }
 
   // Drive Config operations
   async getAllDriveConfigs(): Promise<DriveConfig[]> {
@@ -891,12 +867,11 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async deleteMessage(messageId: string): Promise<void> {
+  async deleteMessage(messageId: number): Promise<void> {
     console.log(`🗑️ STORAGE: Deletando mensagem ${messageId} do PostgreSQL`);
     
     try {
-      const id = parseInt(messageId);
-      await db.delete(internalMessages).where(eq(internalMessages.id, id));
+      await db.delete(internalMessages).where(eq(internalMessages.id, messageId));
       console.log(`✅ STORAGE: Mensagem ${messageId} deletada com sucesso`);
     } catch (error) {
       console.error(`❌ STORAGE: Erro ao deletar mensagem ${messageId}:`, error);
