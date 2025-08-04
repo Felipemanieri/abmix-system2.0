@@ -153,7 +153,7 @@ export default function AdvancedInternalMessage({
   });
 
   // Buscar mensagens do inbox - USAR URL CORRETA
-  const { data: inboxMessages = [], isLoading: isLoadingInbox } = useQuery<InternalMessage[]>({
+  const { data: inboxMessages = [], isLoading: isLoadingInbox, refetch: refetchInboxMessages } = useQuery<InternalMessage[]>({
     queryKey: ['/api/messages/inbox', currentUser.email],
     queryFn: async () => {
       console.log('📬 BUSCANDO MENSAGENS INBOX REACT QUERY:', currentUser.email);
@@ -163,15 +163,30 @@ export default function AdvancedInternalMessage({
       }
       const data = await response.json();
       console.log('📬 MENSAGENS INBOX RECEBIDAS:', data.length, 'mensagens');
+      
+      // AUTO-MARCAR MENSAGENS COMO LIDAS QUANDO O PAINEL É ABERTO
+      if (activeTab === 'inbox' && data.length > 0) {
+        data.forEach(async (message: InternalMessage) => {
+          if (!message.read) {
+            try {
+              await fetch(`/api/messages/${message.id}/read`, { method: 'PUT' });
+              console.log(`✅ Mensagem ${message.id} marcada como lida automaticamente`);
+            } catch (error) {
+              console.error('Erro ao marcar mensagem como lida:', error);
+            }
+          }
+        });
+      }
+      
       return data;
     },
     enabled: isOpen && activeTab === 'inbox',
     refetchOnWindowFocus: false,
-    staleTime: 30000 // 30 segundos - mensagens podem ser atualizadas menos frequentemente
+    staleTime: 5000 // 5 segundos - atualizar mais frequentemente para notificações
   });
 
   // Buscar mensagens enviadas - USAR URL CORRETA
-  const { data: sentMessages = [], isLoading: isLoadingSent } = useQuery<InternalMessage[]>({
+  const { data: sentMessages = [], isLoading: isLoadingSent, refetch: refetchSentMessages } = useQuery<InternalMessage[]>({
     queryKey: ['/api/messages/sent', currentUser.email],
     queryFn: async () => {
       console.log('📤 BUSCANDO MENSAGENS ENVIADAS REACT QUERY:', currentUser.email);
@@ -711,17 +726,33 @@ export default function AdvancedInternalMessage({
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400">Ações:</h4>
           
-          {/* Botão de exclusão (lixeira) - SEM NOTIFICAÇÃO NO NAVEGADOR */}
+          {/* Botão de exclusão (lixeira) - USAR API CORRETA */}
           <button 
-            onClick={() => {
-              // EXCLUSÃO DIRETA - SEM window.confirm
-              fetch(`/api/messages/${message.id}`, { method: 'DELETE' })
-                .then(() => {
+            onClick={async () => {
+              try {
+                const response = await fetch(`/api/messages/${message.id}`, { 
+                  method: 'DELETE' 
+                });
+                
+                if (response.ok) {
+                  console.log(`✅ Mensagem ${message.id} excluída`);
+                  
+                  // Atualizar queries para remover da UI
                   queryClient.invalidateQueries({ queryKey: ['/api/messages'] });
                   queryClient.invalidateQueries({ queryKey: ['/api/messages/inbox'] });
+                  queryClient.invalidateQueries({ queryKey: ['/api/messages/sent'] });
+                  
+                  // Refetch para garantir dados atualizados
+                  await refetchInboxMessages();
+                  
                   showNotification('Mensagem excluída com sucesso!', 'success');
-                })
-                .catch(() => showNotification('Erro ao excluir mensagem', 'error'));
+                } else {
+                  showNotification('Erro ao excluir mensagem', 'error');
+                }
+              } catch (error) {
+                console.error('Erro ao excluir mensagem:', error);
+                showNotification('Erro ao excluir mensagem', 'error');
+              }
             }}
             className="p-1 text-gray-400 hover:text-red-500 transition-colors"
             title="Excluir mensagem"

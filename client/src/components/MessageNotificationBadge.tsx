@@ -36,8 +36,24 @@ export default function MessageNotificationBadge({ userEmail, onMessagesView }: 
     return () => clearInterval(interval);
   }, [userEmail]);
 
-  const handleClick = () => {
-    // Apenas chama onMessagesView para abrir a interface unificada
+  const handleClick = async () => {
+    // MARCAR TODAS AS MENSAGENS COMO LIDAS AUTOMATICAMENTE quando o painel é aberto
+    try {
+      const unreadMessages = messages.filter(msg => !msg.read);
+      
+      for (const message of unreadMessages) {
+        await fetch(`/api/messages/${message.id}/read`, { method: 'PUT' });
+        console.log(`✅ Auto-marcada como lida: ${message.id}`);
+      }
+      
+      // Limpar o contador local imediatamente
+      setUnreadCount(0);
+      
+    } catch (error) {
+      console.error('❌ Erro ao marcar mensagens como lidas:', error);
+    }
+    
+    // Abrir o painel de mensagens
     if (onMessagesView) {
       onMessagesView();
     }
