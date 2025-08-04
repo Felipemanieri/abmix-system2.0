@@ -564,19 +564,29 @@ async function startServer() {
             id: user.id,
             name: user.name,
             email: user.email,
+            password: user.password || '123456',
             role: user.role,
             panel: user.panel,
             active: user.active,
-            type: 'system'
+            type: 'system',
+            userType: 'system',
+            lastLogin: user.lastLogin,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
           })),
           ...vendors.map(vendor => ({
             id: vendor.id,
             name: vendor.name,
             email: vendor.email,
+            password: vendor.password || '123456',
             role: vendor.role,
             panel: 'vendor',
             active: vendor.active,
-            type: 'vendor'
+            type: 'vendor',
+            userType: 'vendor',
+            lastLogin: vendor.last_login,
+            createdAt: vendor.createdAt,
+            updatedAt: vendor.updatedAt
           }))
         ];
         
@@ -584,6 +594,99 @@ async function startServer() {
       } catch (error) {
         console.error('Erro ao buscar todos os usuários:', error);
         res.status(500).json({ error: 'Erro ao buscar usuários' });
+      }
+    });
+
+    // API para criar usuário
+    app.post('/api/auth/users', async (req: Request, res: Response) => {
+      try {
+        const userData = req.body;
+        console.log('🆕 Criando novo usuário:', userData);
+
+        if (userData.userType === 'vendor' || userData.panel === 'vendor') {
+          // Criar vendedor
+          const newVendor = await storage.createVendor({
+            name: userData.name,
+            email: userData.email,
+            password: userData.password || '123456',
+            role: 'vendor',
+            active: userData.active !== false
+          });
+          console.log('✅ Vendedor criado:', newVendor);
+          res.json(newVendor);
+        } else {
+          // Criar usuário do sistema
+          const newUser = await storage.createSystemUser({
+            name: userData.name,
+            email: userData.email,
+            password: userData.password || '123456',
+            role: userData.role,
+            panel: userData.panel,
+            active: userData.active !== false
+          });
+          console.log('✅ Usuário do sistema criado:', newUser);
+          res.json(newUser);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao criar usuário:', error);
+        res.status(500).json({ error: 'Erro ao criar usuário' });
+      }
+    });
+
+    // API para atualizar usuário
+    app.put('/api/auth/users/:id', async (req: Request, res: Response) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const userData = req.body;
+        console.log(`🔄 Atualizando usuário ${userId}:`, userData);
+
+        if (userData.userType === 'vendor' || userData.type === 'vendor') {
+          // Atualizar vendedor
+          const updatedVendor = await storage.updateVendor(userId, {
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            active: userData.active
+          });
+          console.log('✅ Vendedor atualizado:', updatedVendor);
+          res.json(updatedVendor);
+        } else {
+          // Atualizar usuário do sistema
+          const updatedUser = await storage.updateSystemUser(userId, {
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            role: userData.role,
+            panel: userData.panel,
+            active: userData.active
+          });
+          console.log('✅ Usuário do sistema atualizado:', updatedUser);
+          res.json(updatedUser);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao atualizar usuário:', error);
+        res.status(500).json({ error: 'Erro ao atualizar usuário' });
+      }
+    });
+
+    // API para deletar usuário
+    app.delete('/api/auth/users/:id', async (req: Request, res: Response) => {
+      try {
+        const userId = parseInt(req.params.id);
+        const userType = req.query.type as string;
+        console.log(`🗑️ Deletando usuário ${userId} (${userType})`);
+
+        if (userType === 'vendor') {
+          await storage.deleteVendor(userId);
+        } else {
+          await storage.deleteSystemUser(userId);
+        }
+        
+        console.log('✅ Usuário deletado com sucesso');
+        res.json({ success: true });
+      } catch (error) {
+        console.error('❌ Erro ao deletar usuário:', error);
+        res.status(500).json({ error: 'Erro ao deletar usuário' });
       }
     });
 
@@ -657,95 +760,53 @@ async function startServer() {
       res.json({ success: true, message: 'API funcionando (produção)', timestamp: new Date().toISOString() });
     });
 
-    // ROTAS DE AUTENTICAÇÃO PARA PRODUÇÃO
+    // ROTAS DE AUTENTICAÇÃO PARA PRODUÇÃO (usando banco de dados)
     app.post('/api/auth/login', async (req: Request, res: Response) => {
       try {
         console.log('🔐 Login em produção:', req.body);
         
-        const { email, password } = req.body;
+        const { email, password, portal } = req.body;
         
         if (!email || !password) {
           return res.status(400).json({ error: 'Email e senha são obrigatórios' });
         }
 
-        // Mapear usuários do sistema
-        let userRole = 'client';
-        let userName = 'Usuário';
-        
-        if (email === 'cliente@abmix.com.br' && password === '123456') {
-          userRole = 'client';
-          userName = 'Cliente';
-        } else if (email === 'felipe@abmix.com.br' && password === '123456') {
-          userRole = 'restricted';
-          userName = 'Administrador';
-        } else if (email === 'supervisao@abmix.com.br' && password === '123456') {
-          userRole = 'supervisor';
-          userName = 'Rod Ribas';
-        } else if (email === 'financeiro@abmix.com.br' && password === '123456') {
-          userRole = 'financial';
-          userName = 'Financeiro';
-        } else if (email === 'implementacao@abmix.com.br' && password === '123456') {
-          userRole = 'implementation';
-          userName = 'Implementação';
-        } else if (email === 'carol@abmix.com.br' && password === '123456') {
-          userRole = 'financial';
-          userName = 'Carol Almeida';
-        } else if (email === 'michelle@abmix.com.br' && password === '123456') {
-          userRole = 'financial';
-          userName = 'Michelle Manieri';
-        } else if (email === 'adm2@abmix.com.br' && password === '123456') {
-          userRole = 'implementation';
-          userName = 'Amanda Fernandes';
-        } else if (email === 'comercial14@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Ana Caroline Terto';
-        } else if (email === 'comercial10@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Bruna Garcia';
-        } else if (email === 'comercial17@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Fabiana Ferreira';
-        } else if (email === 'comercial@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Fabiana Godinho';
-        } else if (email === 'comercial18@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Fernanda Batista';
-        } else if (email === 'comercial3@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Gabrielle Fernandes';
-        } else if (email === 'comercial4@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Isabela Velasquez';
-        } else if (email === 'comercial6@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Juliana Araujo';
-        } else if (email === 'comercial15@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Lohainy Berlino';
-        } else if (email === 'comercial21@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Luciana Velasquez';
-        } else if (email === 'comercial2@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Monique Silva';
-        } else if (email === 'comercial8@abmix.com.br' && password === '123456') {
-          userRole = 'vendor';
-          userName = 'Sara Mattos';
-        } else {
-          console.log('❌ Credenciais inválidas para:', email);
-          return res.status(401).json({ error: 'Credenciais inválidas' });
+        console.log(`🔍 Verificando credenciais para ${email} no portal ${portal}`);
+
+        // Primeiro, tentar buscar usuário do sistema
+        const systemUser = await storage.getSystemUserByEmail(email);
+        if (systemUser && systemUser.password === password && systemUser.active) {
+          console.log('✅ Login bem-sucedido - Usuário do sistema:', systemUser);
+          await storage.updateLastLogin(systemUser.id);
+          
+          const user = { 
+            id: systemUser.id.toString(), 
+            email: systemUser.email, 
+            name: systemUser.name,
+            role: systemUser.role
+          };
+          
+          return res.json({ success: true, user });
         }
+
+        // Se não encontrou no sistema, tentar buscar nos vendedores
+        const vendor = await storage.getVendorByEmail(email);
+        if (vendor && vendor.password === password && vendor.active) {
+          console.log('✅ Login bem-sucedido - Vendedor:', vendor);
+          
+          const user = { 
+            id: vendor.id.toString(), 
+            email: vendor.email, 
+            name: vendor.name,
+            role: 'vendor'
+          };
+          
+          return res.json({ success: true, user });
+        }
+
+        console.log('❌ Credenciais inválidas para:', email);
+        return res.status(401).json({ error: 'Credenciais inválidas' });
         
-        const user = { 
-          id: '1', 
-          email, 
-          name: userName,
-          role: userRole
-        };
-        
-        console.log('✅ Login bem-sucedido em produção:', user);
-        res.json({ success: true, user });
       } catch (error) {
         console.error('❌ Erro no login em produção:', error);
         res.status(500).json({ error: 'Erro de conexão. Tente novamente.' });
