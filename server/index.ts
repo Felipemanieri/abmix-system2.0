@@ -761,6 +761,22 @@ async function startServer() {
       }
     });
 
+    // ROTA PARA BUSCAR MENSAGENS INTERNAS (NOTIFICAÇÕES)
+    app.get('/api/messages/inbox/:email', async (req: Request, res: Response) => {
+      try {
+        const { email } = req.params;
+        console.log(`📧 Buscando mensagens para: ${email}`);
+        
+        const messages = await storage.getInternalMessages(email);
+        console.log(`✅ Encontradas ${messages.length} mensagens para ${email}`);
+        
+        res.json(messages);
+      } catch (error) {
+        console.error('❌ Erro ao buscar mensagens:', error);
+        res.status(500).json({ error: 'Erro ao buscar mensagens' });
+      }
+    });
+
     // Authentication endpoints
     app.post('/api/auth/login', async (req: Request, res: Response) => {
       try {

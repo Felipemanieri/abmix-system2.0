@@ -657,6 +657,20 @@ export class DatabaseStorage implements IStorage {
     return message;
   }
 
+  // BUSCAR MENSAGENS INTERNAS PARA EXIBIÇÃO NO BADGE
+  async getInternalMessages(userEmail: string): Promise<InternalMessage[]> {
+    console.log(`📧 STORAGE: Buscando mensagens para ${userEmail}`);
+    
+    const messages = await db
+      .select()
+      .from(internalMessages)
+      .where(eq(internalMessages.to, userEmail))
+      .orderBy(desc(internalMessages.createdAt));
+    
+    console.log(`✅ STORAGE: Encontradas ${messages.length} mensagens para ${userEmail}`);
+    return messages;
+  }
+
   // Drive Config operations
   async getAllDriveConfigs(): Promise<DriveConfig[]> {
     return await db.select().from(driveConfigs);
