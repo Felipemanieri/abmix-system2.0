@@ -118,29 +118,13 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
 
 
-  // Função para excluir proposta diretamente (CORRIGIDA)
+  // Função para excluir proposta com animação RESTAURADA e feedback visual
   const handleDeleteProposal = async (proposalId: string, cliente: string) => {
     try {
       console.log(`🗑️ IMPLANTACAO PORTAL - Iniciando exclusão da proposta ${proposalId} (${cliente})`);
       
-      // Fazer requisição DELETE direta para garantir funcionamento
-      const response = await fetch(`/api/proposals/${proposalId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro na exclusão: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(`✅ IMPLANTACAO PORTAL - Proposta ${proposalId} excluída:`, result);
-      
-      // Invalidar cache para atualização imediata em TODOS os portais
-      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
-      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
+      // Usar o hook oficial para garantir animação
+      await deleteProposal.mutateAsync(proposalId);
       
       showInternalNotification(`Proposta de ${cliente} excluída com sucesso e removida de todos os portais!`, 'success');
     } catch (error) {
@@ -758,11 +742,17 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                     </button>
                     <button
                       onClick={() => handleDeleteProposal(proposal.id, proposal.cliente)}
-                      className="p-2 text-red-600 hover:text-red-800 dark:text-white hover:bg-red-50 dark:hover:bg-red-800 dark:bg-red-900 rounded-md transition-colors"
-                      title="Excluir Proposta"
+                      className={`p-2 rounded-md transition-all duration-300 ${
+                        deleteProposal.isPending 
+                          ? 'text-red-800 bg-red-100 dark:bg-red-900 dark:text-red-200 cursor-not-allowed scale-110 animate-pulse' 
+                          : 'text-red-600 hover:text-red-800 dark:text-white hover:bg-red-50 dark:hover:bg-red-800 dark:bg-red-900 hover:scale-105'
+                      }`}
+                      title={deleteProposal.isPending ? "Excluindo..." : "Excluir Proposta"}
                       disabled={deleteProposal.isPending}
                     >
-                      <Trash2 className={`w-4 h-4 ${deleteProposal.isPending ? 'animate-spin' : ''}`} />
+                      <Trash2 className={`w-4 h-4 transition-transform duration-300 ${
+                        deleteProposal.isPending ? 'animate-spin scale-125' : 'hover:scale-110'
+                      }`} />
                     </button>
                     {/* SISTEMA DE APROVAÇÃO E REJEIÇÃO SINCRONIZADO EM TEMPO REAL */}
                     {!proposal.approved && !proposal.rejected ? (
