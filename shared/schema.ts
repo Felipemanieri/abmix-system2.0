@@ -27,7 +27,7 @@ export const vendors = pgTable("vendors", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull().default("120784"),
+  password: text("password").notNull().default("123456"),
   role: text("role").notNull().default("vendor"),
   active: boolean("active").notNull().default(true),
   last_login: timestamp("last_login"),

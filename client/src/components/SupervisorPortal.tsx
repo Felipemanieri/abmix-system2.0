@@ -878,7 +878,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     link.click();
     showNotification(`Proposta ${proposal.abmId || proposal.id} baixada com dados completos`, 'success');
   };
-  const [newVendorData, setNewVendorData] = useState({ name: '', email: '', password: '120784' });
+  const [newVendorData, setNewVendorData] = useState({ name: '', email: '', password: '123456' });
   
   // Estados para metas
   const [showAddTargetForm, setShowAddTargetForm] = useState(false);
@@ -960,7 +960,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
       realTimeSync.forceRefresh();
       
       setShowAddVendorForm(false);
-      setNewVendorData({ name: '', email: '', password: '120784' });
+      setNewVendorData({ name: '', email: '', password: '123456' });
       showNotification('Vendedor adicionado com sucesso! Todos os gráficos atualizados.', 'success');
     },
     onError: (error: any) => {
@@ -4231,7 +4231,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                   <tr key={vendor.id} className="border-b border-gray-200 dark:border-gray-600">
                     <td className="py-2 font-medium text-gray-900 dark:text-white">{vendor.name}</td>
                     <td className="py-2 text-gray-900 dark:text-white">{vendor.email}</td>
-                    <td className="py-2 text-sm text-gray-900 dark:text-white">120784</td>
+                    <td className="py-2 text-sm text-gray-900 dark:text-white">123456</td>
                     <td className="py-2">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         vendor.active ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'

@@ -390,7 +390,7 @@ export default function ControleSenhas() {
                         </div>
                       ) : (
                         <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm">
-                          {showAllPasswords ? (vendor.password || '120784') : '••••••••'}
+                          {showAllPasswords ? (vendor.password || '123456') : '••••••••'}
                         </code>
                       )}
                     </td>
@@ -423,7 +423,7 @@ export default function ControleSenhas() {
                         <button
                           onClick={() => {
                             setEditingUser(`vendor-${vendor.id}`);
-                            setNewPassword(vendor.password || '120784');
+                            setNewPassword(vendor.password || '123456');
                           }}
                           className="p-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-800 dark:bg-blue-900 rounded"
                         >

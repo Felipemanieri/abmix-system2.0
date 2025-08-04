@@ -320,7 +320,7 @@ export default function UserManagementDashboard() {
       ...filteredUsers.map((user: any) => [
         user.name || 'N/A',
         user.email || 'N/A',
-        user.password || '120784',
+        user.password || '123456',
         user.status === 'active' ? 'Ativo' : 'Inativo',
         formatDate(user.lastLogin)
       ])
@@ -652,7 +652,7 @@ export default function UserManagementDashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <span className="font-mono bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded border">
-                      {showPasswords ? (user.type === 'vendor' ? '120784' : '123456') : '••••••••'}
+                      {showPasswords ? '123456' : '••••••••'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

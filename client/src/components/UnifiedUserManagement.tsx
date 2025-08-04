@@ -269,7 +269,7 @@ export default function UnifiedUserManagement() {
     setFormData({
       name: '',
       email: '',
-      password: '120784', // Default password
+      password: '123456', // Default password
       role: activePanel === 'vendor' ? 'vendor' : activePanel,
       panel: activePanel,
       active: true
@@ -544,7 +544,7 @@ export default function UnifiedUserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {showPasswords ? (
                         <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                          {user.password || (user.role === 'vendor' ? '120784' : 'N/A')}
+                          {user.password || (user.role === 'vendor' ? '123456' : 'N/A')}
                         </span>
                       ) : (
                         <span className="text-gray-400">••••••••</span>

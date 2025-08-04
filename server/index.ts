@@ -687,49 +687,49 @@ async function startServer() {
         } else if (email === 'implementacao@abmix.com.br' && password === '123456') {
           userRole = 'implementation';
           userName = 'Implementação';
-        } else if (email === 'carol@abmix.com.br' && password === '120784') {
+        } else if (email === 'carol@abmix.com.br' && password === '123456') {
           userRole = 'financial';
           userName = 'Carol Almeida';
-        } else if (email === 'michelle@abmix.com.br' && password === '120784') {
+        } else if (email === 'michelle@abmix.com.br' && password === '123456') {
           userRole = 'financial';
           userName = 'Michelle Manieri';
-        } else if (email === 'adm2@abmix.com.br' && password === '120784') {
+        } else if (email === 'adm2@abmix.com.br' && password === '123456') {
           userRole = 'implementation';
           userName = 'Amanda Fernandes';
-        } else if (email === 'comercial14@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial14@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Ana Caroline Terto';
-        } else if (email === 'comercial10@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial10@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Bruna Garcia';
-        } else if (email === 'comercial17@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial17@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Fabiana Ferreira';
-        } else if (email === 'comercial@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Fabiana Godinho';
-        } else if (email === 'comercial18@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial18@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Fernanda Batista';
-        } else if (email === 'comercial3@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial3@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Gabrielle Fernandes';
-        } else if (email === 'comercial4@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial4@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Isabela Velasquez';
-        } else if (email === 'comercial6@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial6@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Juliana Araujo';
-        } else if (email === 'comercial15@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial15@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Lohainy Berlino';
-        } else if (email === 'comercial21@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial21@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Luciana Velasquez';
-        } else if (email === 'comercial2@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial2@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Monique Silva';
-        } else if (email === 'comercial8@abmix.com.br' && password === '120784') {
+        } else if (email === 'comercial8@abmix.com.br' && password === '123456') {
           userRole = 'vendor';
           userName = 'Sara Mattos';
         } else {

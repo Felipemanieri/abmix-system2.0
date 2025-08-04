@@ -76,7 +76,7 @@ export default function UnifiedUserManagement() {
       id: 3,
       name: 'Carol Almeida',
       email: 'carol@abmix.com.br',
-      password: '120784',
+      password: '123456',
       role: 'financial',
       panel: 'financial',
       active: true,

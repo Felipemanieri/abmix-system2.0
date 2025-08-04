@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Password System Restoration  
+- **Date**: August 4, 2025
+- **Issue**: User authentication passwords were incorrectly changed from "123456" to "120784"
+- **Fix**: Restored all user passwords to "123456" for Unified User Management System
+- **Details**: 
+  - Fixed authentication in server/index.ts for all portal users
+  - Restored default password in shared/schema.ts vendors table
+  - All financial, implementation, and vendor users now use "123456" password
+  - System respects original Unified User Management requirements
+
 ### Supervisor Commission Bug Fix
 - **Date**: August 4, 2025
 - **Issue**: Supervisor reports incorrectly counting Fabiana Godinho sales in commission calculations

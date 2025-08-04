@@ -13,12 +13,12 @@ export default function SimplePasswordManagement() {
   ];
 
   const vendors = [
-    { id: 1, name: 'Fabiana Godinho', email: 'comercial@abmix.com.br', password: '120784' },
-    { id: 2, name: 'Monique Silva', email: 'comercial2@abmix.com.br', password: '120784' },
-    { id: 3, name: 'Gabrielle Fernandes', email: 'comercial3@abmix.com.br', password: '120784' },
-    { id: 4, name: 'Isabela Velasquez', email: 'comercial4@abmix.com.br', password: '120784' },
-    { id: 5, name: 'Juliana Araujo', email: 'comercial6@abmix.com.br', password: '120784' },
-    { id: 6, name: 'Sara Mattos', email: 'comercial8@abmix.com.br', password: '120784' },
+    { id: 1, name: 'Fabiana Godinho', email: 'comercial@abmix.com.br', password: '123456' },
+    { id: 2, name: 'Monique Silva', email: 'comercial2@abmix.com.br', password: '123456' },
+    { id: 3, name: 'Gabrielle Fernandes', email: 'comercial3@abmix.com.br', password: '123456' },
+    { id: 4, name: 'Isabela Velasquez', email: 'comercial4@abmix.com.br', password: '123456' },
+    { id: 5, name: 'Juliana Araujo', email: 'comercial6@abmix.com.br', password: '123456' },
+    { id: 6, name: 'Sara Mattos', email: 'comercial8@abmix.com.br', password: '123456' },
   ];
 
   const exportUsers = () => {
