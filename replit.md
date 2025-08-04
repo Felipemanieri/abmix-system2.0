@@ -10,6 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Supervisor Commission Bug Fix
+- **Date**: August 4, 2025
+- **Issue**: Supervisor reports incorrectly counting Fabiana Godinho sales in commission calculations
+- **Fix**: Updated "SUPERVISOR - VENDAS COMISSIONADAS" section to exclude Fabiana Godinho
+- **Details**: 
+  - Fixed filter in lines 5914 and 5952 of SupervisorPortal.tsx
+  - Added condition `&& item.vendedor !== 'Fabiana Godinho'` to exclude her sales
+  - Now respects spreadsheet rules where supervisor doesn't earn commission on Fabiana's sales
+  - Consistent with existing logic in lines 6018-6023
+
 ### Field Requirement Updates
 - **Date**: August 4, 2025
 - **Change**: Removed required validation from "Início da Vigência" field

@@ -5908,7 +5908,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                           {/* Detalhes de cada venda comissionada para o supervisor */}
                           <div className="space-y-1 mb-2">
                             {reportData
-                              .filter(item => item.status === 'implantado') // Só vendas implantadas
+                              .filter(item => item.status === 'implantado' && item.vendedor !== 'Fabiana Godinho') // Só vendas implantadas, exceto Fabiana Godinho
                               .map((item, idx) => {
                                 const valor = parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
                                 const comissaoSupervisor = valor * 0.05;
@@ -5946,7 +5946,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   TOTAL SUPERVISOR
                                 </div>
                                 <div className="text-xs text-indigo-700 dark:text-indigo-300">
-                                  {reportData.filter(item => item.status === 'implantado').length} vendas implantadas × 5%
+                                  {reportData.filter(item => item.status === 'implantado' && item.vendedor !== 'Fabiana Godinho').length} vendas implantadas × 5%
                                 </div>
                               </div>
                               <div className="text-right">
@@ -5954,7 +5954,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                                   R$ {totalSupervisorComissions.toFixed(2).replace('.', ',')}
                                 </div>
                                 <div className="text-xs text-indigo-700 dark:text-indigo-300">
-                                  Base: R$ {reportData.filter(item => item.status === 'implantado').reduce((sum, item) => sum + parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0, 0).toFixed(2).replace('.', ',')}
+                                  Base: R$ {reportData.filter(item => item.status === 'implantado' && item.vendedor !== 'Fabiana Godinho').reduce((sum, item) => sum + parseFloat(item.valor.toString().replace(/[^0-9,]/g, '').replace(',', '.')) || 0, 0).toFixed(2).replace('.', ',')}
                                 </div>
                               </div>
                             </div>
