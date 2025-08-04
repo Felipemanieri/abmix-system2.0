@@ -79,14 +79,39 @@ class RealTimeSync {
   
   // Força atualização quando status de proposta muda
   public notifyProposalUpdated(proposalId: string, updateType?: string): void {
-    console.log(`📝 Proposal ${proposalId} updated`);
+    console.log(`📝 Proposal ${proposalId} updated - triggering global sync`);
+    
+    // Forçar atualização em todos os portais
     this.forceUpdateAllProposals();
+    
+    // Invalidar queries específicas da proposta
+    this.invalidateProposalQueries(proposalId);
     
     // Notificar Make.com sobre atualização
     this.notifyMakeWebhook('proposal_updated', { proposalId, updateType });
     
     // Sincronizar com Google Sheets
     this.syncWithGoogleSheets(proposalId);
+    
+    // Forçar re-fetch de todas as propostas após pequeno delay
+    setTimeout(() => {
+      this.forceUpdateAllProposals();
+    }, 1000);
+  }
+
+  private invalidateProposalQueries(proposalId: string): void {
+    try {
+      // Invalidar queries relacionadas à proposta específica
+      const queryClient = (window as any).queryClient;
+      if (queryClient) {
+        queryClient.invalidateQueries({ queryKey: ['/api/proposals', proposalId] });
+        queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
+        queryClient.invalidateQueries({ queryKey: ['proposals'] });
+        queryClient.refetchQueries();
+      }
+    } catch (error) {
+      console.warn('Erro ao invalidar queries específicas:', error);
+    }
   }
   
   // Sincroniza proposta específica com Google Sheets

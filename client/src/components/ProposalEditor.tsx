@@ -282,7 +282,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
-  const handleFieldEdit = (fieldName: string, value: any, section: string) => {
+  const handleFieldEdit = async (fieldName: string, value: any, section: string) => {
     // Registrar mudança no log
     const newChange: ChangeLog = {
       id: Date.now().toString(),
@@ -295,9 +295,93 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     };
     setChangeLog(prev => [newChange, ...prev]);
 
-    // Simular atualização no Google Sheets
-    showNotification(`Campo "${fieldName}" atualizado no Google Sheets`, 'success');
+    // Atualizar dados localmente primeiro
+    updateLocalData(fieldName, value, section);
+
+    // Salvar mudanças na API (debounced para evitar muitas requests)
+    try {
+      // Aguardar um momento para pegar os dados atualizados
+      setTimeout(async () => {
+        const proposalData = {
+          id: proposalId,
+          contractData,
+          titulares,
+          dependentes,
+          internalData,
+          attachments
+        };
+
+        const response = await fetch(`/api/proposals/${proposalId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(proposalData),
+        });
+
+        if (response.ok) {
+          // Triggerar sincronização global
+          try {
+            const { realTimeSync } = await import('@/utils/realTimeSync');
+            realTimeSync.notifyProposalUpdated(proposalId || '', 'field_edit');
+          } catch (syncError) {
+            console.warn('Erro na sincronização:', syncError);
+          }
+          
+          showNotification(`Campo "${fieldName}" salvo e sincronizado`, 'success');
+        } else {
+          throw new Error('Falha ao salvar');
+        }
+      }, 500);
+    } catch (error) {
+      showNotification(`Erro ao salvar "${fieldName}"`, 'error');
+    }
+
     setEditingField(null);
+  };
+
+  // Função para atualizar dados localmente
+  const updateLocalData = (fieldName: string, value: any, section: string) => {
+    if (section === 'Dados Pessoais') {
+      // Atualizar titular ou dependente
+      const [type, indexStr, field] = fieldName.split('-');
+      const index = parseInt(indexStr);
+      
+      // Mapear nomes de campos para propriedades do schema
+      const fieldMap: Record<string, string> = {
+        'nome': 'nomeCompleto',
+        'cpf': 'cpf',
+        'rg': 'rg',
+        'nascimento': 'dataNascimento',
+        'parentesco': 'parentesco'
+      };
+      
+      const actualField = fieldMap[field] || field;
+      
+      if (type === 'titular') {
+        setTitulares(prev => prev.map((titular, i) => 
+          i === index ? { ...titular, [actualField]: value } : titular
+        ));
+      } else if (type === 'dependente') {
+        setDependentes(prev => prev.map((dependente, i) => 
+          i === index ? { ...dependente, [actualField]: value } : dependente
+        ));
+      }
+    } else if (section === 'Controle Interno') {
+      // Mapear nomes de campos para propriedades
+      const fieldMap: Record<string, string> = {
+        'Desconto Aplicado': 'desconto',
+        'Origem da Venda': 'origemVenda',
+        'Autorizador do Desconto': 'autorizadorDesconto',
+        'Observações Financeiras': 'observacoesFinanceiras',
+        'Observações para o Cliente': 'observacoesCliente'
+      };
+      
+      const internalField = fieldMap[fieldName];
+      if (internalField) {
+        setInternalData(prev => ({ ...prev, [internalField]: value }));
+      }
+    }
   };
 
 

@@ -929,11 +929,21 @@ Vendedor Abmix`;
               setShowDocProposalEditor(false);
               setSelectedDocProposal(null);
             }}
-            onSave={(data) => {
-              showNotification('Proposta atualizada com sucesso!', 'success');
-              setShowDocProposalEditor(false);
-              setSelectedDocProposal(null);
-              // Não recarregar a página para manter o usuário no painel
+            onSave={async (data) => {
+              try {
+                // Triggerar sincronização global após salvar
+                const { realTimeSync } = await import('@/utils/realTimeSync');
+                realTimeSync.notifyProposalUpdated(selectedDocProposal.id, 'proposal_save');
+                
+                showNotification('Proposta atualizada e sincronizada com sucesso!', 'success');
+                setShowDocProposalEditor(false);
+                setSelectedDocProposal(null);
+                // Não recarregar a página para manter o usuário no painel
+              } catch (error) {
+                showNotification('Proposta salva, mas erro na sincronização', 'warning');
+                setShowDocProposalEditor(false);
+                setSelectedDocProposal(null);
+              }
             }}
             user={user}
           />
