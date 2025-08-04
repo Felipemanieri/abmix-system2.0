@@ -56,8 +56,8 @@ export function useProposals() {
           return []; // Retornar array vazio em caso de erro
         }
         return response.json();
-      } catch (error) {
-        console.warn('Fetch failed for proposals:', error.message);
+      } catch (error: any) {
+        console.warn('Fetch failed for proposals:', error?.message || error);
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -106,8 +106,8 @@ export function useProposals() {
           return []; // Retornar array vazio em caso de erro
         }
         return response.json();
-      } catch (error) {
-        console.warn('Fetch failed for vendors:', error.message);
+      } catch (error: any) {
+        console.warn('Fetch failed for vendors:', error?.message || error);
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -141,8 +141,8 @@ export function useProposals() {
           return null;
         }
         return response.json();
-      } catch (error) {
-        console.warn(`Update failed for proposal ${id}:`, error.message);
+      } catch (error: any) {
+        console.warn(`Update failed for proposal ${id}:`, error?.message || error);
         return null;
       }
     },
@@ -175,8 +175,8 @@ export function useProposals() {
           return null;
         }
         return response.json();
-      } catch (error) {
-        console.warn(`Reject failed for proposal ${proposalId}:`, error.message);
+      } catch (error: any) {
+        console.warn(`Reject failed for proposal ${proposalId}:`, error?.message || error);
         return null;
       }
     },
@@ -229,8 +229,8 @@ export function useUpdateProposal() {
           throw new Error(`HTTP ${response.status}`);
         }
         return response.json();
-      } catch (error) {
-        console.warn(`Update failed for proposal ${id}:`, error.message);
+      } catch (error: any) {
+        console.warn(`Update failed for proposal ${id}:`, error?.message || error);
         throw error;
       }
     },
@@ -263,8 +263,8 @@ export function useVendorProposals(vendorId: number) {
           return []; // Retornar array vazio em caso de erro
         }
         return response.json();
-      } catch (error) {
-        console.warn(`Fetch failed for vendor ${vendorId} proposals:`, error.message);
+      } catch (error: any) {
+        console.warn(`Fetch failed for vendor ${vendorId} proposals:`, error?.message || error);
         return []; // Retornar array vazio em caso de erro
       }
     },
@@ -366,8 +366,8 @@ export function useDeleteProposal() {
         }
 
         return response.json();
-      } catch (error) {
-        console.warn(`Delete failed for proposal ${proposalId}:`, error.message);
+      } catch (error: any) {
+        console.warn(`Delete failed for proposal ${proposalId}:`, error?.message || error);
         return null;
       }
     },

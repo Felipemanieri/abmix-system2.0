@@ -118,13 +118,33 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
 
 
 
-  // Função para excluir proposta diretamente (sem confirmação do navegador)
+  // Função para excluir proposta diretamente (CORRIGIDA)
   const handleDeleteProposal = async (proposalId: string, cliente: string) => {
     try {
-      await deleteProposal.mutateAsync(proposalId);
-      showInternalNotification(`Proposta de ${cliente} excluída com sucesso!`, 'success');
+      console.log(`🗑️ IMPLANTACAO PORTAL - Iniciando exclusão da proposta ${proposalId} (${cliente})`);
+      
+      // Fazer requisição DELETE direta para garantir funcionamento
+      const response = await fetch(`/api/proposals/${proposalId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na exclusão: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`✅ IMPLANTACAO PORTAL - Proposta ${proposalId} excluída:`, result);
+      
+      // Invalidar cache para atualização imediata em TODOS os portais
+      queryClient.invalidateQueries({ queryKey: ['/api/proposals'] });
+      queryClient.refetchQueries({ queryKey: ['/api/proposals'] });
+      
+      showInternalNotification(`Proposta de ${cliente} excluída com sucesso e removida de todos os portais!`, 'success');
     } catch (error) {
-      console.error('Erro ao excluir proposta:', error);
+      console.error('❌ IMPLANTACAO PORTAL - Erro ao excluir proposta:', error);
       showInternalNotification('Erro ao excluir proposta. Tente novamente.', 'error');
     }
   };
