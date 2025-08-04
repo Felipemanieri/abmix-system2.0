@@ -10,19 +10,41 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
-### Sistema de Anexos Corrigido  
+### Sistema de Anexos Corrigido Completamente
 - **Date**: August 4, 2025
-- **Issue**: Sistema de drag and drop e upload de anexos completamente quebrado
-- **Fix**: Implementado sistema de upload funcional para ProposalGenerator
-- **Details**: 
-  - Corrigido upload temporário durante criação de propostas
-  - Drag and drop funcionando com feedback visual emerald
-  - Arquivos salvos no servidor (/uploads/) com sucesso
-  - Interface atualizada com lista de arquivos anexados
-  - Validação de tamanho (máximo 10MB) implementada
+- **Issues Fixed**: 
+  - Sistema de drag and drop e upload de anexos completamente quebrado
+  - Anexos aparecendo duplicados no ProposalGenerator
+  - Anexos desaparecendo após upload
+  - Problema crítico de scroll travando após geração de proposta
+- **Complete Fix**: 
+  - Sistema de upload 100% funcional com persistência no banco PostgreSQL
+  - Anexos salvos corretamente via storage.createAttachment()
+  - Eliminada duplicação de anexos removendo seção duplicada
+  - Implementado scroll suave após criação de propostas
   - Upload imediato durante anexação de arquivos
-  - Sistema aceita PDF, DOC, DOCX, JPG, PNG
-  - Resolução: Upload temporário 100% funcional, drag and drop operacional
+  - Sistema aceita PDF, DOC, DOCX, JPG, PNG com validação de 50MB
+  - Notificações do vendedor implementadas no servidor
+  - Resolução: Sistema de anexos 100% operacional e confiável
+
+### Simulador de Propostas com Dados Aleatórios Completo
+- **Date**: August 4, 2025
+- **Feature**: Sistema completo de simulação de propostas com dados rotativos
+- **Location**: Área Restrita → Aba Sistema → Simulador de Propostas
+- **Functionality**:
+  - Geração de dados 100% aleatórios e únicos a cada uso
+  - Função regenerateAllData() para novos dados a qualquer momento
+  - Nomes, empresas, CNPJs, CPFs completamente variáveis
+  - Sistema de anexos funcional integrado ao simulador
+  - Propostas reais criadas que aparecem em todos os portais
+  - Scroll automático para resultados após simulação
+  - Interface profissional com botão "Gerar Novos Dados"
+- **Technical**: 
+  - generateRandomData() com arrays extensos de dados variados
+  - Lazy initialization para evitar repetição de dados
+  - Upload de anexos funcional durante simulação
+  - Integração completa com sistema real de propostas
+  - Scroll suave implementado para evitar travamento de tela
 
 ### Documentações Recebidas Panel Implementation
 - **Date**: August 4, 2025

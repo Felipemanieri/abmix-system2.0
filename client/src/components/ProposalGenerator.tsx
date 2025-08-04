@@ -579,6 +579,17 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
       setGeneratedLink(result.clientFormLink);
       setShowProfessionalModal(true);
       showNotification('Link exclusivo da proposta gerado com sucesso!', 'success');
+      
+      // Corrigir problema de scroll travando - rolar para o modal de sucesso
+      setTimeout(() => {
+        const modalElement = document.querySelector('[data-modal="professional-link"]');
+        if (modalElement) {
+          modalElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // Fallback: rolar para o topo suavemente
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 500);
 
       // Sincronização automática com Google Drive e Sheets
       try {
@@ -2258,22 +2269,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
             )}
 
-            {/* Seção removida - duplicação corrigida */}
-                        <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white mr-2" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{arquivo.name}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white ml-2">({formatFileSize(arquivo.size)})</span>
-                      </div>
-                      <button
-                        onClick={() => removerArquivo(index)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Duplicação de anexos removida completamente */}
 
             {/* Botões de Cotação */}
             <div className="flex flex-wrap items-center gap-3 mt-6">

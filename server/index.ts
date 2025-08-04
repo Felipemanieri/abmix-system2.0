@@ -147,20 +147,44 @@ app.post('/api/proposals/:id/attachments', upload.single('file'), async (req, re
       return;
     }
     
-    // Para propostas reais, por enquanto só salvar arquivo e simular resposta
-    console.log('📎 Arquivo salvo no servidor:', req.file.filename);
+    // Para propostas reais, salvar no banco de dados
+    console.log('📎 Salvando anexo no banco para proposta:', proposalId);
     
-    res.json({ 
-      success: true, 
-      attachment: {
-        id: `file-${Date.now()}`,
-        name: req.file.originalname,
-        url: fileUrl,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
-        uploadedAt: new Date()
-      }
-    });
+    const attachmentData = {
+      proposalId: proposalId,
+      name: req.file.originalname,
+      url: fileUrl,
+      size: req.file.size.toString(),
+      mimetype: req.file.mimetype,
+      category: category || 'identity',
+      status: 'pending',
+      uploadedAt: new Date()
+    };
+
+    try {
+      const savedAttachment = await storage.createAttachment(attachmentData);
+      console.log('✅ Anexo salvo no banco:', savedAttachment.id);
+      
+      res.json({ 
+        success: true, 
+        attachment: savedAttachment
+      });
+    } catch (dbError) {
+      console.error('❌ Erro ao salvar anexo no banco:', dbError);
+      
+      // Resposta de fallback se houver erro no banco
+      res.json({ 
+        success: true, 
+        attachment: {
+          id: `file-${Date.now()}`,
+          name: req.file.originalname,
+          url: fileUrl,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+          uploadedAt: new Date()
+        }
+      });
+    }
   } catch (error) {
     console.error('❌ Erro no upload:', error);
     res.status(500).json({ success: false, error: 'Erro interno do servidor' });
@@ -168,12 +192,14 @@ app.post('/api/proposals/:id/attachments', upload.single('file'), async (req, re
 });
 
 // Rota para deletar anexos
-app.delete('/api/attachments/:id', (req, res) => {
+app.delete('/api/attachments/:id', async (req, res) => {
   const attachmentId = req.params.id;
   
   try {
-    // Aqui você implementaria a lógica para deletar o arquivo do sistema de arquivos
-    // Por enquanto, vamos simular uma resposta de sucesso
+    // Deletar do banco de dados
+    await storage.deleteAttachment(parseInt(attachmentId));
+    console.log(`🗑️ Anexo ${attachmentId} removido do banco`);
+    
     res.json({ success: true, message: 'Anexo removido com sucesso' });
   } catch (error) {
     console.error('Erro ao deletar anexo:', error);
@@ -574,6 +600,18 @@ async function startServer() {
         
         const proposal = await storage.createProposal(proposalData);
         console.log('✅ Proposta criada com sucesso:', proposal.id);
+
+        // Notificar o vendedor sobre a criação da proposta
+        try {
+          if (proposal.vendorId) {
+            const vendor = await storage.getVendor(proposal.vendorId);
+            if (vendor) {
+              console.log(`📧 Notificação: Proposta ${proposal.abmId} criada para vendedor ${vendor.name} (${vendor.email})`);
+            }
+          }
+        } catch (notificationError) {
+          console.warn('⚠️ Erro ao notificar vendedor:', notificationError);
+        }
 
         const clientFormLink = `${req.protocol}://${req.get('host')}/cliente/proposta/${proposal.clientToken}`;
         

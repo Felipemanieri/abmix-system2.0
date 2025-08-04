@@ -20,7 +20,8 @@ import {
   Hash,
   Clock,
   Save,
-  Loader
+  Loader,
+  RotateCcw
 } from 'lucide-react';
 
 interface ProposalSimulatorProps {
@@ -158,11 +159,20 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
     };
   };
 
-  // Estado inicial com dados aleatórios
-  const randomData = generateRandomData();
-  const [proposalData, setProposalData] = useState(randomData.proposalData);
-  const [titular, setTitular] = useState<SimulatedTitular>(randomData.titular);
-  const [dependentes, setDependentes] = useState<SimulatedDependente[]>(randomData.dependentes);
+  // Estado inicial vazio - dados serão gerados quando necessário
+  const [proposalData, setProposalData] = useState(() => generateRandomData().proposalData);
+  const [titular, setTitular] = useState<SimulatedTitular>(() => generateRandomData().titular);
+  const [dependentes, setDependentes] = useState<SimulatedDependente[]>(() => generateRandomData().dependentes);
+
+  // Função para regenerar todos os dados aleatórios
+  const regenerateAllData = () => {
+    const newData = generateRandomData();
+    setProposalData(newData.proposalData);
+    setTitular(newData.titular);
+    setDependentes(newData.dependentes);
+    setAttachments([]);
+    setSimulationResult(null);
+  };
 
   // Carregar vendedores disponíveis
   useEffect(() => {
@@ -276,20 +286,42 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
 
       // Depois, fazer upload dos anexos (se houver)
       if (attachments.length > 0) {
+        console.log(`📎 Enviando ${attachments.length} anexos...`);
         for (const file of attachments) {
           const formData = new FormData();
           formData.append('file', file);
           formData.append('category', 'identity');
 
-          await fetch(`/api/proposals/${proposalResult.id}/attachments`, {
-            method: 'POST',
-            body: formData
-          });
+          try {
+            const uploadResponse = await fetch(`/api/proposals/${proposalResult.id}/attachments`, {
+              method: 'POST',
+              body: formData
+            });
+            
+            if (uploadResponse.ok) {
+              console.log(`✅ Anexo ${file.name} enviado com sucesso`);
+            } else {
+              console.warn(`⚠️ Falha no upload de ${file.name}`);
+            }
+          } catch (uploadError) {
+            console.error(`❌ Erro no upload de ${file.name}:`, uploadError);
+          }
         }
       }
 
       setSimulationResult(proposalResult);
       onSimulationCreated?.(proposalResult);
+      
+      // Limpar anexos após sucesso
+      setAttachments([]);
+      
+      // Scroll para o resultado
+      setTimeout(() => {
+        const resultElement = document.getElementById('simulation-result');
+        if (resultElement) {
+          resultElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
 
     } catch (error) {
       console.error('❌ Erro na simulação:', error);
@@ -668,7 +700,7 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
 
       {/* Resultado da Simulação */}
       {simulationResult && (
-        <div className="border border-emerald-200 dark:border-emerald-600 rounded-lg p-4 bg-emerald-50 dark:bg-emerald-900/20">
+        <div id="simulation-result" className="border border-emerald-200 dark:border-emerald-600 rounded-lg p-4 bg-emerald-50 dark:bg-emerald-900/20">
           <h4 className="text-md font-medium text-emerald-900 dark:text-emerald-100 mb-3 flex items-center">
             <CheckCircle className="w-4 h-4 mr-2" />
             Simulação Concluída com Sucesso
@@ -681,12 +713,34 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
             <p><strong>Valor:</strong> R$ {simulationResult.contractData?.valor}</p>
             <p><strong>Titulares:</strong> {simulationResult.titulares?.length || 0}</p>
             <p><strong>Dependentes:</strong> {simulationResult.dependentes?.length || 0}</p>
+            <p className="text-xs bg-emerald-100 dark:bg-emerald-800 p-2 rounded mt-3">
+              Esta proposta agora aparece em todos os portais do sistema e pode ser editada normalmente pelos vendedores.
+            </p>
+          </div>
+          
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={regenerateAllData}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Simulação
+            </button>
           </div>
         </div>
       )}
 
-      {/* Botão de Simulação */}
-      <div className="flex justify-center pt-4">
+      {/* Botões de Ação */}
+      <div className="flex justify-center gap-4 pt-4">
+        <button
+          onClick={regenerateAllData}
+          disabled={isSimulating}
+          className="px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
+        >
+          <RotateCcw className="w-5 h-5" />
+          <span>Gerar Novos Dados</span>
+        </button>
+        
         <button
           onClick={simulateProposal}
           disabled={isSimulating || !selectedVendor}

@@ -571,6 +571,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProposalAttachments(proposalId: string): Promise<Attachment[]> {
+    try {
+      const result = await db.select().from(attachments).where(eq(attachments.proposalId, proposalId));
+      console.log(`📎 Storage: Encontrados ${result.length} anexos para proposta ${proposalId}`);
+      return result;
+    } catch (error) {
+      console.error('Erro ao buscar anexos no storage:', error);
+      return [];
+    }
+  }
+
+  async getProposalAttachments(proposalId: string): Promise<Attachment[]> {
     return await db.select().from(attachments).where(eq(attachments.proposalId, proposalId));
   }
 
