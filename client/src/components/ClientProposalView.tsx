@@ -72,6 +72,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
   const [isClearingDraft, setIsClearingDraft] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 ClientProposalView useEffect triggered with token:', token);
     fetchProposal();
   }, [token]);
 
@@ -116,13 +117,17 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
 
   const fetchProposal = async () => {
     try {
+      console.log('🔍 ClientProposalView fetching proposal with token:', token);
       const response = await fetch(`/api/proposals/client/${token}`);
+      console.log('🔍 ClientProposalView response:', response);
 
       if (!response.ok) {
+        console.error('❌ ClientProposalView response not ok:', response.status, response.statusText);
         throw new Error('Proposta não encontrada');
       }
 
       const proposalData = await response.json();
+      console.log('✅ ClientProposalView proposal data loaded:', proposalData);
       setProposal(proposalData);
 
       // Verificar se existe rascunho salvo no localStorage
@@ -1051,7 +1056,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
               ];
 
               // Filtrar documentos não marcados pelo vendedor
-              const documentosRecebidos = proposalData?.documentosRecebidos || {};
+              const documentosRecebidos = proposal?.documentosRecebidos || {};
               const documentosVisivos = todosDocumentos.filter(doc => 
                 !documentosRecebidos[doc.key]
               );

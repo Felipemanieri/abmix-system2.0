@@ -239,7 +239,7 @@ function App() {
   // Check for client proposal token in URL
   useEffect(() => {
     const path = window.location.pathname;
-    const clientProposalMatch = path.match(/\/cliente\/proposta\/(.+)/);
+    const clientProposalMatch = path.match(/\/cliente\/proposta\/(.+)/) || path.match(/\/client\/(.+)/);
 
     if (clientProposalMatch) {
       setClientProposalToken(clientProposalMatch[1]);
