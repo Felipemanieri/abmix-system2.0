@@ -590,18 +590,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAttachment(attachmentData: any): Promise<Attachment> {
-    // Remove campos que não existem na tabela atual
+    // Ajuste para compatibilidade com schema atual
     const cleanData = {
       proposalId: attachmentData.proposalId,
       filename: attachmentData.filename,
       originalName: attachmentData.originalName,
-      filepath: attachmentData.filepath,
-      size: attachmentData.size,
-      mimetype: attachmentData.mimetype,
-      category: attachmentData.category,
+      fileSize: attachmentData.fileSize || attachmentData.size,
+      fileType: attachmentData.fileType || attachmentData.mimetype,
+      uploadDate: new Date(),
       status: attachmentData.status || 'pending',
+      approvedBy: null,
+      approvalDate: null,
+      category: attachmentData.category || 'other',
       uploadedBy: attachmentData.uploadedBy || 'sistema',
-      uploadedAt: new Date()
+      driveFileId: null,
+      driveUrl: null
     };
     
     const [attachment] = await db
