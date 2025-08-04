@@ -856,6 +856,40 @@ Vendedor Abmix`;
   // Estados para documentações recebidas
   const [selectedDocProposal, setSelectedDocProposal] = useState<any>(null);
   const [showDocProposalEditor, setShowDocProposalEditor] = useState(false);
+  const [lastCheckedTime, setLastCheckedTime] = useState(Date.now());
+
+  // Verificar novas documentações e notificar
+  useEffect(() => {
+    if (realProposals && realProposals.length > 0) {
+      const newDocumentations = realProposals.filter(proposal => {
+        if (Number(proposal.vendorId) !== Number(user.id)) return false;
+        
+        const hasNewClientData = proposal.titulares && 
+          proposal.titulares.length > 0 && 
+          proposal.titulares[0]?.nomeCompleto?.trim();
+        
+        const hasNewAttachments = proposal.attachments && 
+          proposal.attachments.length > 0;
+        
+        // Verificar se há atualizações recentes (últimos 30 segundos)
+        const proposalUpdated = proposal.updatedAt && 
+          new Date(proposal.updatedAt).getTime() > lastCheckedTime;
+        
+        return (hasNewClientData || hasNewAttachments) && proposalUpdated;
+      });
+
+      if (newDocumentations.length > 0) {
+        newDocumentations.forEach(proposal => {
+          const clientName = proposal.titulares?.[0]?.nomeCompleto || 'Cliente';
+          showNotification(
+            `Nova documentação recebida de ${clientName} (${proposal.abmId})`, 
+            'success'
+          );
+        });
+        setLastCheckedTime(Date.now());
+      }
+    }
+  }, [realProposals, user.id, lastCheckedTime]);
 
   // Função para renderizar documentações recebidas
   const renderDocumentacoesRecebidas = () => {
@@ -864,12 +898,15 @@ Vendedor Abmix`;
       // Verificar se é do vendedor atual
       if (Number(proposal.vendorId) !== Number(user.id)) return false;
       
-      // Verificar se cliente completou o formulário (tem dados de titulares preenchidos)
+      // Verificar se cliente completou o formulário (tem dados de titulares preenchidos) OU tem anexos
       const hasClientData = proposal.titulares && 
         proposal.titulares.length > 0 && 
         proposal.titulares[0]?.nomeCompleto?.trim();
       
-      return hasClientData;
+      const hasClientAttachments = proposal.attachments && 
+        proposal.attachments.length > 0;
+      
+      return hasClientData || hasClientAttachments;
     }) || [];
 
     return (
@@ -896,8 +933,7 @@ Vendedor Abmix`;
               showNotification('Proposta atualizada com sucesso!', 'success');
               setShowDocProposalEditor(false);
               setSelectedDocProposal(null);
-              // Recarregar dados
-              window.location.reload();
+              // Não recarregar a página para manter o usuário no painel
             }}
             user={user}
           />

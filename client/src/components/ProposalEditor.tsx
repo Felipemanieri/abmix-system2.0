@@ -144,6 +144,26 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
   const [editingField, setEditingField] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+
+  // Handlers para drag and drop
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files, 'vendor');
+    }
+  };
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Carregar dados reais da proposta quando os dados chegarem
@@ -650,7 +670,17 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                   <FileText className="w-6 h-6 text-indigo-600 mr-3" />
                   <h2 className="text-xl font-semibold text-gray-900">Documentos Anexados ({attachments.length})</h2>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div 
+                  className={`flex items-center space-x-2 p-4 border-2 border-dashed rounded-lg transition-colors ${
+                    dragActive 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                      : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
                   <input
                     type="file"
                     multiple
@@ -665,6 +695,9 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                     <Upload className="w-4 h-4 mr-2" />
                     Adicionar Arquivos
                   </label>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    ou arraste arquivos aqui (PDF, JPG, PNG, DOC - máx 10MB)
+                  </span>
                 </div>
               </div>
 
