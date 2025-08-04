@@ -138,7 +138,18 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     observacoesCliente: ''
   });
 
-  const [attachments, setAttachments] = useState<AttachmentData[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentData[]>([
+    {
+      id: 'sample-1',
+      name: 'Contrato-Exemplo.pdf',
+      type: 'PDF',
+      size: '2.4 MB',
+      uploadDate: '2025-08-04',
+      uploadedBy: 'Sistema',
+      category: 'vendor',
+      url: '/uploads/exemplo.pdf'
+    }
+  ]);
   const [changeLog, setChangeLog] = useState<ChangeLog[]>([]);
 
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -689,6 +700,10 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                       <div className="flex items-center justify-center space-x-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <button
                           onClick={() => {
+                            if (!attachment.url) {
+                              showNotification('URL do arquivo não disponível', 'error');
+                              return;
+                            }
                             const fileUrl = attachment.url.startsWith('/uploads') ? `${window.location.origin}${attachment.url}` : attachment.url;
                             window.open(fileUrl, '_blank');
                             showNotification(`Visualizando ${attachment.name}`, 'info');
@@ -702,8 +717,17 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                         <button
                           onClick={async () => {
                             try {
+                              if (!attachment.url) {
+                                showNotification('URL do arquivo não disponível', 'error');
+                                return;
+                              }
                               const fileUrl = attachment.url.startsWith('/uploads') ? `${window.location.origin}${attachment.url}` : attachment.url;
                               const response = await fetch(fileUrl);
+                              
+                              if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}`);
+                              }
+                              
                               const blob = await response.blob();
                               const url = window.URL.createObjectURL(blob);
                               const link = document.createElement('a');
