@@ -2214,6 +2214,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
         <ProfessionalLinkShare
           clientLink={generatedLink}
           clientName={contractData.nomeEmpresa}
+          titular1Name={titulares.length > 0 ? titulares[0].nome : undefined}
           onClose={() => setShowProfessionalModal(false)}
           onGenerateNewProposal={generateSameLinkProposal}
         />
