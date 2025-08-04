@@ -211,7 +211,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProposal(id: string): Promise<void> {
+    console.log(`🗑️ STORAGE: Excluindo proposta ${id} do banco de dados...`);
     await db.delete(proposals).where(eq(proposals.id, id));
+    console.log(`✅ STORAGE: Proposta ${id} excluída com sucesso`);
+  }
+
+  async deleteAttachmentsByProposal(proposalId: string): Promise<void> {
+    console.log(`🗑️ STORAGE: Excluindo anexos da proposta ${proposalId}...`);
+    await db.delete(attachments).where(eq(attachments.proposalId, proposalId));
+    console.log(`✅ STORAGE: Anexos da proposta ${proposalId} excluídos com sucesso`);
   }
 
   async clearAllProposals(): Promise<void> {

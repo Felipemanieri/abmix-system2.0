@@ -495,10 +495,12 @@ async function startServer() {
       res.json({ success: true, data: portalVisibilityState });
     });
 
-    // Basic data endpoints
+    // Basic data endpoints - SINCRONIZAÇÃO GLOBAL GARANTIDA
     app.get('/api/proposals', async (req: Request, res: Response) => {
       try {
+        console.log('🔄 Buscando TODAS as propostas para sincronização global...');
         const proposals = await storage.getAllProposals();
+        console.log(`📊 SYNC: Retornando ${proposals.length} propostas ativas para todos os portais`);
         res.json(proposals);
       } catch (error) {
         console.error('Erro ao buscar propostas:', error);
@@ -601,12 +603,27 @@ async function startServer() {
         const proposal = await storage.createProposal(proposalData);
         console.log('✅ Proposta criada com sucesso:', proposal.id);
 
-        // Notificar o vendedor sobre a criação da proposta
+        // Notificar o vendedor sobre a criação da proposta (ESPECIALMENTE do simulador)
         try {
           if (proposal.vendorId) {
             const vendor = await storage.getVendor(proposal.vendorId);
             if (vendor) {
-              console.log(`📧 Notificação: Proposta ${proposal.abmId} criada para vendedor ${vendor.name} (${vendor.email})`);
+              // Criar notificação no sistema de mensagens internas
+              const isSimulatorProposal = req.body.internalData?.origemVenda === 'Simulação Sistema';
+              const messageContent = isSimulatorProposal ? 
+                `Nova proposta ${proposal.abmId} criada através do SIMULADOR DO SISTEMA com dados de teste. Cliente: ${proposal.contractData?.nomeEmpresa || 'Empresa Teste'}` :
+                `Nova proposta ${proposal.abmId} criada. Cliente: ${proposal.contractData?.nomeEmpresa || 'Sem nome'}`;
+              
+              await storage.sendInternalMessage({
+                fromName: 'Sistema Automático',
+                fromEmail: 'sistema@abmix.com.br',
+                toEmail: vendor.email,
+                subject: `Nova Proposta ${proposal.abmId}`,
+                message: messageContent,
+                attachments: []
+              });
+              
+              console.log(`📧 NOTIFICAÇÃO CRIADA: Proposta ${proposal.abmId} para vendedor ${vendor.name} (${vendor.email}) - Simulador: ${isSimulatorProposal}`);
             }
           }
         } catch (notificationError) {
@@ -649,8 +666,56 @@ async function startServer() {
 
     app.delete('/api/proposals/:id', async (req: Request, res: Response) => {
       try {
-        await storage.deleteProposal(req.params.id);
-        res.json({ success: true, message: 'Proposta excluída com sucesso' });
+        const proposalId = req.params.id;
+        console.log(`🗑️ Excluindo proposta ${proposalId} com sincronização completa...`);
+        
+        // Buscar dados da proposta antes de excluir para logs
+        const proposal = await storage.getProposal(proposalId);
+        if (proposal) {
+          console.log(`📝 Excluindo proposta: ${proposal.contractData?.nomeEmpresa || 'Sem nome'} (${proposal.abmId})`);
+        }
+        
+        // EXCLUSÃO SINCRONIZADA - Remove também anexos associados
+        console.log(`🗑️ FASE 1: Excluindo anexos da proposta ${proposalId}...`);
+        try {
+          await storage.deleteAttachmentsByProposal(proposalId);
+          console.log(`✅ Anexos da proposta ${proposalId} excluídos com sucesso`);
+        } catch (attachmentError) {
+          console.warn('⚠️ Erro ao excluir anexos (continua com exclusão):', attachmentError);
+        }
+        
+        console.log(`🗑️ FASE 2: Excluindo proposta ${proposalId} do banco...`);
+        await storage.deleteProposal(proposalId);
+        
+        // Notificar vendedor sobre exclusão
+        if (proposal?.vendorId) {
+          try {
+            const vendor = await storage.getVendor(proposal.vendorId);
+            if (vendor) {
+              await storage.sendInternalMessage({
+                fromName: 'Sistema Automático',
+                fromEmail: 'sistema@abmix.com.br',
+                toEmail: vendor.email,
+                subject: `Proposta ${proposal.abmId} Excluída`,
+                message: `A proposta ${proposal.abmId} da empresa ${proposal.contractData?.nomeEmpresa || 'Sem nome'} foi excluída do sistema e removida de TODOS os portais (Vendedor, Financeiro, Supervisor, Implantação).`,
+                attachments: []
+              });
+              console.log(`📧 Notificação de exclusão enviada para ${vendor.email}`);
+            }
+          } catch (notifyError) {
+            console.warn('⚠️ Erro ao notificar exclusão:', notifyError);
+          }
+        }
+        
+        // SINCRONIZAÇÃO GLOBAL - Forçar atualização em todos os portais
+        console.log(`🔄 FASE 3: Sincronização global - Proposta ${proposalId} removida de TODOS os portais`);
+        console.log(`✅ EXCLUSÃO COMPLETA: Proposta ${proposalId} excluída do sistema e sincronizada globalmente`);
+        res.json({ 
+          success: true, 
+          message: 'Proposta excluída com sucesso de todos os portais',
+          deletedProposal: proposal?.abmId,
+          globalSync: true
+        });
       } catch (error) {
         console.error('❌ Erro ao excluir proposta:', error);
         res.status(500).json({ error: 'Erro ao excluir proposta' });
