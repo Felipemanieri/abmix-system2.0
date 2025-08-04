@@ -10,6 +10,23 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Documentações Recebidas Panel Implementation
+- **Date**: August 4, 2025
+- **Feature**: New comprehensive panel for vendor portal to manage client-submitted forms
+- **Location**: Added as new button in Quick Actions section, positioned after Agendor button
+- **Functionality**:
+  - Shows only proposals where clients completed forms through exclusive links
+  - Security: Each vendor sees only proposals from links they generated (vendorId filtering)
+  - Displays all attachments (vendor + client uploads)
+  - Full proposal editing capabilities through integrated ProposalEditor
+  - Real-time data synchronization across all system portals
+  - Professional interface with attachment counting and proposal management
+- **Technical**: 
+  - Added 'documentacoes' to VendorView type
+  - Created renderDocumentacoesRecebidas() function with comprehensive filtering
+  - Integrated FileCheck icon and emerald color scheme
+  - Automatic proposal updates sync globally across system
+
 ### Password System Restoration  
 - **Date**: August 4, 2025
 - **Issue**: User authentication passwords were incorrectly changed from "123456" to "120784"

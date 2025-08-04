@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Plus, Users, FileText, Link, Eye, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, Copy, ExternalLink, Download, Search, Filter, ArrowLeft, Home, Bell, Calculator, Target, TrendingUp, DollarSign, X, Mail, Image, MessageSquare, MessageCircle, Trash2, Camera, Upload, Paperclip, User, Award } from 'lucide-react';
+import { LogOut, Plus, Users, FileText, Link, Eye, BarChart3, Clock, CheckCircle, AlertCircle, XCircle, Copy, ExternalLink, Download, Search, Filter, ArrowLeft, Home, Bell, Calculator, Target, TrendingUp, DollarSign, X, Mail, Image, MessageSquare, MessageCircle, Trash2, Camera, Upload, Paperclip, User, Award, FileCheck } from 'lucide-react';
 // import AbmixLogo from './AbmixLogo';
 import ActionButtons from './ActionButtons';
 import AdvancedInternalMessage from './AdvancedInternalMessage';
@@ -32,7 +32,7 @@ interface VendorPortalProps {
   onLogout: () => void;
 }
 
-type VendorView = 'dashboard' | 'new-proposal' | 'tracker' | 'clients' | 'spreadsheet' | 'quotation' | 'cotacoes' | 'quotations' | 'edit-proposal' | 'metas' | 'premiacoes';
+type VendorView = 'dashboard' | 'new-proposal' | 'tracker' | 'clients' | 'spreadsheet' | 'quotation' | 'cotacoes' | 'quotations' | 'edit-proposal' | 'metas' | 'premiacoes' | 'documentacoes';
 
 interface Proposal {
   id: string;
@@ -851,6 +851,155 @@ Vendedor Abmix`;
       currentValue,
       currentProposals
     };
+  };
+
+  // Função para renderizar documentações recebidas
+  const renderDocumentacoesRecebidas = () => {
+    // Filtrar propostas onde cliente completou o formulário e o vendedor é o atual
+    const proposalsWithClientSubmissions = realProposals?.filter(proposal => {
+      // Verificar se é do vendedor atual
+      if (Number(proposal.vendorId) !== Number(user.id)) return false;
+      
+      // Verificar se cliente completou o formulário (tem dados de titulares preenchidos)
+      const hasClientData = proposal.titulares && 
+        proposal.titulares.length > 0 && 
+        proposal.titulares[0]?.nomeCompleto?.trim();
+      
+      return hasClientData;
+    }) || [];
+
+    const [selectedProposal, setSelectedProposal] = useState<any>(null);
+    const [showProposalEditor, setShowProposalEditor] = useState(false);
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className="flex items-center text-white dark:text-white hover:text-gray-200 dark:hover:text-gray-300 transition-colors bg-black/20 px-3 py-2 rounded-lg hover:bg-black/30"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar ao Dashboard
+          </button>
+        </div>
+
+        {showProposalEditor && selectedProposal ? (
+          <ProposalEditor 
+            proposalId={selectedProposal.id}
+            onBack={() => {
+              setShowProposalEditor(false);
+              setSelectedProposal(null);
+            }}
+            onSave={(data) => {
+              showNotification('Proposta atualizada com sucesso!', 'success');
+              setShowProposalEditor(false);
+              setSelectedProposal(null);
+              // Recarregar dados
+              window.location.reload();
+            }}
+            user={user}
+          />
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center mb-6">
+              <FileCheck className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Documentações Recebidas</h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Propostas onde os clientes completaram o formulário ({proposalsWithClientSubmissions.length})
+                </p>
+              </div>
+            </div>
+
+            {proposalsWithClientSubmissions.length === 0 ? (
+              <div className="text-center py-12">
+                <FileCheck className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Nenhuma documentação recebida
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Quando os clientes completarem os formulários através dos links exclusivos,
+                  eles aparecerão aqui para você gerenciar.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {proposalsWithClientSubmissions.map((proposal) => {
+                  const attachmentCount = proposal.attachments?.length || 0;
+                  const clientName = proposal.titulares?.[0]?.nomeCompleto || 'Cliente';
+                  const companyName = proposal.contractData?.nomeEmpresa || 'Empresa';
+                  
+                  return (
+                    <div 
+                      key={proposal.id} 
+                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gray-50 dark:bg-gray-700"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
+                            <FileCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900 dark:text-white">
+                              {proposal.abmId} - {clientName}
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {companyName} • {proposal.contractData?.planoContratado || 'Plano não informado'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                            {attachmentCount} anexo(s)
+                          </span>
+                          <button
+                            onClick={() => {
+                              setSelectedProposal(proposal);
+                              setShowProposalEditor(true);
+                            }}
+                            className="px-3 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm"
+                          >
+                            Gerenciar
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Valor:</span>
+                          <p className="text-gray-900 dark:text-white font-medium">
+                            R$ {proposal.contractData?.valor || '0,00'}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                          <p className="text-gray-900 dark:text-white font-medium">
+                            {proposal.status || 'Pendente'}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Titulares:</span>
+                          <p className="text-gray-900 dark:text-white font-medium">
+                            {proposal.titulares?.length || 0}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Dependentes:</span>
+                          <p className="text-gray-900 dark:text-white font-medium">
+                            {proposal.dependentes?.length || 0}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   // Função para renderizar premiações do vendedor
@@ -2033,6 +2182,8 @@ Vendedor Abmix`;
         return renderVendorMetas();
       case 'premiacoes':
         return renderVendorPremiacoes();
+      case 'documentacoes':
+        return renderDocumentacoesRecebidas();
       case 'edit-proposal':
         return editingProposal ? (
           <ProposalEditor 
@@ -2154,6 +2305,21 @@ Vendedor Abmix`;
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">Agendor</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Acesse o CRM completo</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveView('documentacoes')}
+                className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm dark:shadow-gray-900/30 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200 text-left group hover:scale-105 cursor-pointer"
+              >
+                <div className="flex items-center">
+                  <div className="p-3 bg-emerald-100 rounded-full group-hover:bg-emerald-200 transition-colors">
+                    <FileCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Documentações Recebidas</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Formulários enviados pelos clientes</p>
                   </div>
                 </div>
               </button>

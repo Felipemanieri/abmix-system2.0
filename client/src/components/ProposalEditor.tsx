@@ -316,59 +316,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
-  const handleFileUpload = async (files: FileList | null, category: 'vendor' | 'client') => {
-    if (!files) return;
 
-    const formData = new FormData();
-    Array.from(files).forEach(file => {
-      formData.append('files', file);
-    });
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        result.files.forEach((file: any) => {
-          const newAttachment: AttachmentData = {
-            id: file.id,
-            name: file.originalName,
-            type: file.originalName.split('.').pop()?.toUpperCase() || 'FILE',
-            size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-            uploadDate: new Date().toISOString().split('T')[0],
-            uploadedBy: user.name,
-            category: category,
-            url: file.url
-          };
-
-          setAttachments(prev => [...prev, newAttachment]);
-          
-          // Registrar no log
-          const newChange: ChangeLog = {
-            id: Date.now().toString(),
-            timestamp: new Date(),
-            user: user.name,
-            field: 'Novo Anexo',
-            oldValue: '',
-            newValue: file.originalName,
-            section: 'Documentos'
-          };
-          setChangeLog(prev => [newChange, ...prev]);
-        });
-
-        showNotification(`${result.files.length} arquivo(s) enviado(s) com sucesso`, 'success');
-      } else {
-        showNotification(result.error || 'Erro no upload', 'error');
-      }
-    } catch (error) {
-      console.error('Erro no upload:', error);
-      showNotification('Erro ao enviar arquivos', 'error');
-    }
-  };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     const attachment = attachments.find(a => a.id === attachmentId);
