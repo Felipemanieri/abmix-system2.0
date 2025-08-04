@@ -6,11 +6,12 @@ import logoOficial from '@assets/Logo Abmix_1753662019626.jpg';
 interface ProfessionalLinkShareProps {
   clientLink: string;
   clientName?: string;
+  titular1Name?: string;
   onClose: () => void;
   onGenerateNewProposal?: () => void;
 }
 
-export default function ProfessionalLinkShare({ clientLink, clientName, onClose, onGenerateNewProposal }: ProfessionalLinkShareProps) {
+export default function ProfessionalLinkShare({ clientLink, clientName, titular1Name, onClose, onGenerateNewProposal }: ProfessionalLinkShareProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -25,7 +26,23 @@ export default function ProfessionalLinkShare({ clientLink, clientName, onClose,
   };
 
   const handleWhatsApp = () => {
-    const message = `Olá${clientName ? ` ${clientName}` : ''}! 
+    // Função para gerar saudação personalizada
+    const generateGreeting = () => {
+      if (titular1Name) {
+        return `Olá, ${titular1Name}!`;
+      }
+      
+      const currentHour = new Date().getHours();
+      if (currentHour >= 6 && currentHour < 12) {
+        return 'Bom dia!';
+      } else if (currentHour >= 12 && currentHour < 18) {
+        return 'Boa tarde!';
+      } else {
+        return 'Boa noite!';
+      }
+    };
+
+    const message = `${generateGreeting()} 
 
 🏥 *Abmix Consultoria em Benefícios*
 
@@ -43,8 +60,25 @@ Qualquer dúvida, estou à disposição!`;
   };
 
   const handleEmail = () => {
-    const subject = 'Formulário de Proposta - Abmix Consultoria em Benefícios';
-    const body = `Olá${clientName ? ` ${clientName}` : ''},
+    const subject = 'Proposta de plano de saúde – Abmix';
+    
+    // Função para gerar saudação personalizada
+    const generateGreeting = () => {
+      if (titular1Name) {
+        return `Olá, ${titular1Name}!`;
+      }
+      
+      const currentHour = new Date().getHours();
+      if (currentHour >= 6 && currentHour < 12) {
+        return 'Bom dia!';
+      } else if (currentHour >= 12 && currentHour < 18) {
+        return 'Boa tarde!';
+      } else {
+        return 'Boa noite!';
+      }
+    };
+
+    const body = `${generateGreeting()}
 
 Segue o link do formulário para completar sua proposta:
 
