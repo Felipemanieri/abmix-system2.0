@@ -1305,6 +1305,53 @@ export function setupRoutes(app: any) {
     }
   });
 
+  // NOVA ROTA: Notificar vendedor quando cliente preenche formulário (para simulador)
+  app.post('/api/proposals/:id/notify-vendor', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { clientName, message } = req.body;
+      
+      console.log(`📧 Enviando notificação para vendedor sobre proposta ${id}`);
+      
+      // Buscar a proposta para obter o vendedor
+      const proposal = await storage.getProposal(id);
+      if (!proposal) {
+        return res.status(404).json({ error: 'Proposta não encontrada' });
+      }
+      
+      // Buscar dados do vendedor
+      const vendor = await storage.getVendor(proposal.vendorId);
+      if (!vendor) {
+        return res.status(404).json({ error: 'Vendedor não encontrado' });
+      }
+      
+      // Criar notificação interna para o vendedor
+      const notificationMessage = {
+        fromName: 'Sistema Automático',
+        fromEmail: 'sistema@abmix.com.br',
+        toEmail: vendor.email,
+        subject: `Cliente ${clientName} preencheu formulário - ${proposal.abmId}`,
+        message: message || `Seu cliente ${clientName} preencheu o formulário da proposta ${proposal.abmId}!`,
+        attachments: []
+      };
+      
+      await storage.sendInternalMessage(notificationMessage);
+      
+      console.log(`✅ Notificação enviada para vendedor ${vendor.name} (${vendor.email}) sobre cliente ${clientName}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Notificação enviada ao vendedor',
+        vendorNotified: vendor.name,
+        clientName: clientName
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao notificar vendedor:', error);
+      res.status(500).json({ error: 'Erro ao enviar notificação' });
+    }
+  });
+
   // NOVO: Gerar relatório completo do supervisor para o financeiro
   app.get('/api/supervisor-report-complete', async (req: Request, res: Response) => {
     try {

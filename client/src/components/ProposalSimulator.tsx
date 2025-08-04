@@ -263,10 +263,14 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
           desconto: '',
           vendaDupla: false,
           nomeReuniao: '',
-          origemVenda: 'Simulação Sistema',
+          origemVenda: 'VENDA REAL - Simulador',
           nomeVendaDupla: '',
-          observacoesCliente: 'Proposta criada através do simulador do sistema para testes'
-        }
+          observacoesCliente: 'PROPOSTA REAL criada através do simulador - CONTA PARA VALORES E COMISSÕES'
+        },
+        // Flag para indicar que é uma venda real que deve contar nos valores
+        isRealSale: true,
+        // Simular preenchimento completo do cliente para ativar notificações
+        clientFormCompleted: true
       };
 
       console.log('🧪 Criando proposta simulada:', proposalPayload);
@@ -282,7 +286,27 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
       }
 
       const proposalResult = await proposalResponse.json();
-      console.log('✅ Proposta criada:', proposalResult);
+      console.log('✅ PROPOSTA REAL CRIADA - CONTA NOS VALORES:', proposalResult);
+      
+      // Simular notificação automática ao vendedor (como se o cliente tivesse preenchido)
+      if (proposalResult.id) {
+        try {
+          const notificationResponse = await fetch(`/api/proposals/${proposalResult.id}/notify-vendor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clientName: titular.nomeCompleto,
+              message: `Seu cliente ${titular.nomeCompleto} preencheu o formulário da proposta ${proposalResult.abmId} para ${proposalData.nomeEmpresa}!`
+            })
+          });
+          
+          if (notificationResponse.ok) {
+            console.log('📧 Notificação automática enviada ao vendedor');
+          }
+        } catch (notifyError) {
+          console.warn('⚠️ Erro ao enviar notificação:', notifyError);
+        }
+      }
 
       // Depois, fazer upload dos anexos (se houver)
       if (attachments.length > 0) {

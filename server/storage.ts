@@ -589,10 +589,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getProposalAttachments(proposalId: string): Promise<Attachment[]> {
-    return await db.select().from(attachments).where(eq(attachments.proposalId, proposalId));
-  }
-
   async createAttachment(attachmentData: InsertAttachment): Promise<Attachment> {
     const [attachment] = await db
       .insert(attachments)
