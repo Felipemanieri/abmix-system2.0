@@ -8,6 +8,18 @@ The Abmix System is a comprehensive proposal management platform designed for in
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 2025)
+
+### Email Personalization Implementation
+- **Date**: August 4, 2025
+- **Feature**: Automated email generation with personalized greetings
+- **Details**: 
+  - Email subject standardized as "Proposta de plano de saúde – Abmix"
+  - WhatsApp and email messages use "Olá, [NOME DO TITULAR 1]!" when name exists
+  - Fallback to time-based greetings (Bom dia/Boa tarde/Boa noite) when no name
+  - Removed all emojis, keeping only clean text format
+  - Links generated from ProfessionalLinkShare component pull titular name from `titulares[0].nomeCompleto`
+
 ## System Architecture
 
 ### Technology Stack
