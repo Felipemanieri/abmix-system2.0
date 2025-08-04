@@ -44,14 +44,14 @@ export default function ProfessionalLinkShare({ clientLink, clientName, titular1
 
     const message = `${generateGreeting()} 
 
-🏥 *Abmix Consultoria em Benefícios*
+Abmix Consultoria em Benefícios
 
 Segue o link do formulário para completar sua proposta:
 ${clientLink}
 
-🔒 Seus dados estão protegidos com criptografia de ponta a ponta e armazenamento seguro.
+Seus dados estão protegidos com criptografia de ponta a ponta e armazenamento seguro.
 
-📋 Preencha todas as informações solicitadas e anexe os documentos necessários.
+Preencha todas as informações solicitadas e anexe os documentos necessários.
 
 Qualquer dúvida, estou à disposição!`;
 
@@ -84,7 +84,7 @@ Segue o link do formulário para completar sua proposta:
 
 ${clientLink}
 
-🔒 Seus dados estão protegidos com criptografia de ponta a ponta e armazenamento seguro.
+Seus dados estão protegidos com criptografia de ponta a ponta e armazenamento seguro.
 
 Preencha todas as informações solicitadas e anexe os documentos necessários.
 
