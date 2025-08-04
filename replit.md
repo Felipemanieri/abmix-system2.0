@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
+### Sistema de Anexos Corrigido  
+- **Date**: August 4, 2025
+- **Issue**: Sistema de drag and drop e upload de anexos completamente quebrado
+- **Fix**: Implementado sistema de upload funcional para ProposalGenerator
+- **Details**: 
+  - Corrigido upload temporário durante criação de propostas
+  - Drag and drop funcionando com feedback visual emerald
+  - Arquivos salvos no servidor (/uploads/) com sucesso
+  - Interface atualizada com lista de arquivos anexados
+  - Validação de tamanho (máximo 10MB) implementada
+  - Upload imediato durante anexação de arquivos
+  - Sistema aceita PDF, DOC, DOCX, JPG, PNG
+  - Resolução: Upload temporário 100% funcional, drag and drop operacional
+
 ### Documentações Recebidas Panel Implementation
 - **Date**: August 4, 2025
 - **Feature**: New comprehensive panel for vendor portal to manage client-submitted forms

@@ -784,8 +784,22 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         }
       }
       
+      // Adicionar arquivos imediatamente à lista visual
       setArquivosAnexados(prev => [...prev, ...novosArquivos]);
-      showNotification(`${novosArquivos.length} arquivo(s) anexado(s) com sucesso`, 'success');
+      
+      // Upload imediato de cada arquivo
+      showNotification('Enviando anexos...', 'info');
+      
+      for (const file of novosArquivos) {
+        try {
+          await uploadAnexoImediato(file);
+        } catch (error) {
+          // Remove o arquivo da lista se falhou
+          setArquivosAnexados(prev => prev.filter(f => f !== file));
+        }
+      }
+      
+      showNotification(`${novosArquivos.length} arquivo(s) anexado(s) e enviados`, 'success');
     }
   };
 
@@ -816,7 +830,21 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
         }
       }
       
+      // Adicionar arquivos imediatamente à lista visual
       setArquivosAnexados(prev => [...prev, ...files]);
+      
+      // Upload imediato de cada arquivo via drag and drop
+      showNotification('Enviando anexos via drag and drop...', 'info');
+      
+      for (const file of files) {
+        try {
+          await uploadAnexoImediato(file);
+        } catch (error) {
+          // Remove o arquivo da lista se falhou
+          setArquivosAnexados(prev => prev.filter(f => f !== file));
+        }
+      }
+      
       showNotification(`${files.length} arquivo(s) anexado(s) via drag and drop`, 'success');
     }
   };
@@ -828,6 +856,8 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
     formData.append('category', 'vendor');
 
     try {
+      console.log(`📤 Enviando arquivo ${file.name} para proposta ${proposalId}`);
+      
       const response = await fetch(`/api/proposals/${proposalId}/attachments`, {
         method: 'POST',
         body: formData,
@@ -835,13 +865,35 @@ const ProposalGenerator: React.FC<ProposalGeneratorProps> = ({ onBack, currentVe
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Arquivo enviado com sucesso:', result);
+        console.log('✅ Arquivo enviado com sucesso:', result);
+        
+        // Atualizar lista de anexos do vendedor
+        setVendorAttachments(prev => [...prev, result.attachment]);
+        
         return result.attachment;
       } else {
-        throw new Error('Falha no upload');
+        const errorText = await response.text();
+        console.error('❌ Erro na resposta do servidor:', errorText);
+        throw new Error(`Falha no upload: ${response.status}`);
       }
     } catch (error) {
-      console.error('Erro no upload:', error);
+      console.error('❌ Erro no upload:', error);
+      throw error;
+    }
+  };
+
+  // Função para upload imediato quando arquivo é anexado
+  const uploadAnexoImediato = async (file: File) => {
+    // Usar ID temporário para upload antes da proposta ser criada
+    const tempId = `temp-${Date.now()}`;
+    
+    try {
+      const attachment = await uploadFileToServer(file, tempId);
+      console.log('✅ Anexo enviado imediatamente:', attachment);
+      return attachment;
+    } catch (error) {
+      console.error('❌ Erro no upload imediato:', error);
+      showNotification(`Erro ao enviar ${file.name}`, 'error');
       throw error;
     }
   };
@@ -1995,8 +2047,8 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
             <div 
               className={`border-2 border-dashed rounded-lg p-8 text-center mb-4 transition-colors ${
                 dragActive 
-                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                  : 'border-gray-300 dark:border-gray-600'
+                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' 
+                  : 'border-gray-300 dark:border-gray-600 hover:border-emerald-400'
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -2012,12 +2064,12 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
               <label htmlFor="file-upload-cotacao" className="cursor-pointer">
-                <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Arraste arquivos aqui ou clique para selecionar
+                <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-emerald-500' : 'text-gray-400 dark:text-gray-500'}`} />
+                <p className={`text-lg font-medium mb-2 ${dragActive ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                  {dragActive ? 'Solte os arquivos aqui' : 'Arraste arquivos aqui ou clique para anexar'}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Suporte para PDF, DOC, DOCX, JPG, PNG - Máximo 10MB por arquivo
+                  PDF, DOC, DOCX, JPG, PNG - Máximo 10MB por arquivo
                 </p>
               </label>
             </div>
@@ -2171,6 +2223,42 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
 
             {/* Lista de Arquivos Anexados */}
             {arquivosAnexados.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                  <FileText className="w-5 h-5 text-emerald-500 mr-2" />
+                  Arquivos Anexados ({arquivosAnexados.length})
+                </h3>
+                <div className="space-y-3">
+                  {arquivosAnexados.map((arquivo, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
+                      <div className="flex items-center">
+                        <FileText className="w-5 h-5 text-emerald-600 mr-3" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{arquivo.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {(arquivo.size / 1024 / 1024).toFixed(2)} MB • {arquivo.type}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-800 px-2 py-1 rounded">
+                          Enviado
+                        </span>
+                        <button
+                          onClick={() => removerArquivo(index)}
+                          className="text-red-500 hover:text-red-700 transition-colors p-1 rounded"
+                          title="Remover arquivo"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {vendorAttachments.length > 0 && (
               <div className="mb-6 space-y-2">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Arquivos Anexados ({arquivosAnexados.length})

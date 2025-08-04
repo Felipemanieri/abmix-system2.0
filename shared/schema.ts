@@ -162,7 +162,7 @@ export const attachments = pgTable("attachments", {
   driveFileId: varchar("drive_file_id"),
   driveUrl: varchar("drive_url"),
   uploadedBy: varchar("uploaded_by").notNull(),
-  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  uploadedAt: timestamp("upload_date").defaultNow(),
   approvedBy: varchar("approved_by"),
   approvedAt: timestamp("approved_at"),
 });
