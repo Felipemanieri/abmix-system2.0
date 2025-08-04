@@ -2258,15 +2258,7 @@ Validade: ${quotationData.validade ? new Date(quotationData.validade).toLocaleDa
               </div>
             )}
 
-            {vendorAttachments.length > 0 && (
-              <div className="mb-6 space-y-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Arquivos Anexados ({arquivosAnexados.length})
-                </p>
-                <div className="space-y-2">
-                  {arquivosAnexados.map((arquivo, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <div className="flex items-center">
+            {/* Seção removida - duplicação corrigida */}
                         <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white mr-2" />
                         <span className="text-sm text-gray-700 dark:text-gray-300">{arquivo.name}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 dark:text-white ml-2">({formatFileSize(arquivo.size)})</span>

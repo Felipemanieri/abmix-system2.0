@@ -71,62 +71,98 @@ const ProposalSimulator: React.FC<ProposalSimulatorProps> = ({ onSimulationCreat
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Dados realistas pré-preenchidos
-  const [proposalData, setProposalData] = useState({
-    // Dados da empresa
-    nomeEmpresa: 'Empresa Simulada LTDA',
-    cnpj: '12.345.678/0001-90',
-    valor: '2.500,00',
-    planoContratado: 'Plano Premium',
-    periodoMinimo: '12 meses',
-    inicioVigencia: new Date().toISOString().split('T')[0],
-    compulsorio: true,
-    livreAdesao: false,
-    odontoConjugado: true,
-    aproveitamentoCongenere: false,
-  });
+  // Função para gerar dados aleatórios
+  const generateRandomData = () => {
+    const empresas = [
+      'TechCorp Sistemas LTDA', 'Inovação Digital S/A', 'Soluções Modernas EIRELI',
+      'Empresa Vanguarda LTDA', 'Negócios Inteligentes S/A', 'Corporação Alfa LTDA',
+      'Beta Tecnologia EIRELI', 'Gamma Consultoria S/A', 'Delta Serviços LTDA'
+    ];
+    
+    const nomes = [
+      'Carlos Eduardo Santos', 'Maria Fernanda Oliveira', 'João Pedro Costa',
+      'Ana Beatriz Lima', 'Ricardo Almeida Silva', 'Fernanda Rodrigues',
+      'Paulo Roberto Mendes', 'Juliana Castro Pereira', 'Bruno Henrique Souza',
+      'Camila Torres Ribeiro', 'Rafael Barbosa Lima', 'Larissa Campos Silva'
+    ];
 
-  // Titular com dados realistas
-  const [titular, setTitular] = useState<SimulatedTitular>({
-    nomeCompleto: 'João Carlos da Silva',
-    cpf: '123.456.789-10',
-    dataNascimento: '1985-03-15',
-    sexo: 'masculino',
-    rg: '12.345.678-9',
-    nomeMae: 'Maria da Silva Santos',
-    estadoCivil: 'casado',
-    telefoneEmpresa: '11 3456-7890',
-    telefonePessoal: '11 98765-4321',
-    emailEmpresa: 'joao.silva@empresasimulada.com.br',
-    emailPessoal: 'joao.silva@gmail.com',
-    enderecoCompleto: 'Rua das Flores, 123, Centro',
-    cep: '01234-567',
-    peso: '80',
-    altura: '1.75',
-    dadosReembolso: 'Banco do Brasil - Ag: 1234 - CC: 56789-0'
-  });
+    const planos = [
+      'Plano Executivo Premium', 'Plano Empresarial Gold', 'Plano Corporate Plus',
+      'Plano Business Advanced', 'Plano Professional Elite', 'Plano Standard Pro'
+    ];
 
-  // Dependentes com dados realistas
-  const [dependentes, setDependentes] = useState<SimulatedDependente[]>([
-    {
-      nomeCompleto: 'Ana Paula da Silva',
-      cpf: '987.654.321-00',
-      dataNascimento: '1988-07-22',
-      sexo: 'feminino',
-      parentesco: 'cônjuge',
-      peso: '65',
-      altura: '1.65'
-    },
-    {
-      nomeCompleto: 'Pedro da Silva Junior',
-      cpf: '456.789.123-45',
-      dataNascimento: '2015-11-10',
-      sexo: 'masculino',
-      parentesco: 'filho',
-      peso: '30',
-      altura: '1.20'
-    }
-  ]);
+    const dependentesNomes = [
+      'Spouse Silva', 'Filho(a) Santos', 'Dependente Costa', 'Cônjuge Lima',
+      'Criança Oliveira', 'Parceiro(a) Souza', 'Familiar Pereira'
+    ];
+
+    const randomEmpresa = empresas[Math.floor(Math.random() * empresas.length)];
+    const randomNome = nomes[Math.floor(Math.random() * nomes.length)];
+    const randomPlano = planos[Math.floor(Math.random() * planos.length)];
+    
+    const randomCNPJ = `${Math.floor(Math.random() * 90 + 10)}.${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}/0001-${Math.floor(Math.random() * 90 + 10)}`;
+    const randomCPF = `${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 90 + 10)}`;
+    const randomValor = `${(Math.random() * 5000 + 1000).toFixed(0)},00`;
+    
+    return {
+      proposalData: {
+        nomeEmpresa: randomEmpresa,
+        cnpj: randomCNPJ,
+        valor: randomValor,
+        planoContratado: randomPlano,
+        periodoMinimo: ['01 mês', '06 meses', '12 meses', '24 meses'][Math.floor(Math.random() * 4)],
+        inicioVigencia: new Date(Date.now() + Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        compulsorio: Math.random() > 0.5,
+        livreAdesao: Math.random() > 0.5,
+        odontoConjugado: Math.random() > 0.5,
+        aproveitamentoCongenere: Math.random() > 0.5,
+      },
+      titular: {
+        nomeCompleto: randomNome,
+        cpf: randomCPF,
+        dataNascimento: new Date(1970 + Math.random() * 40, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+        sexo: Math.random() > 0.5 ? 'masculino' : 'feminino',
+        rg: `${Math.floor(Math.random() * 90 + 10)}.${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9)}`,
+        nomeMae: nomes[Math.floor(Math.random() * nomes.length)],
+        estadoCivil: ['solteiro', 'casado', 'divorciado', 'viúvo'][Math.floor(Math.random() * 4)],
+        telefoneEmpresa: `11 3${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`,
+        telefonePessoal: `11 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`,
+        emailEmpresa: `${randomNome.toLowerCase().replace(/\s+/g, '.')}@${randomEmpresa.toLowerCase().replace(/\s+/g, '')}.com.br`,
+        emailPessoal: `${randomNome.toLowerCase().replace(/\s+/g, '.')}@gmail.com`,
+        enderecoCompleto: `Rua ${Math.floor(Math.random() * 1000 + 1)}, ${Math.floor(Math.random() * 500 + 1)}, Centro`,
+        cep: `${Math.floor(Math.random() * 90 + 10)}${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}`,
+        peso: `${Math.floor(Math.random() * 40 + 50)}`,
+        altura: `1.${Math.floor(Math.random() * 40 + 60)}`,
+        dadosReembolso: `Banco ${['do Brasil', 'Itaú', 'Bradesco', 'Santander'][Math.floor(Math.random() * 4)]} - Ag: ${Math.floor(Math.random() * 9000 + 1000)} - CC: ${Math.floor(Math.random() * 90000 + 10000)}-${Math.floor(Math.random() * 9)}`
+      },
+      dependentes: [
+        {
+          nomeCompleto: dependentesNomes[Math.floor(Math.random() * dependentesNomes.length)],
+          cpf: `${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 90 + 10)}`,
+          dataNascimento: new Date(1980 + Math.random() * 30, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+          sexo: Math.random() > 0.5 ? 'masculino' : 'feminino',
+          parentesco: ['cônjuge', 'filho', 'pai', 'mãe'][Math.floor(Math.random() * 4)],
+          peso: `${Math.floor(Math.random() * 30 + 40)}`,
+          altura: `1.${Math.floor(Math.random() * 30 + 50)}`
+        },
+        {
+          nomeCompleto: dependentesNomes[Math.floor(Math.random() * dependentesNomes.length)],
+          cpf: `${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}.${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 90 + 10)}`,
+          dataNascimento: new Date(2000 + Math.random() * 20, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
+          sexo: Math.random() > 0.5 ? 'masculino' : 'feminino',
+          parentesco: 'filho',
+          peso: `${Math.floor(Math.random() * 20 + 20)}`,
+          altura: `1.${Math.floor(Math.random() * 40 + 20)}`
+        }
+      ]
+    };
+  };
+
+  // Estado inicial com dados aleatórios
+  const randomData = generateRandomData();
+  const [proposalData, setProposalData] = useState(randomData.proposalData);
+  const [titular, setTitular] = useState<SimulatedTitular>(randomData.titular);
+  const [dependentes, setDependentes] = useState<SimulatedDependente[]>(randomData.dependentes);
 
   // Carregar vendedores disponíveis
   useEffect(() => {
