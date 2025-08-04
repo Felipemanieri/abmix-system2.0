@@ -858,7 +858,7 @@ async function startServer() {
                 role: 'vendor',
                 portal: 'vendor'
               };
-              await storage.updateVendor(vendor.id, { last_login: new Date() });
+              await storage.updateVendorLastLogin(vendor.id);
               console.log(`✅ Vendor login successful: ${vendor.name}`);
             }
           }
@@ -958,7 +958,7 @@ async function startServer() {
             active: user.active,
             type: 'system',
             userType: 'system',
-            lastLogin: user.lastLogin,
+            lastLogin: user.last_login,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
           })),
@@ -974,7 +974,7 @@ async function startServer() {
             userType: 'vendor',
             lastLogin: vendor.last_login,
             createdAt: vendor.createdAt,
-            updatedAt: vendor.updatedAt
+            updatedAt: null
           }))
         ];
         
