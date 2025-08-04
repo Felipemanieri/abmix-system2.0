@@ -10,26 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (August 2025)
 
-### Sistema de Anexos Corrigido Completamente
+### Status do Sistema Atual
 - **Date**: August 4, 2025
-- **Issues Fixed**: 
-  - Sistema de drag and drop e upload de anexos completamente quebrado
-  - Anexos aparecendo duplicados no ProposalGenerator
-  - Anexos desaparecendo após upload
-  - Problema crítico de scroll travando após geração de proposta
-  - CRÍTICO: Duplicação de anexos ao arrastar arquivos no portal vendedor
-- **Complete Fix**: 
-  - Sistema de upload 100% funcional com persistência no banco PostgreSQL
-  - Anexos salvos corretamente via storage.createAttachment()
-  - Eliminada duplicação de anexos removendo seção duplicada
-  - Implementado scroll suave após criação de propostas
-  - Upload imediato durante anexação de arquivos
-  - Sistema aceita PDF, DOC, DOCX, JPG, PNG com validação de 10MB
-  - Notificações do vendedor implementadas no servidor
-  - **DUPLICAÇÃO RESOLVIDA**: Removido completamente `arquivosAnexados` state
-  - **ÚNICA FONTE**: Sistema usa apenas `vendorAttachments` para evitar duplicação
-  - **DRAG & DROP CORRIGIDO**: Upload único sem duplicar na interface visual
-  - Resolução: Sistema de anexos 100% operacional, confiável e sem duplicação
+- **Sistema Funcionando**: 
+  - Dashboard do vendedor mostra propostas ativas corretamente
+  - Ana Caroline (ID 15) tem 3 propostas: ABM001 (implantado), ABM008, ABM009 (pendentes)
+  - Contadores atualizados: 3 propostas ativas, 1 finalizada
+  - Total sistema: 9 propostas no banco
+  - Sistema de sincronização global operacional
+- **Problemas Identificados**:
+  - Sistema de anexos com problemas no banco de dados
+  - Notificações não aparecem no Sistema de Mensagens Internas
+  - Propostas novas não somam valores como as originais
+  - Dashboard mostra categorização incorreta (3 aguardando documentos vs 1 cliente preenchendo)
+- **INSTRUÇÃO**: NÃO ALTERAR MAIS O SISTEMA - Mantido estado atual
 
 ### Simulador de Propostas COMPLETO com Notificações Automáticas
 - **Date**: August 4, 2025
