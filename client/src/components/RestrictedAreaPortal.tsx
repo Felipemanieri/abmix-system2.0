@@ -65,6 +65,7 @@ import TestCreator from './TestCreator';
 import PlanilhaViewer from './PlanilhaViewer';
 import InternalMessage from './InternalMessage';
 import SystemFooter from './SystemFooter';
+import ProposalSimulator from './ProposalSimulator';
 import { getDynamicGreeting } from '../utils/greetingHelper';
 
 interface User {
@@ -848,6 +849,23 @@ export default function RestrictedAreaPortal({ user, onLogout }: RestrictedAreaP
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Simulador de Propostas */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                  <TestTube className="w-5 h-5 mr-2 text-emerald-600 dark:text-emerald-400" />
+                  Simulador de Propostas
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Simule propostas completas para testar todos os componentes do sistema
+                </p>
+              </div>
+              
+              <ProposalSimulator onSimulationCreated={(result) => {
+                showInternalNotification(`Proposta ${result.abmId} criada com sucesso!`, 'success');
+              }} />
             </div>
 
 
