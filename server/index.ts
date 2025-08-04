@@ -603,31 +603,36 @@ async function startServer() {
         const proposal = await storage.createProposal(proposalData);
         console.log('✅ Proposta criada com sucesso:', proposal.id);
 
-        // Notificar o vendedor sobre a criação da proposta (ESPECIALMENTE do simulador)
+        // NOTIFICAÇÃO AUTOMÁTICA OBRIGATÓRIA - Especialmente para SIMULADOR
         try {
           if (proposal.vendorId) {
             const vendor = await storage.getVendor(proposal.vendorId);
             if (vendor) {
-              // Criar notificação no sistema de mensagens internas
-              const isSimulatorProposal = req.body.internalData?.origemVenda === 'Simulação Sistema';
-              const messageContent = isSimulatorProposal ? 
-                `Nova proposta ${proposal.abmId} criada através do SIMULADOR DO SISTEMA com dados de teste. Cliente: ${proposal.contractData?.nomeEmpresa || 'Empresa Teste'}` :
-                `Nova proposta ${proposal.abmId} criada. Cliente: ${proposal.contractData?.nomeEmpresa || 'Sem nome'}`;
+              const isRealSale = req.body.isRealSale === true;
+              const isSimulator = req.body.internalData?.origemVenda?.includes('Simulador');
+              
+              let messageContent;
+              if (isRealSale || isSimulator) {
+                const clientName = proposal.titulares?.[0]?.nomeCompleto || 'Cliente Teste';
+                messageContent = `Seu cliente ${clientName} preencheu o formulário da proposta ${proposal.abmId}!`;
+              } else {
+                messageContent = `Nova proposta ${proposal.abmId} criada. Cliente: ${proposal.contractData?.nomeEmpresa || 'Sem nome'}`;
+              }
               
               await storage.sendInternalMessage({
-                fromName: 'Sistema Automático',
                 fromEmail: 'sistema@abmix.com.br',
                 toEmail: vendor.email,
-                subject: `Nova Proposta ${proposal.abmId}`,
+                subject: `Formulário Preenchido - ${proposal.abmId}`,
                 message: messageContent,
-                attachments: []
+                attachments: [],
+                attachedProposal: proposal.id
               });
               
-              console.log(`📧 NOTIFICAÇÃO CRIADA: Proposta ${proposal.abmId} para vendedor ${vendor.name} (${vendor.email}) - Simulador: ${isSimulatorProposal}`);
+              console.log(`🔔 NOTIFICAÇÃO AUTOMÁTICA ENVIADA: ${messageContent} para ${vendor.email}`);
             }
           }
         } catch (notificationError) {
-          console.warn('⚠️ Erro ao notificar vendedor:', notificationError);
+          console.error('❌ ERRO CRÍTICO ao notificar vendedor:', notificationError);
         }
 
         const clientFormLink = `${req.protocol}://${req.get('host')}/cliente/proposta/${proposal.clientToken}`;

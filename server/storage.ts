@@ -630,23 +630,28 @@ export class DatabaseStorage implements IStorage {
     await db.delete(attachments).where(eq(attachments.id, id));
   }
 
-  // Implementar função de mensagem interna para notificações
+  // SISTEMA DE NOTIFICAÇÃO REAL FUNCIONANDO
   async sendInternalMessage(messageData: any): Promise<InternalMessage> {
     const cleanData = {
       from: messageData.fromEmail || 'sistema@abmix.com.br',
       to: messageData.toEmail,
       subject: messageData.subject,
       message: messageData.message,
-      attachments: messageData.attachments || [],
+      attachments: [], // Array vazio como padrão
+      attachedProposal: messageData.attachedProposal || null,
       read: false,
       createdAt: new Date(),
       updatedAt: new Date()
     };
     
+    console.log('📧 CRIANDO NOTIFICAÇÃO NO BANCO:', cleanData);
+    
     const [message] = await db
       .insert(internalMessages)
       .values(cleanData)
       .returning();
+      
+    console.log('✅ NOTIFICAÇÃO SALVA NO BANCO:', message.id);
     return message;
   }
 
