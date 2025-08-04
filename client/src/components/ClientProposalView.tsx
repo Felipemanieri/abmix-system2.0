@@ -373,7 +373,8 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
           uploadDate: new Date().toISOString(),
           uploadedBy: 'Cliente',
           category: 'client'
-        }))
+        })),
+        clientCompleted: true // MARCA COMO COMPLETO APENAS NO ENVIO FINAL
       };
 
       const response = await fetch(`/api/proposals/client/${token}`, {
@@ -394,7 +395,7 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
       setLastSaved(null);
 
       setIsCompleted(true);
-      showNotification('Proposta enviada com sucesso!', 'success');
+      showNotification('Proposta enviada com sucesso! O vendedor foi notificado.', 'success');
     } catch (error) {
       console.error('Erro ao enviar proposta:', error);
       showNotification('Erro ao enviar proposta', 'error');

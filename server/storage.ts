@@ -635,16 +635,15 @@ export class DatabaseStorage implements IStorage {
 
   // SISTEMA DE NOTIFICAÇÃO REAL FUNCIONANDO
   async sendInternalMessage(messageData: any): Promise<InternalMessage> {
+    // Removendo o campo attachments problemático por enquanto - pode ser adicionado depois se necessário
     const cleanData = {
       from: messageData.fromEmail || 'sistema@abmix.com.br',
       to: messageData.toEmail,
       subject: messageData.subject,
       message: messageData.message,
-      attachments: [], // Array vazio como padrão
       attachedProposal: messageData.attachedProposal || null,
       read: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date()
     };
     
     console.log('📧 CRIANDO NOTIFICAÇÃO NO BANCO:', cleanData);

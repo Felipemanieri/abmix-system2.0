@@ -420,12 +420,46 @@ async function startServer() {
           return res.status(404).json({ error: 'Proposta não encontrada' });
         }
 
+        // Verificar se a proposta está sendo finalizada pelo cliente
+        const isClientCompleting = updateData.clientCompleted === true && proposal.clientCompleted !== true;
+        console.log(`🔍 DEBUG NOTIFICAÇÃO - clientCompleted atual: ${proposal.clientCompleted}, novo: ${updateData.clientCompleted}, deve notificar: ${isClientCompleting}`);
+
         // Atualizar proposta com novos dados
         const updatedProposal = await storage.updateProposal(proposal.id, {
           ...updateData,
           clientCompleted: updateData.clientCompleted || false,
           updatedAt: new Date()
         });
+
+        // Se o cliente acabou de completar a proposta, notificar o vendedor via Sistema de Mensagens Internas
+        if (isClientCompleting) {
+          try {
+            // Buscar dados do vendedor
+            const vendor = await storage.getVendor(proposal.vendorId);
+            if (vendor) {
+              // Obter nome do primeiro titular para notificação personalizada
+              const firstTitular = updateData.titulares?.[0];
+              const clientName = firstTitular?.nomeCompleto || 'Cliente';
+              
+              // Criar notificação interna para o vendedor
+              const notificationMessage = {
+                fromName: 'Sistema Automático',
+                fromEmail: 'sistema@abmix.com.br',
+                toEmail: vendor.email,
+                subject: `${clientName} preencheu formulário - ${proposal.abmId}`,
+                message: `Olá ${vendor.name}! Seu cliente ${clientName} preencheu completamente o formulário da proposta ${proposal.abmId}. A proposta está pronta para análise.`,
+                attachments: [],
+                attachedProposal: proposal.abmId
+              };
+              
+              await storage.sendInternalMessage(notificationMessage);
+              console.log(`📧 NOTIFICAÇÃO ENVIADA para ${vendor.name} (${vendor.email}) sobre ${clientName} - ${proposal.abmId}`);
+            }
+          } catch (notificationError) {
+            console.error('❌ Erro ao enviar notificação para vendedor:', notificationError);
+            // Continuar mesmo se a notificação falhar
+          }
+        }
         
         console.log(`✅ Proposta atualizada: ${proposal.abmId} - Anexos: ${updateData.clientAttachments?.length || 0}`);
         res.json({ success: true, proposal: updatedProposal });
