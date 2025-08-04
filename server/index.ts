@@ -1087,6 +1087,54 @@ async function startServer() {
       });
     });
 
+    // ROTAS PARA CONFIGURAÇÕES DE RELATÓRIOS - PERSISTÊNCIA DE COLUNAS EDITÁVEIS
+    app.post('/api/report-configurations', async (req: Request, res: Response) => {
+      try {
+        const config = req.body;
+        console.log(`💾 Salvando configuração de relatório para ${config.abmId}:`, config);
+        
+        const savedConfig = await storage.saveReportConfiguration(config);
+        console.log(`✅ Configuração salva para ${config.abmId}`);
+        
+        res.json(savedConfig);
+      } catch (error) {
+        console.error('❌ Erro ao salvar configuração de relatório:', error);
+        res.status(500).json({ error: 'Erro ao salvar configuração de relatório' });
+      }
+    });
+
+    app.get('/api/report-configurations', async (req: Request, res: Response) => {
+      try {
+        console.log('📊 Buscando todas as configurações de relatórios');
+        const configs = await storage.getAllReportConfigurations();
+        console.log(`✅ Encontradas ${configs.length} configurações`);
+        
+        res.json(configs);
+      } catch (error) {
+        console.error('❌ Erro ao buscar configurações de relatórios:', error);
+        res.status(500).json({ error: 'Erro ao buscar configurações de relatórios' });
+      }
+    });
+
+    app.get('/api/report-configurations/:abmId', async (req: Request, res: Response) => {
+      try {
+        const { abmId } = req.params;
+        console.log(`📊 Buscando configuração para ${abmId}`);
+        
+        const config = await storage.getReportConfiguration(abmId);
+        if (config) {
+          console.log(`✅ Configuração encontrada para ${abmId}`);
+          res.json(config);
+        } else {
+          console.log(`⚠️ Nenhuma configuração encontrada para ${abmId}`);
+          res.json({});
+        }
+      } catch (error) {
+        console.error(`❌ Erro ao buscar configuração para ${abmId}:`, error);
+        res.status(500).json({ error: 'Erro ao buscar configuração de relatório' });
+      }
+    });
+
     // Endpoint para sincronizar documentos recebidos
     app.post('/api/proposals/sync-documents', async (req: Request, res: Response) => {
       try {
