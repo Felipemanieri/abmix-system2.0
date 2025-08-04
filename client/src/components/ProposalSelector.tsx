@@ -84,9 +84,9 @@ const ProposalSelector: React.FC<ProposalSelectorProps> = ({ isOpen, onClose, on
     return {
       id: proposal.id,
       abmId: proposal.abmId || `ABM${proposal.id.slice(-3)}`,
-      client: contractData.empresa || proposal.cliente || 'Cliente Não Identificado',
+      client: contractData.nomeEmpresa || contractData.empresa || proposal.cliente || proposal.contractData?.nomeEmpresa || 'cliente não identificado',
       vendor: vendorName,
-      plan: contractData.plano || proposal.plano || 'Plano Não Especificado',
+      plan: contractData.planoContratado || contractData.plano || proposal.plano || proposal.contractData?.planoContratado || 'plano não especificado',
       value: contractData.valor || proposal.valor || 'Valor Não Definido',
       status: proposal.status || 'observacao',
       submissionDate: proposal.createdAt ? new Date(proposal.createdAt).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'),

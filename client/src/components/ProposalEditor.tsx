@@ -464,7 +464,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
               </button>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Editar Proposta {proposalId}
+                Editor de Proposta {proposal?.abmId || `ABM${proposalId?.slice(-3) || '000'}`}
               </h1>
             </div>
             <div className="flex items-center space-x-3">
