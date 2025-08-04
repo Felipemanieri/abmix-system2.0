@@ -319,9 +319,13 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
         titulares,
         dependentes,
         clientAttachments: clientAttachments.map(file => ({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
           size: file.size,
-          type: file.type
+          type: file.type,
+          uploadDate: new Date().toISOString(),
+          uploadedBy: 'Cliente',
+          category: 'client'
         })),
         clientCompleted: false // Indica que é apenas um salvamento, não envio final
       };
@@ -362,9 +366,13 @@ const ClientProposalView: React.FC<ClientProposalViewProps> = ({ token }) => {
         titulares,
         dependentes,
         clientAttachments: clientAttachments.map(file => ({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
           name: file.name,
           size: file.size,
-          type: file.type
+          type: file.type,
+          uploadDate: new Date().toISOString(),
+          uploadedBy: 'Cliente',
+          category: 'client'
         }))
       };
 

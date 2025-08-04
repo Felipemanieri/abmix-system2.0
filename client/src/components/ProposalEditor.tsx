@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { ArrowLeft, Building, FileText, DollarSign, Check, Copy, Plus, Trash2, Upload, Camera, User, Eye, EyeOff, Settings, Save, Send, Users, Phone, Mail, MapPin, Calendar, Calculator, CheckCircle, Download, Info, Edit, History, RefreshCw, X } from 'lucide-react';
 import { showNotification } from '../utils/notifications';
 
@@ -81,142 +83,123 @@ interface ChangeLog {
 }
 
 const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onSave, user }) => {
+  // Buscar dados reais da proposta do banco de dados
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/api/proposals', proposalId],
+    queryFn: () => apiRequest(`/api/proposals/${proposalId}`),
+    retry: false,
+  });
+
   const [contractData, setContractData] = useState<ContractData>({
-    nomeEmpresa: 'Tech Solutions Ltda',
-    cnpj: '12.345.678/0001-90',
-    planoContratado: 'Plano Empresarial Premium',
-    valor: 'R$ 1.250,00',
-    periodoVigencia: { inicio: '2024-02-01', fim: '2025-01-31' },
-    odontoConjugado: true,
+    nomeEmpresa: '',
+    cnpj: '',
+    planoContratado: '',
+    valor: '',
+    periodoVigencia: { inicio: '', fim: '' },
+    odontoConjugado: false,
     compulsorio: false,
-    livreAdesao: true,
-    inicioVigencia: '2024-02-01',
-    periodoMinimo: '12 meses',
-    aproveitamentoCongenere: true,
+    livreAdesao: false,
+    inicioVigencia: '',
+    periodoMinimo: '',
+    aproveitamentoCongenere: false,
   });
 
   const [titulares, setTitulares] = useState<PersonData[]>([{
     id: '1',
-    nomeCompleto: 'João Silva Santos',
-    cpf: '123.456.789-00',
-    rg: '12.345.678-9',
-    dataNascimento: '1985-05-15',
-    nomeMae: 'Maria Silva Santos',
-    sexo: 'masculino',
-    estadoCivil: 'Casado',
-    peso: '75',
-    altura: '1.75',
-    emailPessoal: 'joao@gmail.com',
-    telefonePessoal: '(11) 99999-1234',
-    emailEmpresa: 'joao@techsolutions.com',
-    telefoneEmpresa: '(11) 3333-5555',
-    cep: '01234-567',
-    enderecoCompleto: 'Rua das Flores, 123, Apto 45, Centro, São Paulo - SP',
-    dadosReembolso: 'Banco Itaú, Ag: 1234, CC: 56789-0'
-  }]);
-
-  const [dependentes, setDependentes] = useState<PersonData[]>([{
-    id: '1',
-    nomeCompleto: 'Ana Santos Silva',
-    cpf: '987.654.321-00',
-    rg: '98.765.432-1',
-    dataNascimento: '1990-08-20',
-    parentesco: 'Cônjuge',
-    nomeMae: 'Rita Santos Silva',
-    sexo: 'feminino',
-    estadoCivil: 'Casada',
-    peso: '60',
-    altura: '1.65',
-    emailPessoal: 'ana@gmail.com',
-    telefonePessoal: '(11) 99999-5678',
+    nomeCompleto: '',
+    cpf: '',
+    rg: '',
+    dataNascimento: '',
+    nomeMae: '',
+    sexo: '',
+    estadoCivil: '',
+    peso: '',
+    altura: '',
+    emailPessoal: '',
+    telefonePessoal: '',
     emailEmpresa: '',
     telefoneEmpresa: '',
-    cep: '01234-567',
-    enderecoCompleto: 'Rua das Flores, 123, Apto 45, Centro, São Paulo - SP',
+    cep: '',
+    enderecoCompleto: '',
     dadosReembolso: ''
   }]);
 
+  const [dependentes, setDependentes] = useState<PersonData[]>([]);
+
   const [internalData, setInternalData] = useState<InternalData>({
-    reuniao: true,
-    nomeReuniao: 'Reunião de fechamento - Carlos Vendedor',
+    reuniao: false,
+    nomeReuniao: '',
     vendaDupla: false,
     nomeVendaDupla: '',
-    desconto: '5%',
-    origemVenda: 'Base Abmix',
-    autorizadorDesconto: 'Gerente Regional',
-    observacoesFinanceiras: 'Cliente com bom histórico de pagamento. Desconto autorizado.',
-    observacoesCliente: 'Enviar todos os documentos digitalizados em boa qualidade.'
+    desconto: '',
+    origemVenda: '',
+    autorizadorDesconto: '',
+    observacoesFinanceiras: '',
+    observacoesCliente: ''
   });
 
-  const [attachments, setAttachments] = useState<AttachmentData[]>([
-    {
-      id: '1',
-      name: 'contrato-social.pdf',
-      type: 'PDF',
-      size: '2.3 MB',
-      uploadDate: '2024-01-15',
-      uploadedBy: 'Carlos Vendedor',
-      category: 'vendor',
-      url: '#'
-    },
-    {
-      id: '2',
-      name: 'cpf-titular.pdf',
-      type: 'PDF',
-      size: '850 KB',
-      uploadDate: '2024-01-16',
-      uploadedBy: 'João Silva Santos',
-      category: 'client',
-      url: '#'
-    },
-    {
-      id: '3',
-      name: 'rg-dependente.jpg',
-      type: 'JPG',
-      size: '1.2 MB',
-      uploadDate: '2024-01-16',
-      uploadedBy: 'Ana Santos Silva',
-      category: 'client',
-      url: '#'
-    }
-  ]);
-
-  const [changeLog, setChangeLog] = useState<ChangeLog[]>([
-    {
-      id: '1',
-      timestamp: new Date('2024-01-15T10:30:00'),
-      user: 'Carlos Vendedor',
-      field: 'Valor do Plano',
-      oldValue: 'R$ 1.500,00',
-      newValue: 'R$ 1.250,00',
-      section: 'Dados do Contrato'
-    },
-    {
-      id: '2',
-      timestamp: new Date('2024-01-16T14:20:00'),
-      user: 'Ana Implantação',
-      field: 'CPF Dependente',
-      oldValue: '000.000.000-00',
-      newValue: '987.654.321-00',
-      section: 'Dados Pessoais'
-    }
-  ]);
+  const [attachments, setAttachments] = useState<AttachmentData[]>([]);
+  const [changeLog, setChangeLog] = useState<ChangeLog[]>([]);
 
   const [editingField, setEditingField] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Simular carregamento inicial dos dados da proposta
+  // Carregar dados reais da proposta quando os dados chegarem
   useEffect(() => {
-    setIsLoading(true);
-    // Simular carregamento dos dados do Google Sheets
-    setTimeout(() => {
-      setIsLoading(false);
-      // Dados carregados silenciosamente - sem notificação
-    }, 1500);
-  }, [proposalId]);
+    if (data && !isLoading) {
+      console.log('🔄 ProposalEditor - Carregando dados reais da proposta:', data);
+      
+      // Carregar dados do contrato
+      if (data.contractData) {
+        setContractData({
+          nomeEmpresa: data.contractData.nomeEmpresa || '',
+          cnpj: data.contractData.cnpj || '',
+          planoContratado: data.contractData.planoContratado || '',
+          valor: data.contractData.valor || '',
+          periodoVigencia: data.contractData.periodoVigencia || { inicio: '', fim: '' },
+          odontoConjugado: data.contractData.odontoConjugado || false,
+          compulsorio: data.contractData.compulsorio || false,
+          livreAdesao: data.contractData.livreAdesao || false,
+          inicioVigencia: data.contractData.inicioVigencia || '',
+          periodoMinimo: data.contractData.periodoMinimo || '',
+          aproveitamentoCongenere: data.contractData.aproveitamentoCongenere || false,
+        });
+      }
+
+      // Carregar titulares
+      if (data.titulares && data.titulares.length > 0) {
+        setTitulares(data.titulares);
+      }
+
+      // Carregar dependentes
+      if (data.dependentes && data.dependentes.length > 0) {
+        setDependentes(data.dependentes);
+      }
+
+      // Carregar dados internos
+      if (data.internalData) {
+        setInternalData(data.internalData);
+      }
+
+      // Carregar anexos
+      const allAttachments = [];
+      if (data.vendorAttachments) {
+        allAttachments.push(...data.vendorAttachments.map((att: any) => ({
+          ...att,
+          category: 'vendor'
+        })));
+      }
+      if (data.clientAttachments) {
+        allAttachments.push(...data.clientAttachments.map((att: any) => ({
+          ...att,
+          category: 'client'
+        })));
+      }
+      setAttachments(allAttachments);
+    }
+  }, [data, isLoading]);
 
   const handleFieldEdit = (fieldName: string, value: any, section: string) => {
     // Registrar mudança no log

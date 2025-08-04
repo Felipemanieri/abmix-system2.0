@@ -261,6 +261,35 @@ async function startServer() {
       }
     });
 
+    // ROTA CRÍTICA: Atualizar proposta via token do cliente (para anexos e dados)
+    app.put('/api/proposals/client/:clientToken', async (req: Request, res: Response) => {
+      try {
+        const { clientToken } = req.params;
+        const updateData = req.body;
+        console.log(`🔄 Atualizando proposta para token do cliente: ${clientToken}`, updateData);
+        
+        const proposal = await storage.getProposalByToken(clientToken);
+        
+        if (!proposal) {
+          console.log(`❌ Proposta não encontrada para token: ${clientToken}`);
+          return res.status(404).json({ error: 'Proposta não encontrada' });
+        }
+
+        // Atualizar proposta com novos dados
+        const updatedProposal = await storage.updateProposal(proposal.id, {
+          ...updateData,
+          clientCompleted: updateData.clientCompleted || false,
+          updatedAt: new Date()
+        });
+        
+        console.log(`✅ Proposta atualizada: ${proposal.abmId} - Anexos: ${updateData.clientAttachments?.length || 0}`);
+        res.json({ success: true, proposal: updatedProposal });
+      } catch (error) {
+        console.error('❌ Erro ao atualizar proposta por token do cliente:', error);
+        res.status(500).json({ error: 'Falha ao atualizar proposta' });
+      }
+    });
+
     console.log("✅ Rotas essenciais registradas com sucesso");
 
     // Portal visibility state
