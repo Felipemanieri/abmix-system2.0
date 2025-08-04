@@ -62,6 +62,10 @@ const ProposalSelector: React.FC<ProposalSelectorProps> = ({ isOpen, onClose, on
     retry: false,
   });
 
+  // Debug: Log das propostas da API
+  console.log('🔍 ProposalSelector - Propostas da API:', apiProposals);
+  console.log('🔍 ProposalSelector - Loading:', isLoading);
+
   // Converter propostas da API para formato do selector
   const realProposals: ProposalItem[] = apiProposals.map((proposal: any) => {
     const contractData = proposal.contractData || {};
