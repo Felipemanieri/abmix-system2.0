@@ -761,7 +761,7 @@ async function startServer() {
       }
     });
 
-    // ROTA PARA BUSCAR MENSAGENS INTERNAS (NOTIFICAÇÕES)
+    // ROTAS DE MENSAGENS INTERNAS COMPLETAS
     app.get('/api/messages/inbox/:email', async (req: Request, res: Response) => {
       try {
         const { email } = req.params;
@@ -774,6 +774,57 @@ async function startServer() {
       } catch (error) {
         console.error('❌ Erro ao buscar mensagens:', error);
         res.status(500).json({ error: 'Erro ao buscar mensagens' });
+      }
+    });
+
+    // ROTA PARA ENVIAR MENSAGENS INTERNAS
+    app.post('/api/messages/send', async (req: Request, res: Response) => {
+      try {
+        const { from, to, subject, message, proposalData } = req.body;
+        console.log(`📧 Enviando mensagem de ${from} para ${to}`);
+        
+        // Criar mensagem interna
+        const messageData = {
+          fromEmail: from,
+          toEmail: to, 
+          subject: subject,
+          message: message,
+          attachedProposal: proposalData ? JSON.stringify(proposalData) : null
+        };
+        
+        const newMessage = await storage.sendInternalMessage(messageData);
+        console.log(`✅ Mensagem enviada com ID: ${newMessage.id}`);
+        
+        res.json({ success: true, messageId: newMessage.id });
+      } catch (error) {
+        console.error('❌ Erro ao enviar mensagem:', error);
+        res.status(500).json({ error: 'Erro ao enviar mensagem' });
+      }
+    });
+
+    // ROTA PARA MARCAR MENSAGENS COMO LIDAS
+    app.put('/api/messages/:id/read', async (req: Request, res: Response) => {
+      try {
+        const messageId = parseInt(req.params.id);
+        await storage.markMessageAsRead(messageId);
+        console.log(`✅ Mensagem ${messageId} marcada como lida`);
+        res.json({ success: true });
+      } catch (error) {
+        console.error('❌ Erro ao marcar mensagem como lida:', error);
+        res.status(500).json({ error: 'Erro ao marcar mensagem como lida' });
+      }
+    });
+
+    // ROTA PARA EXCLUIR MENSAGENS
+    app.delete('/api/messages/:id', async (req: Request, res: Response) => {
+      try {
+        const messageId = parseInt(req.params.id);
+        await storage.deleteMessage(messageId);
+        console.log(`✅ Mensagem ${messageId} excluída`);
+        res.json({ success: true });
+      } catch (error) {
+        console.error('❌ Erro ao excluir mensagem:', error);
+        res.status(500).json({ error: 'Erro ao excluir mensagem' });
       }
     });
 
