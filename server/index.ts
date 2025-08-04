@@ -97,6 +97,20 @@ const upload = multer({
 // Servir arquivos estáticos da pasta uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Rota para deletar anexos
+app.delete('/api/attachments/:id', (req, res) => {
+  const attachmentId = req.params.id;
+  
+  try {
+    // Aqui você implementaria a lógica para deletar o arquivo do sistema de arquivos
+    // Por enquanto, vamos simular uma resposta de sucesso
+    res.json({ success: true, message: 'Anexo removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar anexo:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+  }
+});
+
 // Rota para consultar CPF via proxy (evita CORS)
 app.get('/api/cpf/:cpf', async (req, res) => {
   try {

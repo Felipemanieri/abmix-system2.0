@@ -309,26 +309,37 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
-  const handleDeleteAttachment = (attachmentId: string) => {
+  const handleDeleteAttachment = async (attachmentId: string) => {
     const attachment = attachments.find(a => a.id === attachmentId);
     if (!attachment) return;
 
-    if (confirm(`Tem certeza que deseja excluir "${attachment.name}"?`)) {
-      setAttachments(prev => prev.filter(a => a.id !== attachmentId));
-      
-      // Registrar no log
-      const newChange: ChangeLog = {
-        id: Date.now().toString(),
-        timestamp: new Date(),
-        user: user.name,
-        field: 'Anexo Removido',
-        oldValue: attachment.name,
-        newValue: '',
-        section: 'Documentos'
-      };
-      setChangeLog(prev => [newChange, ...prev]);
+    try {
+      const response = await fetch(`/api/attachments/${attachmentId}`, {
+        method: 'DELETE',
+      });
 
-      showNotification(`Arquivo "${attachment.name}" removido do Google Drive`, 'success');
+      if (response.ok) {
+        setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+        
+        // Registrar no log
+        const newChange: ChangeLog = {
+          id: Date.now().toString(),
+          timestamp: new Date(),
+          user: user.name,
+          field: 'Anexo Removido',
+          oldValue: attachment.name,
+          newValue: '',
+          section: 'Documentos'
+        };
+        setChangeLog(prev => [newChange, ...prev]);
+
+        showNotification(`Arquivo "${attachment.name}" removido com sucesso`, 'success');
+      } else {
+        showNotification('Erro ao remover arquivo', 'error');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir anexo:', error);
+      showNotification('Erro ao remover arquivo', 'error');
     }
   };
 
@@ -678,7 +689,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                       <div className="flex items-center justify-center space-x-2 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <button
                           onClick={() => {
-                            const fileUrl = attachment.url.startsWith('http') ? attachment.url : `${window.location.origin}${attachment.url}`;
+                            const fileUrl = attachment.url.startsWith('/uploads') ? `${window.location.origin}${attachment.url}` : attachment.url;
                             window.open(fileUrl, '_blank');
                             showNotification(`Visualizando ${attachment.name}`, 'info');
                           }}
@@ -689,13 +700,24 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                           Visualizar
                         </button>
                         <button
-                          onClick={() => {
-                            const fileUrl = attachment.url.startsWith('http') ? attachment.url : `${window.location.origin}${attachment.url}`;
-                            const link = document.createElement('a');
-                            link.href = fileUrl;
-                            link.download = attachment.name;
-                            link.click();
-                            showNotification(`Download de ${attachment.name} iniciado`, 'success');
+                          onClick={async () => {
+                            try {
+                              const fileUrl = attachment.url.startsWith('/uploads') ? `${window.location.origin}${attachment.url}` : attachment.url;
+                              const response = await fetch(fileUrl);
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = attachment.name;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                              showNotification(`Download de ${attachment.name} iniciado`, 'success');
+                            } catch (error) {
+                              console.error('Erro no download:', error);
+                              showNotification('Erro ao baixar arquivo', 'error');
+                            }
                           }}
                           className="flex items-center px-3 py-1.5 text-xs bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors"
                           title="Baixar arquivo"
