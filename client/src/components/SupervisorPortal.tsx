@@ -896,6 +896,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
   // Estados para premiações
   const [showAddAwardForm, setShowAddAwardForm] = useState(false);
   const [editingAward, setEditingAward] = useState<Award | null>(null);
+  const [editingAwardId, setEditingAwardId] = useState<number | null>(null);
   const [newAwardData, setNewAwardData] = useState({
     vendorId: 0,
     title: '',
@@ -1059,8 +1060,11 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
   // Mutation para criar premiação
   const addAwardMutation = useMutation({
     mutationFn: async (awardData: any) => {
-      return apiRequest('/api/awards', {
-        method: 'POST',
+      const url = editingAwardId ? `/api/awards/${editingAwardId}` : '/api/awards';
+      const method = editingAwardId ? 'PUT' : 'POST';
+      
+      return apiRequest(url, {
+        method,
         body: JSON.stringify(awardData),
         headers: {
           'Content-Type': 'application/json',
@@ -1070,6 +1074,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
     onSuccess: () => {
       queryClientInstance.invalidateQueries({ queryKey: ['/api/awards'] });
       setShowAddAwardForm(false);
+      setEditingAwardId(null);
       setNewAwardData({
         vendorId: 0,
         title: '',
@@ -1080,10 +1085,12 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         startDate: '',
         endDate: ''
       });
-      showNotification('Premiação criada com sucesso!', 'success');
+      const action = editingAwardId ? 'atualizada' : 'criada';
+      showNotification(`Premiação ${action} com sucesso!`, 'success');
     },
     onError: (error: any) => {
-      showNotification(error.message || 'Erro ao criar premiação', 'error');
+      const action = editingAwardId ? 'atualizar' : 'criar';
+      showNotification(error.message || `Erro ao ${action} premiação`, 'error');
     },
   });
 
@@ -2083,12 +2090,35 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                     </div>
                     <h4 className="font-medium text-gray-800 text-sm">{award.title}</h4>
                   </div>
-                  <button
-                    onClick={() => deleteAwardMutation.mutate(award.id)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => {
+                        setNewAwardData({
+                          vendorId: award.vendorId,
+                          title: award.title,
+                          type: award.type,
+                          value: award.value,
+                          targetValue: award.targetValue,
+                          startDate: award.startDate || '',
+                          endDate: award.endDate || '',
+                          description: award.description || ''
+                        });
+                        setEditingAwardId(award.id);
+                        setShowAddAwardForm(true);
+                      }}
+                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      title="Editar premiação"
+                    >
+                      <Edit size={12} />
+                    </button>
+                    <button
+                      onClick={() => deleteAwardMutation.mutate(award.id)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      title="Excluir premiação"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="text-xs text-gray-600 mb-2">
@@ -2157,9 +2187,24 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Nova Premiação</h3>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {editingAwardId ? 'Editar Premiação' : 'Nova Premiação'}
+              </h3>
               <button
-                onClick={() => setShowAddAwardForm(false)}
+                onClick={() => {
+                  setShowAddAwardForm(false);
+                  setEditingAwardId(null);
+                  setNewAwardData({
+                    vendorId: 0,
+                    title: '',
+                    description: '',
+                    value: '',
+                    targetValue: '',
+                    type: 'recognition' as const,
+                    startDate: new Date().toISOString().split('T')[0],
+                    endDate: new Date().toISOString().split('T')[0]
+                  });
+                }}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X size={20} />
@@ -2317,7 +2362,7 @@ Link: ${window.location.origin}/client/${proposal.clientToken}`;
                 onClick={handleAddAward}
                 className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
               >
-                Conceder Premiação
+                {editingAwardId ? 'Salvar Alterações' : 'Conceder Premiação'}
               </button>
             </div>
           </div>
