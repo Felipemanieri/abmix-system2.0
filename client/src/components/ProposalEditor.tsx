@@ -203,6 +203,65 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
+  // Função para upload real de arquivos
+  const handleFileUpload = async (files: FileList | null, category: 'vendor' | 'client') => {
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    
+    for (const file of fileArray) {
+      // Validar tipo de arquivo
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      
+      if (!allowedTypes.includes(file.type)) {
+        showNotification(`Tipo de arquivo não permitido: ${file.name}`, 'error');
+        continue;
+      }
+
+      // Validar tamanho (máximo 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showNotification(`Arquivo muito grande: ${file.name} (máximo 10MB)`, 'error');
+        continue;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('proposalId', proposalId || '');
+        formData.append('category', category);
+
+        const response = await fetch(`/api/proposals/${proposalId}/attachments`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Adicionar anexo à lista local
+          const newAttachment: AttachmentData = {
+            id: result.attachment.id,
+            name: file.name,
+            type: file.name.split('.').pop()?.toUpperCase() || 'FILE',
+            size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+            uploadDate: new Date().toLocaleDateString('pt-BR'),
+            uploadedBy: user.name,
+            category: category,
+            url: result.attachment.url
+          };
+          
+          setAttachments(prev => [...prev, newAttachment]);
+          showNotification(`Arquivo ${file.name} anexado com sucesso`, 'success');
+        } else {
+          showNotification(`Erro ao anexar ${file.name}: ${result.error}`, 'error');
+        }
+      } catch (error) {
+        console.error('Erro no upload:', error);
+        showNotification(`Erro ao anexar ${file.name}`, 'error');
+      }
+    }
+  };
+
   const handleFieldEdit = (fieldName: string, value: any, section: string) => {
     // Registrar mudança no log
     const newChange: ChangeLog = {
@@ -257,59 +316,7 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
     }
   };
 
-  const handleFileUpload = async (files: FileList | null, category: 'vendor' | 'client') => {
-    if (!files) return;
 
-    const formData = new FormData();
-    Array.from(files).forEach(file => {
-      formData.append('files', file);
-    });
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        result.files.forEach((file: any) => {
-          const newAttachment: AttachmentData = {
-            id: file.id,
-            name: file.originalName,
-            type: file.originalName.split('.').pop()?.toUpperCase() || 'FILE',
-            size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-            uploadDate: new Date().toISOString().split('T')[0],
-            uploadedBy: user.name,
-            category: category,
-            url: file.url
-          };
-
-          setAttachments(prev => [...prev, newAttachment]);
-          
-          // Registrar no log
-          const newChange: ChangeLog = {
-            id: Date.now().toString(),
-            timestamp: new Date(),
-            user: user.name,
-            field: 'Novo Anexo',
-            oldValue: '',
-            newValue: file.originalName,
-            section: 'Documentos'
-          };
-          setChangeLog(prev => [newChange, ...prev]);
-        });
-
-        showNotification(`${result.files.length} arquivo(s) enviado(s) com sucesso`, 'success');
-      } else {
-        showNotification(result.error || 'Erro no upload', 'error');
-      }
-    } catch (error) {
-      console.error('Erro no upload:', error);
-      showNotification('Erro ao enviar arquivos', 'error');
-    }
-  };
 
   const handleDeleteAttachment = async (attachmentId: string) => {
     const attachment = attachments.find(a => a.id === attachmentId);
@@ -696,11 +703,12 @@ const ProposalEditor: React.FC<ProposalEditorProps> = ({ proposalId, onBack, onS
                               return;
                             }
                             const fileUrl = attachment.url.startsWith('/uploads') ? `${window.location.origin}${attachment.url}` : attachment.url;
+                            // O navegador já tem suporte nativo para PDFs - não precisa de programa externo
                             window.open(fileUrl, '_blank');
-                            showNotification(`Visualizando ${attachment.name}`, 'info');
+                            showNotification(`Visualizando ${attachment.name} - Suporte nativo do navegador`, 'info');
                           }}
                           className="flex items-center px-3 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
-                          title="Visualizar arquivo"
+                          title="Visualizar arquivo - Navegador tem suporte nativo para PDFs"
                         >
                           <Eye className="w-3 h-3 mr-1" />
                           Visualizar

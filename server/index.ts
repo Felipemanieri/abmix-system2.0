@@ -102,33 +102,55 @@ app.get('/api/proposals/:id/attachments', (req, res) => {
   const proposalId = req.params.id;
   
   try {
-    // Anexos de exemplo para teste - substitua pela lógica real do banco
-    const mockAttachments = [
-      {
-        id: 'att-001',
-        name: 'Contrato-Assinado.pdf',
-        type: 'PDF',
-        size: '2.4 MB',
-        uploadDate: '2025-08-04',
-        uploadedBy: 'Vendedor',
-        category: 'vendor',
-        url: '/uploads/exemplo.pdf'
-      },
-      {
-        id: 'att-002',
-        name: 'Documentos-Cliente.jpg',
-        type: 'JPG', 
-        size: '1.8 MB',
-        uploadDate: '2025-08-04',
-        uploadedBy: 'Cliente',
-        category: 'client',
-        url: '/uploads/exemplo.jpg'
-      }
-    ];
+    // Para agora, retorna lista vazia - usuário pode anexar novos documentos
+    // Esta foi a resposta solicitada: os anexos antigos não eram reais
+    const attachments = [];
     
-    res.json({ success: true, attachments: mockAttachments });
+    res.json({ success: true, attachments: attachments });
   } catch (error) {
     console.error('Erro ao buscar anexos:', error);
+    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+  }
+});
+
+// Rota para upload de anexos
+app.post('/api/proposals/:id/attachments', upload.single('file'), async (req, res) => {
+  const proposalId = req.params.id;
+  const { category } = req.body;
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'Nenhum arquivo enviado' });
+    }
+
+    // Gerar URL do arquivo
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    // Dados do anexo
+    const attachment = {
+      id: `att-${Date.now()}`,
+      name: req.file.originalname,
+      filename: req.file.filename,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      category: category || 'vendor',
+      proposalId: proposalId,
+      url: fileUrl,
+      uploadedAt: new Date()
+    };
+
+    // Aqui você salvaria no banco de dados
+    console.log('📎 Anexo recebido:', attachment);
+    
+    res.json({ 
+      success: true, 
+      attachment: {
+        id: attachment.id,
+        url: attachment.url
+      }
+    });
+  } catch (error) {
+    console.error('Erro no upload:', error);
     res.status(500).json({ success: false, error: 'Erro interno do servidor' });
   }
 });

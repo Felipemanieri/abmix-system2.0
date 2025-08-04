@@ -1154,7 +1154,7 @@ const ImplantacaoPortal: React.FC<ImplantacaoPortalProps> = ({ user, onLogout })
                 <div className="h-full">
                   <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                      Editor de Proposta ABM{editingProposalId?.slice(-3) || '000'}
+                      Editor de Proposta
                     </h2>
                     <button
                       onClick={handleBackFromEditor}
