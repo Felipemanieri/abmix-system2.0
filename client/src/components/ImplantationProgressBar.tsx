@@ -56,8 +56,12 @@ const ImplantationProgressBar: React.FC<ImplantationProgressBarProps> = ({ propo
       filledFields = requiredFields.length; // Comercial sempre completo se tem status
     }
     
-    if (stage.id === 'documentation' && proposal.documents > 0) {
-      filledFields = Math.max(filledFields, requiredFields.length - 1);
+    if (stage.id === 'documentation') {
+      // Calcular documentos baseado nos anexos reais
+      const realDocuments = proposal.attachments?.length || 0;
+      if (realDocuments > 0) {
+        filledFields = Math.max(filledFields, requiredFields.length - 1);
+      }
     }
     
     if (stage.id === 'financial' && ['validated', 'sent_to_automation', 'processing', 'completed'].includes(proposal.status)) {

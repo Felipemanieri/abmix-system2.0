@@ -40,7 +40,7 @@ interface Proposal {
   value: string;
   status: 'pending_validation' | 'validated' | 'sent_to_automation' | 'processing' | 'completed';
   submissionDate: string;
-  documents: number;
+  documents?: number;
   observations?: string;
   priority: 'low' | 'medium' | 'high';
   estimatedCompletion: string;
