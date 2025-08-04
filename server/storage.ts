@@ -589,10 +589,24 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createAttachment(attachmentData: InsertAttachment): Promise<Attachment> {
+  async createAttachment(attachmentData: any): Promise<Attachment> {
+    // Remove campos que não existem na tabela atual
+    const cleanData = {
+      proposalId: attachmentData.proposalId,
+      filename: attachmentData.filename,
+      originalName: attachmentData.originalName,
+      filepath: attachmentData.filepath,
+      size: attachmentData.size,
+      mimetype: attachmentData.mimetype,
+      category: attachmentData.category,
+      status: attachmentData.status || 'pending',
+      uploadedBy: attachmentData.uploadedBy || 'sistema',
+      uploadedAt: new Date()
+    };
+    
     const [attachment] = await db
       .insert(attachments)
-      .values(attachmentData)
+      .values(cleanData)
       .returning();
     return attachment;
   }
@@ -614,6 +628,26 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAttachment(id: number): Promise<void> {
     await db.delete(attachments).where(eq(attachments.id, id));
+  }
+
+  // Implementar função de mensagem interna para notificações
+  async sendInternalMessage(messageData: any): Promise<InternalMessage> {
+    const cleanData = {
+      from: messageData.fromEmail || 'sistema@abmix.com.br',
+      to: messageData.toEmail,
+      subject: messageData.subject,
+      message: messageData.message,
+      attachments: messageData.attachments || [],
+      read: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const [message] = await db
+      .insert(internalMessages)
+      .values(cleanData)
+      .returning();
+    return message;
   }
 
   // Drive Config operations

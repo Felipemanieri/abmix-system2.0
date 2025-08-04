@@ -31,24 +31,26 @@ Preferred communication style: Simple, everyday language.
   - **DRAG & DROP CORRIGIDO**: Upload único sem duplicar na interface visual
   - Resolução: Sistema de anexos 100% operacional, confiável e sem duplicação
 
-### Simulador de Propostas com Dados Aleatórios Completo
+### Simulador de Propostas COMPLETO com Notificações Automáticas
 - **Date**: August 4, 2025
-- **Feature**: Sistema completo de simulação de propostas com dados rotativos
+- **Feature**: Sistema completo de simulação que cria VENDAS REAIS com notificações automáticas
 - **Location**: Área Restrita → Aba Sistema → Simulador de Propostas
 - **Functionality**:
+  - ✅ **VENDAS REAIS**: Propostas criadas contam nos valores e comissões (não são mais simulações)
+  - ✅ **NOTIFICAÇÕES AUTOMÁTICAS**: Vendedor recebe notificação "Seu cliente [Nome] preencheu o formulário"
+  - ✅ **ANEXOS FUNCIONAIS**: Sistema de upload de documentos integrado durante simulação
+  - ✅ **SINCRONIZAÇÃO GLOBAL**: Propostas aparecem em todos os portais do sistema
   - Geração de dados 100% aleatórios e únicos a cada uso
   - Função regenerateAllData() para novos dados a qualquer momento
   - Nomes, empresas, CNPJs, CPFs completamente variáveis
-  - Sistema de anexos funcional integrado ao simulador
-  - Propostas reais criadas que aparecem em todos os portais
   - Scroll automático para resultados após simulação
-  - Interface profissional com botão "Gerar Novos Dados"
 - **Technical**: 
-  - generateRandomData() com arrays extensos de dados variados
-  - Lazy initialization para evitar repetição de dados
-  - Upload de anexos funcional durante simulação
-  - Integração completa com sistema real de propostas
-  - Scroll suave implementado para evitar travamento de tela
+  - Rota /api/proposals/:id/notify-vendor implementada para notificações
+  - Flag isRealSale: true marca como venda real
+  - sendInternalMessage() funcional para notificar vendedores
+  - Sistema de anexos corrigido (sem erro approved_at)
+  - Origemvenda: "VENDA REAL - Simulador" para identificação
+  - **TESTE REALIZADO**: ABM009 criada com anexo PowerToys, vendedor notificado
 
 ### Documentações Recebidas Panel Implementation
 - **Date**: August 4, 2025
