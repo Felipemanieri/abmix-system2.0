@@ -853,6 +853,10 @@ Vendedor Abmix`;
     };
   };
 
+  // Estados para documentações recebidas
+  const [selectedDocProposal, setSelectedDocProposal] = useState<any>(null);
+  const [showDocProposalEditor, setShowDocProposalEditor] = useState(false);
+
   // Função para renderizar documentações recebidas
   const renderDocumentacoesRecebidas = () => {
     // Filtrar propostas onde cliente completou o formulário e o vendedor é o atual
@@ -868,9 +872,6 @@ Vendedor Abmix`;
       return hasClientData;
     }) || [];
 
-    const [selectedProposal, setSelectedProposal] = useState<any>(null);
-    const [showProposalEditor, setShowProposalEditor] = useState(false);
-
     return (
       <div className="space-y-6">
         {/* Header */}
@@ -884,17 +885,17 @@ Vendedor Abmix`;
           </button>
         </div>
 
-        {showProposalEditor && selectedProposal ? (
+        {showDocProposalEditor && selectedDocProposal ? (
           <ProposalEditor 
-            proposalId={selectedProposal.id}
+            proposalId={selectedDocProposal.id}
             onBack={() => {
-              setShowProposalEditor(false);
-              setSelectedProposal(null);
+              setShowDocProposalEditor(false);
+              setSelectedDocProposal(null);
             }}
             onSave={(data) => {
               showNotification('Proposta atualizada com sucesso!', 'success');
-              setShowProposalEditor(false);
-              setSelectedProposal(null);
+              setShowDocProposalEditor(false);
+              setSelectedDocProposal(null);
               // Recarregar dados
               window.location.reload();
             }}
@@ -955,8 +956,8 @@ Vendedor Abmix`;
                           </span>
                           <button
                             onClick={() => {
-                              setSelectedProposal(proposal);
-                              setShowProposalEditor(true);
+                              setSelectedDocProposal(proposal);
+                              setShowDocProposalEditor(true);
                             }}
                             className="px-3 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm"
                           >
